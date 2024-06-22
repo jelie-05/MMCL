@@ -6,7 +6,6 @@ from __future__ import print_function
 import os
 import numpy as np
 from PIL import Image
-from .filldepth import fill_depth_colorization
 from .bin2depth import get_velo_points
 
 

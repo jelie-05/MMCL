@@ -1,27 +1,40 @@
 import torch
 from tqdm import tqdm
-import argparse
-import yaml
+from src.models.mm_siamese import lidar_backbone, image_backbone
+from src.dataset.kitti_dataloader.dataset import DataGenerator
+from .contrastive_loss import ContrastiveLoss as CL
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    '--fname', type=str,
-    help='name of config file to load',
-    default='configs.yaml')
-parser.add_argument(
-    '--devices', type=str, nargs='+', default=['cuda:0'],
-    help='which devices to use on local machine')
 
 def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
-def train_model(model_im, model_lid, train_loader, val_loader, project_path, loss_func, tb_logger, device, hparams, epochs=10, name="default"):
+def main(params, data_root, tb_logger, name="default"):
     """
     Train the classifier for a number of epochs.
     """
-    optimizer_im = torch.optim.Adam(model_im.parameters(), hparams["learning_rate"])
+    # TODO: implement the transformation!!!
+    """ Data Loader """
+    train_gen = DataGenerator(data_root, 'train')
+    train_loader = train_gen.create_data(params.get['batch_size'], shuffle=True)
+    val_gen = DataGenerator(data_root, 'val')
+    val_loader = val_gen.create_data(params.get['batch_size'], shuffle=False)
+
+    """ Loss Function """
+    loss_func = CL(params.get['margin'])
+
+    """ Device """
+    device = torch.device(params.get['device'])
+
+    """ Other hyperparams """
+    learning_rate = params.get['lr']
+    epochs = params.get['epoch']
+
+    model_im = image_backbone()
+    model_lid = lidar_backbone()
+
+    optimizer_im = torch.optim.Adam(model_im.parameters(), learning_rate)
     model_im = model_im.to(device)
-    optimizer_lid = torch.optim.Adam(model_lid.parameters(), hparams["learning_rate"])
+    optimizer_lid = torch.optim.Adam(model_lid.parameters(), learning_rate)
     model_lid= model_lid.to(device)
 
     for epoch in range(epochs):
@@ -81,11 +94,11 @@ def train_model(model_im, model_lid, train_loader, val_loader, project_path, los
         val_loop = create_tqdm_bar(val_loader, desc=f'Validation Epoch [{epoch + 1}/{epochs}]')
 
         with torch.no_grad():
-            for val_iteration, batch in val_loop:
+            for val_iteration, val_batch in val_loop:
 
-                left_img_batch = batch['left_img'].to(device)  # batch of left image, id 02
-                depth_batch = batch['depth'].to(device)  # the corresponding depth ground truth of given id
-                depth_neg = batch['depth_neg'].to(device)
+                left_img_batch = val_batch['left_img'].to(device)  # batch of left image, id 02
+                depth_batch = val_batch['depth'].to(device)  # the corresponding depth ground truth of given id
+                depth_neg = val_batch['depth_neg'].to(device)
 
                 batch_length = len(depth_batch)
                 half_length = batch_length // 2

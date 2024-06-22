@@ -9,13 +9,14 @@ def set_parameter_requires_grad(model, feature_extracting):
             param.requires_grad = False # Freeze
 
 
-class Image_Backbone(nn.Module):
-    def __init__(self, hp=None):
+class image_backbone(nn.Module):
+    def __init__(self,
+                 freeze=False):
         super().__init__()
-        self.hp = hp
+        self.freeze = freeze
 
         model = resnet18(pretrained=True)
-        set_parameter_requires_grad(model, feature_extracting=False) # True: freeze
+        set_parameter_requires_grad(model, feature_extracting = self.freeze) # True: freeze
 
         # Image Backbone: First 3 Block of ResNet
         backbone_im = torch.nn.Sequential(*(list(model.children())[0:6]))
@@ -26,14 +27,15 @@ class Image_Backbone(nn.Module):
         return output_im
 
 
-class Lidar_Backbone(nn.Module):
+class lidar_backbone(nn.Module):
 
-    def __init__(self, hp=None):
+    def __init__(self,
+                 freeze=False):
         super().__init__()
-        self.hp = hp
+        self.freeze = freeze
 
         model = resnet18(pretrained=True)
-        set_parameter_requires_grad(model, feature_extracting=False) # True: freeze
+        set_parameter_requires_grad(model, feature_extracting=self.freeze) # True: freeze
 
         # Change input channel for Lidar
         backbone_lid = torch.nn.Sequential(

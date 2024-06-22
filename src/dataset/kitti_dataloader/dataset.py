@@ -42,10 +42,10 @@ class DataGenerator(object):
         self.dataset = KittiDataset(KittiDir,
                                     phase)
 
-    def create_data(self, batch_size, nthreads=0):
+    def create_data(self, batch_size, nthreads=0, shuffle=False):
         # use page locked gpu memory by default
         return DataLoader(self.dataset,
                           batch_size,
-                          shuffle=(self.phase == 'train') or (self.phase == 'check'),
+                          shuffle=shuffle,
                           num_workers=nthreads,
                           pin_memory=self.high_gpu)
