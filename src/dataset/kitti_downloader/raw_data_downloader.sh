@@ -172,7 +172,9 @@ for i in ${files[@]}; do
                 fullname=$i
         fi
 	echo "Downloading: "$shortname
-        wget 'https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/'$fullname
+        wget 'http://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/'$fullname
+#        --secure-protocol tlsv1
         unzip -o $shortname
         rm $shortname
 done
+

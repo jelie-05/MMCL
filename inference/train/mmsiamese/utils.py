@@ -4,6 +4,7 @@ from PIL import Image
 from collections import Counter
 from scipy.interpolate import LinearNDInterpolator
 from concurrent.futures import ProcessPoolExecutor
+import torch
 
 def read_calib_file(path):
     # taken from https://github.com/hunse/kitti
@@ -188,6 +189,8 @@ def lidar_batch_transform(cam2cam, velo2cam, lidar_batch, im_shape):
     # Separate the results into depth_batch and distorted_batch
     depth_batch, distorted_batch = zip(*results)
 
-    return list(depth_batch), list(distorted_batch)
+    # Convert the lists to PyTorch tensors
+    depth_batch_tensor = torch.tensor(np.array(depth_batch))
+    distorted_batch_tensor = torch.tensor(np.array(distorted_batch))
 
-
+    return depth_batch_tensor, distorted_batch_tensor

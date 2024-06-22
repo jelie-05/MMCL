@@ -190,7 +190,7 @@ def get_depth(calib_dir, velo_file_name, im_shape, cam=2, interp=False, vel_dept
     else:
         return depth
 
-def get_velo_points(calib_dir, velo_file_name, im_shape, cam=2, interp=False, vel_depth=False):
+def get_velo_points(calib_dir, velo_file_name):
     # load calibration files
     cam2cam = read_calib_file(os.path.join(calib_dir, 'calib_cam_to_cam.txt'))
     velo2cam = read_calib_file(os.path.join(calib_dir, 'calib_velo_to_cam.txt'))
@@ -205,21 +205,3 @@ def get_velo_points(calib_dir, velo_file_name, im_shape, cam=2, interp=False, ve
     velo = velo[velo[:, 0] >= 0, :]
 
     return cam2cam, velo2cam, velo
-
-def get_focal_length_baseline(calib_dir, cam):
-    cam2cam = read_calib_file(os.path.join(calib_dir, 'calib_cam_to_cam.txt'))
-    P2_rect = cam2cam['P_rect_02'].reshape(3,4)
-    P3_rect = cam2cam['P_rect_03'].reshape(3,4)
-
-    # cam 2 is left of camera 0  -6cm
-    # cam 3 is to the right  +54cm
-    b2 = P2_rect[0,3] / -P2_rect[0,0]
-    b3 = P3_rect[0,3] / -P3_rect[0,0]
-    baseline = b3-b2
-
-    if cam==2:
-        focal_length = P2_rect[0,0]
-    elif cam==3:
-        focal_length = P3_rect[0,0]
-
-    return focal_length, baseline

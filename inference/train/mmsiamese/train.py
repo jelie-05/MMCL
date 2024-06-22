@@ -3,6 +3,7 @@ from tqdm import tqdm
 from src.models.mm_siamese import lidar_backbone, image_backbone
 from src.dataset.kitti_dataloader.dataset import DataGenerator
 from .contrastive_loss import ContrastiveLoss as CL
+from .utils import lidar_batch_transform
 
 
 def create_tqdm_bar(iterable, desc):
@@ -52,9 +53,17 @@ def main(params, data_root, tb_logger, name="default"):
             optimizer_im.zero_grad()  # Reset the gradients - VERY important! Otherwise they accumulate.
             optimizer_lid.zero_grad()
 
-            left_img_batch = batch['left_img'].to(device)  # batch of left image, id 02
-            depth_batch = batch['depth'].to(device)  # the corresponding depth ground truth of given id
-            depth_neg = batch['depth_neg'].to(device)
+            # Not yet as torch tensor
+            left_img_batch = batch['left_img']  # batch of left image, id 02
+            cam2cam = batch['cam2cam']
+            velo2cam = batch['velo2cam']
+            velo_points = batch['velo']
+
+            w, h = left_img_batch[0].size   # ASSUME: same image size for all batch
+
+            depth_batch, depth_neg = lidar_batch_transform(cam2cam=cam2cam, velo2cam=velo2cam,lidar_batch=velo_points, im_shape=[h,w])
+            # Image to torch tensor
+            # image lidar transforms
 
             batch_length = len(depth_batch)
             half_length = batch_length // 2

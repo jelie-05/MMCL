@@ -52,8 +52,7 @@ class Kittiloader(object):
         depth_path = self._check_path(item_files['depth'], err_info="Panic::Cannot find depth file. Filename: {}".format(item_files['l_rgb']))
 
         l_rgb = Image.open(l_rgb_path).convert('RGB')
-        w, h = l_rgb.size
-        cam2cam, velo2cam, velo = get_velo_points(cam_path, depth_path, [h, w], cam=self.cam, interp=True, vel_depth=True)
+        cam2cam, velo2cam, velo = get_velo_points(cam_path, depth_path)
 
         data = {}
         data['left_img'] = l_rgb
