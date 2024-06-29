@@ -40,18 +40,18 @@ if __name__ == "__main__":
     path = os.path.join(path, f'run_{num_of_runs + 1}')
     tb_logger = SummaryWriter(path)
 
-    # port = 6006
-    # tb = program.TensorBoard()
-    # tb.configure(argv=[None, '--logdir', path, '--port', str(port)])
-    # url = tb.launch()
-    # print(f"TensorBoard started at {url}")
+    port = 6006
+    tb = program.TensorBoard()
+    tb.configure(argv=[None, '--logdir', path, '--port', str(port)])
+    url = tb.launch()
+    print(f"TensorBoard started at {url}")
 
     # load_ext tensorboard
     # tensorboard - -logdir logs - -port 6006
 
     lidar_raw = False
-    # if lidar_raw:
-    #     train_3D(params=params['train'], tb_logger=tb_logger, data_root=data_root)
-    # else:
-    #     train_2D(params=params['train'], tb_logger=tb_logger, data_root=data_root, save_model_lid=args.model_lid, save_model_im=args.model_im)
+    if lidar_raw:
+        train_3D(params=params['train'], tb_logger=tb_logger, data_root=data_root)
+    else:
+        train_2D(params=params['train'], tb_logger=tb_logger, data_root=data_root, save_model_lid=args.model_lid, save_model_im=args.model_im)
 
