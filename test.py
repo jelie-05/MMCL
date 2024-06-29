@@ -1,20 +1,11 @@
-import argparse
 import yaml
 
+# Load YAML configuration
+with open(r'C:\Users\jerem\OneDrive\Me\StudiumMaster\00_Semesterarbeit\Project\MMSiamese\configs\configs.yaml', 'r') as file:
+    config = yaml.safe_load(file)
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    '--fname', type=str,
-    help='name of config file to load',
-    default='configs/configs.yaml')
-parser.add_argument(
-    '--devices', type=str, nargs='+', default=['cuda:0'],
-    help='which devices to use on local machine')
+# Retrieve learning rate and convert to float
+learning_rate = float(config['train']['lr'])
 
-if __name__ == "__main__":
-    args = parser.parse_args()
-    with open(args.fname, 'r') as y_file:
-        params = yaml.load(y_file, Loader=yaml.FullLoader)
-
-    par = params['train']
-    print(par['batch_size'])
+# Now learning_rate is a float
+print(type(learning_rate))  # Output: 0.001

@@ -2,14 +2,14 @@ import os
 import pickle
 import torch
 
-from configs.networks.Siamese_Resnet import Lidar_Backbone
-from configs.networks.Siamese_Resnet import Classifier_Lidar
-from configs.networks.Siamese_Resnet import Image_Backbone
+from src.models.mm_siamese import lidar_backbone
+from src.models.mm_siamese import image_backbone
+from src.models.classifier_head import classifier_lidar
 
 
 def load_model_lid(model_path):
     model_dict = pickle.load(open(model_path, 'rb'))["cifar_classification_ptl"]
-    model = Lidar_Backbone(model_dict["hparams"])
+    model = lidar_backbone(model_dict["hparams"])
     model.load_state_dict(model_dict["state_dict"])
     print("model is loaded")
     return model
@@ -17,7 +17,7 @@ def load_model_lid(model_path):
 
 def load_model_cls_lid(model_path):
     model_dict = pickle.load(open(model_path, 'rb'))["cifar_classification_ptl"]
-    model = Classifier_Lidar(model_dict["hparams"])
+    model = classifier_lidar(model_dict["hparams"])
     model.load_state_dict(model_dict["state_dict"])
     print("model is loaded")
     return model
@@ -25,7 +25,7 @@ def load_model_cls_lid(model_path):
 
 def load_model_img(model_path):
     model_dict = pickle.load(open(model_path, 'rb'))["cifar_classification_ptl"]
-    model = Image_Backbone(model_dict["hparams"])
+    model = image_backbone(model_dict["hparams"])
     model.load_state_dict(model_dict["state_dict"])
     print("model is loaded")
     return model

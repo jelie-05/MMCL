@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 from torchvision.models import resnet18
 
-class Classifier_Lidar(nn.Module):
+
+class classifier_lidar(nn.Module):
     def __init__(self, hp=None, in_dim=None):
         super().__init__()
         self.hp = hp
