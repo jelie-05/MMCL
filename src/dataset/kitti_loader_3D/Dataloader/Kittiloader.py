@@ -7,6 +7,7 @@ import os
 import numpy as np
 from PIL import Image
 from .bin2depth import get_velo_points
+from torchvision import transforms
 
 
 class Kittiloader(object):
@@ -20,6 +21,7 @@ class Kittiloader(object):
         self.cam = cam
         self.files = []
         self.kitti_root = kittiDir
+        self.transform = transforms.ToTensor()
 
         # read filenames files
         currpath = os.path.dirname(os.path.realpath(__file__))
@@ -52,21 +54,24 @@ class Kittiloader(object):
         depth_path = self._check_path(item_files['depth'], err_info="Panic::Cannot find depth file. Filename: {}".format(item_files['l_rgb']))
 
         l_rgb = Image.open(l_rgb_path).convert('RGB')
-        cam2cam, velo2cam, velo = get_velo_points(cam_path, depth_path)
+        velo = get_velo_points(depth_path)
 
         data = {}
-        # data['left_img'] = l_rgb
-        data['cam2cam'] = cam2cam
-        data['velo2cam'] = velo2cam.astype(np.float32)
+        data['left_img'] = self.transform(l_rgb)
+        # data['cam2cam'] = cam2cam
+        # data['velo2cam'] = velo2cam.astype(np.float32)
+        # data['velo2cam'] = velo2cam
         # data['loc_l_rgb'] = item_files['l_rgb']
-        data['velo'] = velo.astype(np.float32)
+        data['velo'] = velo
+        data['cam_path'] = cam_path
         return data
 
-    def load_item(self, idx, interp_method='linear'):
+    def load_item(self, idx):
         """
         load an item for training or test
         interp_method can be selected from [linear', 'nyu']
         """
+        # Return dict of idx-th file
         item_files = self.files[idx]
         data_item = self._read_data(item_files)
 

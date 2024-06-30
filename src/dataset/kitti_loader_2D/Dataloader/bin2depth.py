@@ -113,6 +113,7 @@ def get_depth(calib_dir, velo_file_name, im_shape, cam=2, interp=False, vel_dept
 
     # For negative samples
     # Translation and Rotation Calibration Error
+    # DONE: checked for randomness of different files. Explanation: each file are called independently with Kittiloader.load_item (a function of get_depth)
     # TODO: check why not all points translated?
     # Rotation Angles
     theta1 = np.random.uniform(1,5)  # Yaw

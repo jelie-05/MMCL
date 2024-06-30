@@ -2,8 +2,9 @@ import torch
 from tqdm import tqdm
 from src.models.mm_siamese import lidar_backbone, image_backbone
 from src.dataset.kitti_loader_3D.dataset_3D import DataGenerator
-from .contrastive_loss import ContrastiveLoss
+from inference.train.mmsiamese.contrastive_loss import ContrastiveLoss as CL
 from .utils import lidar_batch_transform
+from src.dataset.kitti_loader_3D.Dataloader.bin2depth import get_calibration_files
 
 
 def create_tqdm_bar(iterable, desc):
@@ -16,27 +17,25 @@ def main(params, data_root, tb_logger, name="default"):
 
     """ Data Loader """
     train_gen = DataGenerator(data_root, 'train')
-    train_loader = train_gen.create_data(int(params.get['batch_size']), shuffle=True)
+    train_loader = train_gen.create_data(int(params.get('batch_size')), shuffle=True)
     val_gen = DataGenerator(data_root, 'val')
-    val_loader = val_gen.create_data(int(params.get['batch_size']), shuffle=False)
+    val_loader = val_gen.create_data(int(params.get('batch_size')), shuffle=False)
 
     """ Loss Function """
-    loss_func = ContrastiveLoss(float(params.get['margin']))
+    loss_func = CL(float(params.get('margin')))
 
     """ Device """
-    device = torch.device(params.get['device'])
+    device = torch.device(params.get('device'))
 
     """ Other hyperparams """
-    learning_rate = float(params.get['lr'])
-    epochs = int(params.get['epoch'])
+    learning_rate = float(params.get('lr'))
+    epochs = int(params.get('epoch'))
 
-    model_im = image_backbone()
-    model_lid = lidar_backbone()
+    model_im = image_backbone().to(device)
+    model_lid = lidar_backbone().to(device)
 
     optimizer_im = torch.optim.Adam(model_im.parameters(), learning_rate)
-    model_im = model_im.to(device)
     optimizer_lid = torch.optim.Adam(model_lid.parameters(), learning_rate)
-    model_lid= model_lid.to(device)
 
     for epoch in range(epochs):
 
@@ -54,16 +53,18 @@ def main(params, data_root, tb_logger, name="default"):
             optimizer_lid.zero_grad()
 
             # Not yet as torch tensor
-            left_img_batch = batch['left_img']  # batch of left image, id 02
-            cam2cam = batch['cam2cam']
-            velo2cam = batch['velo2cam']
+            left_img_batch = batch['left_img'].to(device)  # batch of left image, id 02
             velo_points = batch['velo']
+            path = batch['cam_path'][0] # TODO: Still assuming that all calibration file same!!!
+            cam2cam, velo2cam = get_calibration_files(calib_dir=path)
 
-            w, h = left_img_batch[0].size   # ASSUME: same image size for all batch
+            size = left_img_batch[0].size()   # ASSUME: same image size for all batch
 
-            depth_batch, depth_neg = lidar_batch_transform(cam2cam=cam2cam, velo2cam=velo2cam,lidar_batch=velo_points, im_shape=[h,w])
+            depth_batch, depth_neg = lidar_batch_transform(cam2cam=cam2cam, velo2cam=velo2cam,lidar_batch=velo_points, im_shape=[size[2],size[1]]) # height width
             # Image to torch tensor
             # image lidar transforms
+
+            depth_batch, depth_neg = depth_batch.to(device), depth_neg.to(device)
 
             batch_length = len(depth_batch)
             half_length = batch_length // 2

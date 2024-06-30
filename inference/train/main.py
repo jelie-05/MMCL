@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # load_ext tensorboard
     # tensorboard - -logdir logs - -port 6006
 
-    lidar_raw = False
+    lidar_raw = True
     if lidar_raw:
         train_3D(params=params['train'], tb_logger=tb_logger, data_root=data_root)
     else:

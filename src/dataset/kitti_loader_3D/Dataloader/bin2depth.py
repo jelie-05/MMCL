@@ -1,6 +1,6 @@
 import os
 import numpy as np
-
+import torch
 
 def read_calib_file(path):
     # taken from https://github.com/hunse/kitti
@@ -27,8 +27,7 @@ def load_velodyne_points(file_name):
     points[:, 3] = 1.0  # homogeneous
     return points
 
-
-def get_velo_points(calib_dir, velo_file_name):
+def get_calibration_files(calib_dir):
     # load calibration files
     cam2cam = read_calib_file(os.path.join(calib_dir, 'calib_cam_to_cam.txt'))
     velo2cam = read_calib_file(os.path.join(calib_dir, 'calib_velo_to_cam.txt'))
@@ -37,9 +36,17 @@ def get_velo_points(calib_dir, velo_file_name):
     velo2cam = np.hstack((velo2cam['R'].reshape(3,3), velo2cam['T'][..., np.newaxis]))
     velo2cam = np.vstack((velo2cam, np.array([0, 0, 0, 1.0])))
 
+    return cam2cam, velo2cam
+
+
+def get_velo_points(velo_file_name):
     # load velodyne points and remove all behind image plane (approximation)
     # each row of the velodyne data is forward, left, up, reflectance
     velo = load_velodyne_points(velo_file_name)
     velo = velo[velo[:, 0] >= 0, :]
+    m,n = velo.shape
 
-    return cam2cam, velo2cam, velo
+    velo_padded = np.zeros((65000, 4))
+    velo_padded[:m, :] = velo
+
+    return velo_padded

@@ -64,6 +64,8 @@ def choose_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z):
 
 def lidar_to_plane(cam2cam, velo2cam, velo, im_shape, cam=2, vel_depth=True):
 
+    velo = velo[0].numpy()
+    velo = velo[velo[:, 0] > 0, :]
     # compute projection matrix velodyne->image plane
     R_cam2rect = np.eye(4)
     R_cam2rect[:3,:3] = cam2cam['R_rect_00'].reshape(3,3)
@@ -173,18 +175,19 @@ def lidar_to_plane(cam2cam, velo2cam, velo, im_shape, cam=2, vel_depth=True):
 
     return depth, depth_neg
 
+def process_lidar(cam2cam, velo2cam, lidar_item, im_shape):
+    return lidar_to_plane(cam2cam=cam2cam, velo2cam=velo2cam, velo=lidar_item, im_shape=im_shape)
 
 def lidar_batch_transform(cam2cam, velo2cam, lidar_batch, im_shape):
-    def process_lidar(params):
-        cam2cam_item, velo2cam_item, lidar_item = params
-        return lidar_to_plane(cam2cam=cam2cam_item, velo2cam=velo2cam_item, velo=lidar_item, im_shape=im_shape)
-
     # Combine the parameters into a single iterable using zip
-    params_list = zip(cam2cam, velo2cam, lidar_batch)
+    params_list = zip(lidar_batch)
 
     # Use ProcessPoolExecutor for parallel processing
     with ProcessPoolExecutor() as executor:
-        results = list(executor.map(process_lidar, params_list))
+        results = list(executor.map(process_lidar, [cam2cam] * len(lidar_batch),
+                                    [velo2cam] * len(lidar_batch),
+                                    params_list,
+                                    [im_shape] * len(lidar_batch)))
 
     # Separate the results into depth_batch and distorted_batch
     depth_batch, distorted_batch = zip(*results)
