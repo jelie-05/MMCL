@@ -1,8 +1,9 @@
 import torch
 from tqdm import tqdm
-from src.models.mm_siamese import lidar_backbone, image_backbone
+from src.models.classifier_head import classifier_lidar
 from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
 from .contrastive_loss import ContrastiveLoss as CL
+import torch.nn as nn
 
 from src.utils.save_load_model import save_model
 
@@ -10,7 +11,7 @@ from src.utils.save_load_model import save_model
 def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
-def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="default"):
+def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, name="default"):
     """
     Train the classifier for a number of epochs.
     """
@@ -22,7 +23,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
     val_loader = val_gen.create_data(int(params.get('batch_size')), shuffle=False)
 
     """ Loss Function """
-    loss_func = CL(float(params.get('margin')))
+    loss_func = nn.BCELoss()
 
     """ Device """
     device = torch.device(params.get('device'))
@@ -31,11 +32,13 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
     learning_rate = float(params.get('lr'))
     epochs = int(params.get('epoch'))
 
-    model_im = image_backbone().to(device)
-    model_lid = lidar_backbone().to(device)
+    model_im = pretrained_im.to(device)
+    model_lid = pretrained_lid.to(device)
+    model_lid.eval()
+    model_im.eval()
+    model_cls = classifier_lidar(model_lid=model_lid, model_im=model_im).to(device)
 
-    optimizer_im = torch.optim.Adam(model_im.parameters(), learning_rate)
-    optimizer_lid = torch.optim.Adam(model_lid.parameters(), learning_rate)
+    optimizer = torch.optim.Adam(model_cls.parameters(), learning_rate)
 
     for epoch in range(epochs):
 
@@ -43,14 +46,12 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
         validation_loss = 0
 
         # Training stage, where we want to update the parameters.
-        model_im.train()  # Set the model to training mode
-        model_lid.train()
+        model_cls.train()  # Set the model to training mode
 
         # Create a progress bar for the training loop.
         training_loop = create_tqdm_bar(train_loader, desc=f'Training Epoch [{epoch + 1}/{epochs}]')
         for train_iteration, batch in training_loop:
-            optimizer_im.zero_grad()  # Reset the gradients - VERY important! Otherwise they accumulate.
-            optimizer_lid.zero_grad()
+            optimizer.zero_grad()  # Reset the gradients - VERY important! Otherwise they accumulate.
 
             # Not yet as torch tensor
             left_img_batch = batch['left_img'].to(device)  # batch of left image, id 02
@@ -70,13 +71,12 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
             stacked_depth_batch = torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
                                               depth_neg)
 
-            pred_im = model_im.forward(left_img_batch)
-            pred_lid = model_lid.forward(stacked_depth_batch)
+            pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch)
+            pred_cls = pred_cls.squeeze(dim=1)
 
-            loss = loss_func(pred_im, pred_lid, label_list)
+            loss = loss_func(pred_cls, label_list)
             loss.backward()  # Stage 2: Backward().
-            optimizer_im.step()  # Stage 3: Update the parameters.
-            optimizer_lid.step()
+            optimizer.step()  # Stage 3: Update the parameters.
 
             training_loss += loss.item()
 
@@ -90,8 +90,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
 
         # Validation stage, where we don't want to update the parameters. Pay attention to the classifier.eval() line
         # and "with torch.no_grad()" wrapper.
-        model_im.eval()
-        model_lid.eval()
+        model_cls.eval()
         val_loop = create_tqdm_bar(val_loader, desc=f'Validation Epoch [{epoch + 1}/{epochs}]')
 
         with torch.no_grad():
@@ -115,10 +114,9 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
                 stacked_depth_batch = torch.where(label_val.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
                                                   depth_neg)
 
-                pred_im = model_im.forward(left_img_batch)
-                pred_lid = model_lid.forward(stacked_depth_batch)
+                pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch).squeeze(dim=1)
 
-                loss = loss_func(pred_im, pred_lid, label_val)
+                loss = loss_func(pred_cls, label_list)
                 validation_loss += loss.item()
 
                 # Update the progress bar.
@@ -131,5 +129,4 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
         # This value is used for the progress bar of the training loop.
         validation_loss /= len(val_loader)
 
-    save_model(model_im, file_name=save_model_im)
-    save_model(model_lid, file_name=save_model_lid)
+    save_model(model_im, file_name=name_cls)

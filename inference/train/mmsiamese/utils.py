@@ -193,7 +193,7 @@ def lidar_batch_transform(cam2cam, velo2cam, lidar_batch, im_shape):
     depth_batch, distorted_batch = zip(*results)
 
     # Convert the lists to PyTorch tensors
-    depth_batch_tensor = torch.tensor(np.array(depth_batch))
-    distorted_batch_tensor = torch.tensor(np.array(distorted_batch))
+    depth_batch_tensor = torch.tensor(np.array(depth_batch)).unsqueeze(1)
+    distorted_batch_tensor = torch.tensor(np.array(distorted_batch)).unsqueeze(1)
 
     return depth_batch_tensor, distorted_batch_tensor

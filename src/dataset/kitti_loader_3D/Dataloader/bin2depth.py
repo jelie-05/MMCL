@@ -46,7 +46,7 @@ def get_velo_points(velo_file_name):
     velo = velo[velo[:, 0] >= 0, :]
     m,n = velo.shape
 
-    velo_padded = np.zeros((65000, 4))
+    velo_padded = np.zeros((75000, 4))
     velo_padded[:m, :] = velo
 
     return velo_padded

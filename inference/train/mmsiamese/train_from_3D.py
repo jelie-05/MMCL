@@ -1,16 +1,25 @@
 import torch
 from tqdm import tqdm
+import sys
+
+# Add the src directory to the system path
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
+
 from src.models.mm_siamese import lidar_backbone, image_backbone
 from src.dataset.kitti_loader_3D.dataset_3D import DataGenerator
 from inference.train.mmsiamese.contrastive_loss import ContrastiveLoss as CL
-from .utils import lidar_batch_transform
+from inference.train.mmsiamese.utils import lidar_batch_transform
 from src.dataset.kitti_loader_3D.Dataloader.bin2depth import get_calibration_files
+from src.utils.save_load_model import save_model
 
 
 def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
-def main(params, data_root, tb_logger, name="default"):
+def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="default"):
+
     """
     Train the classifier for a number of epochs.
     """
@@ -61,10 +70,12 @@ def main(params, data_root, tb_logger, name="default"):
             size = left_img_batch[0].size()   # ASSUME: same image size for all batch
 
             depth_batch, depth_neg = lidar_batch_transform(cam2cam=cam2cam, velo2cam=velo2cam,lidar_batch=velo_points, im_shape=[size[2],size[1]]) # height width
+            print(type(depth_batch))
+
             # Image to torch tensor
             # image lidar transforms
 
-            depth_batch, depth_neg = depth_batch.to(device), depth_neg.to(device)
+            depth_batch, depth_neg = depth_batch.float().to(device), depth_neg.float().to(device)
 
             batch_length = len(depth_batch)
             half_length = batch_length // 2
@@ -107,8 +118,17 @@ def main(params, data_root, tb_logger, name="default"):
             for val_iteration, val_batch in val_loop:
 
                 left_img_batch = val_batch['left_img'].to(device)  # batch of left image, id 02
-                depth_batch = val_batch['depth'].to(device)  # the corresponding depth ground truth of given id
-                depth_neg = val_batch['depth_neg'].to(device)
+                velo_points = val_batch['velo']
+                path = val_batch['cam_path'][0] # TODO: Still assuming that all calibration file same!!!
+                cam2cam, velo2cam = get_calibration_files(calib_dir=path)
+
+                size = left_img_batch[0].size()   # ASSUME: same image size for all batch
+
+                depth_batch, depth_neg = lidar_batch_transform(cam2cam=cam2cam, velo2cam=velo2cam,lidar_batch=velo_points, im_shape=[size[2],size[1]]) # height width
+                # Image to torch tensor
+                # image lidar transforms
+
+                depth_batch, depth_neg = depth_batch.to(device), depth_neg.to(device)
 
                 batch_length = len(depth_batch)
                 half_length = batch_length // 2
@@ -139,3 +159,6 @@ def main(params, data_root, tb_logger, name="default"):
 
         # This value is used for the progress bar of the training loop.
         validation_loss /= len(val_loader)
+
+    save_model(model_im, file_name=save_model_im)
+    save_model(model_lid, file_name=save_model_lid)
