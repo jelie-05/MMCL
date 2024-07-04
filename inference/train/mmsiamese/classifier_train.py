@@ -1,8 +1,7 @@
 import torch
 from tqdm import tqdm
-from src.models.classifier_head import classifier_lidar
+from src.models.classifier_head import classifier_head
 from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
-from .contrastive_loss import ContrastiveLoss as CL
 import torch.nn as nn
 
 from src.utils.save_load_model import save_model
@@ -36,7 +35,7 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
     model_lid = pretrained_lid.to(device)
     model_lid.eval()
     model_im.eval()
-    model_cls = classifier_lidar(model_lid=model_lid, model_im=model_im).to(device)
+    model_cls = classifier_head(model_lid=model_lid, model_im=model_im).to(device)
 
     optimizer = torch.optim.Adam(model_cls.parameters(), learning_rate)
 
@@ -116,7 +115,7 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
 
                 pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch).squeeze(dim=1)
 
-                loss = loss_func(pred_cls, label_list)
+                loss = loss_func(pred_cls, label_val)
                 validation_loss += loss.item()
 
                 # Update the progress bar.
@@ -129,4 +128,4 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
         # This value is used for the progress bar of the training loop.
         validation_loss /= len(val_loader)
 
-    save_model(model_im, file_name=name_cls)
+    save_model(model_cls, file_name=name_cls)

@@ -56,7 +56,7 @@ if __name__ == "__main__":
     print(f"TensorBoard started at {url}")
 
     # load_ext tensorboard
-    # tensorboard - -logdir logs - -port 6006
+    # tensorboard --logdir logs --port 6006
     
     if args.lidar_3D:
         train_3D(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_model_lid=args.model_lid, save_model_im=args.model_im)

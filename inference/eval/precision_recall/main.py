@@ -1,0 +1,43 @@
+import argparse
+import os
+from precision_recall import evaluation
+from src.utils.save_load_model import load_model_lidar, load_model_img, load_model_cls
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--fname', type=str,
+    help='name of config file to load',
+    default='configs.yaml')
+parser.add_argument(
+    '--model_lid', type=str,
+    help='name of lidar model to save',
+    default='lidar_backbone')
+parser.add_argument(
+    '--model_im', type=str,
+    help='name of image model file to save',
+    default='image_backbone')
+parser.add_argument(
+    '--name_cls', type=str,
+    help='name of clasfifier model file to save',
+    default='classifier')
+parser.add_argument(
+    '--lidar_3D', action='store_true', help='train with 3D data as input')
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../'))
+    kitti_path = os.path.join(root, 'data', 'kitti')
+
+    # Load pretrained model
+    im_pretrained_path = os.path.join(root, 'models', args.model_im)
+    lid_pretrained_path = os.path.join(root, 'models', args.model_lid)
+    cls_pretrained_path = os.path.join(root, 'models', args.name_cls)
+
+    im_pretrained = load_model_img(im_pretrained_path)
+    lid_pretrained = load_model_lidar(lid_pretrained_path)
+    cls_pretrained = load_model_cls(cls_pretrained_path, model_im=im_pretrained, model_lid=lid_pretrained)
+
+    device = "cuda:0"
+    PR = evaluation(device=device, data_root=kitti_path, model_cls=cls_pretrained)
+    print(PR)

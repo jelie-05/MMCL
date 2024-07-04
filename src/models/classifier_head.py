@@ -7,7 +7,8 @@ def set_parameter_requires_grad(model, feature_extracting):
         for param in model.parameters():
             param.requires_grad = False # Freeze
 
-class classifier_lidar(nn.Module):
+
+class classifier_head(nn.Module):
     def __init__(self, model_im, model_lid):
         super().__init__()
         self.model_im = model_im
@@ -15,7 +16,7 @@ class classifier_lidar(nn.Module):
         set_parameter_requires_grad(self.model_im, feature_extracting=True)
         set_parameter_requires_grad(self.model_lid, feature_extracting=True)
 
-        self.classifier_head = nn.Sequential(
+        self.classifier_layers = nn.Sequential(
             nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 12, 39)
             nn.BatchNorm2d(512),
             nn.ReLU(),
@@ -40,10 +41,15 @@ class classifier_lidar(nn.Module):
             nn.Sigmoid()
             )
 
+    def load_classifier_layers(self, state_dict):
+        classifier_state_dict = {k.replace('classifier_layers.', ''): v for k, v in state_dict.items() if
+                                 k.startswith('classifier_layers.')}
+        self.classifier_layers.load_state_dict(classifier_state_dict)
+
     def forward(self, image, lidar):
         image = self.model_im(image)
         lidar = self.model_lid(lidar)
-        # concatinate x, y as z
+        # concatenate x, y as z
         z = torch.cat((image, lidar), dim=1)
-        z = self.classifier_head(z)
+        z = self.classifier_layers(z)
         return z

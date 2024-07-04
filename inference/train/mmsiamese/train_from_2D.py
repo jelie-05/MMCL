@@ -49,33 +49,32 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
         # Create a progress bar for the training loop.
         training_loop = create_tqdm_bar(train_loader, desc=f'Training Epoch [{epoch + 1}/{epochs}]')
         for train_iteration, batch in training_loop:
-            optimizer_im.zero_grad()  # Reset the gradients - VERY important! Otherwise they accumulate.
+            optimizer_im.zero_grad()
             optimizer_lid.zero_grad()
 
-            # Not yet as torch tensor
-            left_img_batch = batch['left_img'].to(device)  # batch of left image, id 02
-            depth_batch = batch['depth'].to(device)  # the corresponding depth ground truth of given id
+            # TODO: NORMALIZE THE INPUTS AND TRANSFORMATIONS!!!!
+            left_img_batch = batch['left_img'].to(device)
+            depth_batch = batch['depth'].to(device)
             depth_neg = batch['depth_neg'].to(device)
 
+            # Assign randomly label to each component of the batch
             batch_length = len(depth_batch)
             half_length = batch_length // 2
-
-            # Create shuffled label tensor directly on the specified device
-            label_tensor = torch.cat([torch.zeros(half_length, device=device), torch.ones(half_length, device=device)])
-
-            # Shuffle the tensor on the GPU
+            label_tensor = torch.cat(
+                [torch.zeros(half_length, device=device), torch.ones(half_length, device=device)])
             label_list = label_tensor[torch.randperm(label_tensor.size(0))]
 
-            # Stack depth batches according to labels
+            # Stack depth batches according to labels (depth_batch or depth_neg)
             stacked_depth_batch = torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
                                               depth_neg)
 
+            # Prediction & Backpropagation
             pred_im = model_im.forward(left_img_batch)
             pred_lid = model_lid.forward(stacked_depth_batch)
 
             loss = loss_func(pred_im, pred_lid, label_list)
-            loss.backward()  # Stage 2: Backward().
-            optimizer_im.step()  # Stage 3: Update the parameters.
+            loss.backward()
+            optimizer_im.step()
             optimizer_lid.step()
 
             training_loss += loss.item()
@@ -88,8 +87,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
             tb_logger.add_scalar(f'siamese_{name}/train_loss', loss.item(),
                                  epoch * len(train_loader) + train_iteration)
 
-        # Validation stage, where we don't want to update the parameters. Pay attention to the classifier.eval() line
-        # and "with torch.no_grad()" wrapper.
+        # Validation stage
         model_im.eval()
         model_lid.eval()
         val_loop = create_tqdm_bar(val_loader, desc=f'Validation Epoch [{epoch + 1}/{epochs}]')
@@ -97,8 +95,8 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
         with torch.no_grad():
             for val_iteration, val_batch in val_loop:
 
-                left_img_batch = val_batch['left_img'].to(device)  # batch of left image, id 02
-                depth_batch = val_batch['depth'].to(device)  # the corresponding depth ground truth of given id
+                left_img_batch = val_batch['left_img'].to(device)
+                depth_batch = val_batch['depth'].to(device)
                 depth_neg = val_batch['depth_neg'].to(device)
 
                 batch_length = len(depth_batch)
@@ -107,8 +105,6 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
                 # Create shuffled label tensor directly on the specified device
                 label_tensor = torch.cat(
                     [torch.zeros(half_length, device=device), torch.ones(half_length, device=device)])
-
-                # Shuffle the tensor on the GPU
                 label_val = label_tensor[torch.randperm(label_tensor.size(0))]
 
                 # Stack depth batches according to labels
@@ -128,8 +124,13 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
                 tb_logger.add_scalar(f'siamese_{name}/val_loss', loss.item(),
                                      epoch * len(val_loader) + val_iteration)
 
-        # This value is used for the progress bar of the training loop.
+        # Epoch-wise calculation
+        training_loss /= len(train_loader)
         validation_loss /= len(val_loader)
+        tb_logger.add_scalar('training_loss_epoch', training_loss,
+                             epoch)
+        tb_logger.add_scalar('validation_loss_epoch', validation_loss,
+                             epoch)
 
     save_model(model_im, file_name=save_model_im)
     save_model(model_lid, file_name=save_model_lid)

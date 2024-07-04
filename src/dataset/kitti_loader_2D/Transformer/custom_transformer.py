@@ -40,4 +40,5 @@ class CustTransformer(BaseTransformer):
         return transforms.Compose([augmethods.ToTensor("depth"),
                                    augmethods.Scale("depth", [188, 621]),
                                    augmethods.RandCrop(),
-                                   augmethods.Transfb()])
+                                   augmethods.Transfb(),
+                                   augmethods.InputNormalize()])

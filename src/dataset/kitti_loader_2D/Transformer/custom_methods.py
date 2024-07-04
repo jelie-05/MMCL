@@ -186,6 +186,31 @@ class ImgNormalize(BaseMethod):
         return data_item
 
 
+def normalize_lidar(lidar):
+    mean_lidar = lidar.mean()
+    std_lidar = lidar.std()
+    # Normalize the LiDAR data
+    normalized_lidar = (lidar - mean_lidar) / std_lidar
+
+    return normalized_lidar
+
+
+class InputNormalize(BaseMethod):
+    def __init__(self):
+        BaseMethod.__init__(self)
+        self.normalize_im = transforms.Normalize(
+            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # mean and std from Imagenet
+
+    def __call__(self, data_item):
+        self.set_data(data_item)
+
+        data_item['left_img'] = self.normalize_im(self.left_img)
+        data_item['depth'] = normalize_lidar(self.depth)
+        data_item['depth_neg'] = normalize_lidar(self.depth_neg)
+
+        return data_item
+
+
 class Transfb(BaseMethod):
     def __init__(self):
         BaseMethod.__init__(self)

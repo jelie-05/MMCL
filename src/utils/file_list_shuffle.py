@@ -2,10 +2,9 @@ import os.path
 import random
 
 # Read the lines from the input file
-current_path = os.path.abspath(os.getcwd())
-# filename = 'eigen_train_files.txt'
-filename = 'eigen_val_files.txt'
-full_filename = os.path.join(current_path, 'KITTIRaw', 'Dataloader', 'filenames', filename)
+project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+rel_path = 'src/dataset/kitti_loader_2D/Dataloader/filenames/eigen_train_files.txt'
+full_filename = os.path.join(project_path, rel_path)
 
 with open(full_filename, 'r') as f:
     lines = f.readlines()

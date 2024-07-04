@@ -4,7 +4,7 @@ import torch
 
 from src.models.mm_siamese import lidar_backbone
 from src.models.mm_siamese import image_backbone
-from src.models.classifier_head import classifier_lidar
+from src.models.classifier_head import classifier_head
 
 
 def load_model_lidar(model_path):
@@ -15,10 +15,12 @@ def load_model_lidar(model_path):
     return model
 
 
-def load_model_cls_lid(model_path):
+def load_model_cls(model_path, model_im, model_lid):
     model_dict = pickle.load(open(model_path, 'rb'))["cifar_classification_ptl"]
-    model = classifier_lidar()
-    model.load_state_dict(model_dict["state_dict"])
+
+    model = classifier_head(model_im=model_im, model_lid=model_lid)
+    model.load_classifier_layers(model_dict["state_dict"])
+
     print("model is loaded")
     return model
 
