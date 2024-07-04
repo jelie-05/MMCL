@@ -33,7 +33,7 @@ def load_model_img(model_path):
     return model
 
 
-def save_model(model, file_name, directory="models"):
+def save_model(model, file_name, directory="outputs/models"):
 
     model = model.cpu()
     model_dict = {"cifar_classification_ptl": {"state_dict": model.state_dict()}}

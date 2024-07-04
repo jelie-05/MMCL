@@ -30,9 +30,9 @@ if __name__ == "__main__":
     kitti_path = os.path.join(root, 'data', 'kitti')
 
     # Load pretrained model
-    im_pretrained_path = os.path.join(root, 'models', args.model_im)
-    lid_pretrained_path = os.path.join(root, 'models', args.model_lid)
-    cls_pretrained_path = os.path.join(root, 'models', args.name_cls)
+    im_pretrained_path = os.path.join(root, 'outputs/models', args.model_im)
+    lid_pretrained_path = os.path.join(root, 'outputs/models', args.model_lid)
+    cls_pretrained_path = os.path.join(root, 'outputs/models', args.name_cls)
 
     im_pretrained = load_model_img(im_pretrained_path)
     lid_pretrained = load_model_lidar(lid_pretrained_path)

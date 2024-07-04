@@ -44,7 +44,7 @@ if __name__ == "__main__":
         # logger.info('loaded params...')
 
     # Tensorboard Setup
-    path = "logs"
+    path = "outputs/logs"
     num_of_runs = len(os.listdir(path)) if os.path.exists(path) else 0
     path_siamese = os.path.join(path, f'run_{num_of_runs + 1}')
     tb_logger = SummaryWriter(path_siamese)
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     print(f"TensorBoard started at {url}")
 
     # load_ext tensorboard
-    # tensorboard --logdir logs --port 6006
+    # tensorboard --logdir outputs/logs --port 6006
     
     if args.lidar_3D:
         train_3D(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_model_lid=args.model_lid, save_model_im=args.model_im)
@@ -70,7 +70,6 @@ if __name__ == "__main__":
     lid_pretrained = load_model_lidar(lid_pretrained_path)
 
     # Tensorboard Setup
-    #path = "logs"
     num_of_runs = len(os.listdir(path)) if os.path.exists(path) else 0
     path_cls = os.path.join(path, f'run_cls{num_of_runs + 1}')
     tb_logger_cls = SummaryWriter(path_cls)
