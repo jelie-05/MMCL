@@ -26,4 +26,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8000
 
 # Run main.py when the container launches
-CMD ["python", "./inference/train/main.py", "--model_im", "image_backbone_2D_test2", "--model_lid", "lidar_backbone_2D_test2"]
+CMD ["sh", "-c", "python ./inference/train/main.py --model_im image_240704_full_1 --model_lid lidar_240704_full_1 --name_cls cls_240704_full_1 && python ./inference/eval/main.py --model_im image_240704_full_1 --model_lid lidar_240704_full_1 --name_cls cls_240704_full_1"]
