@@ -9,8 +9,8 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the default Python version to 3.9
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+# Set the default Python version to 3.10
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
 
 # Set the working directory in the container
 WORKDIR /app
@@ -26,4 +26,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8000
 
 # Run main.py when the container launches
-CMD ["sh", "-c", "python ./inference/train/main.py --model_im image_240704_full_1 --model_lid lidar_240704_full_1 --name_cls cls_240704_full_1 && python ./inference/eval/main.py --model_im image_240704_full_1 --model_lid lidar_240704_full_1 --name_cls cls_240704_full_1"]
+CMD ["sh", "-c", "python ./inference/train/main.py --model_im image_240705_mini_1 --model_lid lidar_240705_mini_1 --name_cls cls_240705_mini_1 && python ./inference/eval/precision_recall/main.py --model_im image_240705_mini_1 --model_lid lidar_240705_mini_1 --name_cls cls_240705_mini_1"]

@@ -103,25 +103,25 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
                 half_length = batch_length // 2
 
                 # Create shuffled label tensor directly on the specified device
-                label_tensor = torch.cat(
+                label_tensor_val = torch.cat(
                     [torch.zeros(half_length, device=device), torch.ones(half_length, device=device)])
-                label_val = label_tensor[torch.randperm(label_tensor.size(0))]
+                label_val = label_tensor_val[torch.randperm(label_tensor_val.size(0))]
 
                 # Stack depth batches according to labels
-                stacked_depth_batch = torch.where(label_val.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
+                stacked_depth_val = torch.where(label_val.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
                                                   depth_neg)
 
                 pred_im = model_im.forward(left_img_batch)
-                pred_lid = model_lid.forward(stacked_depth_batch)
+                pred_lid = model_lid.forward(stacked_depth_val)
 
-                loss = loss_func(pred_im, pred_lid, label_val)
-                validation_loss += loss.item()
+                loss_val = loss_func(pred_im, pred_lid, label_val)
+                validation_loss += loss_val.item()
 
                 # Update the progress bar.
                 val_loop.set_postfix(val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)))
 
                 # Update the tensorboard logger.
-                tb_logger.add_scalar(f'siamese_{name}/val_loss', loss.item(),
+                tb_logger.add_scalar(f'siamese_{name}/val_loss', loss_val.item(),
                                      epoch * len(val_loader) + val_iteration)
 
         # Epoch-wise calculation

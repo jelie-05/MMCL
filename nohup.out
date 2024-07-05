@@ -1,0 +1,2 @@
+docker: Error response from daemon: Conflict. The container name "/mmsiamese-container" is already in use by container "386fde7ec3296f4cbd17299d2ba28a0685618981ce3948c68d4081a51a6a2e2f". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.

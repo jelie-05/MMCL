@@ -64,8 +64,8 @@ if __name__ == "__main__":
         train_2D(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_model_lid=args.model_lid, save_model_im=args.model_im)
 
     # Load pretrained model
-    im_pretrained_path = os.path.join(root, 'models', args.model_im)
-    lid_pretrained_path = os.path.join(root, 'models', args.model_lid)
+    im_pretrained_path = os.path.join(root, 'outputs/models', args.model_im)
+    lid_pretrained_path = os.path.join(root, 'outputs/models', args.model_lid)
     im_pretrained = load_model_img(im_pretrained_path)
     lid_pretrained = load_model_lidar(lid_pretrained_path)
 
