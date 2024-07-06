@@ -7,15 +7,16 @@ class ContrastiveLoss(nn.Module):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
 
-    def forward(self, output1, output2, labels):
+    def forward(self, output_im, output_lid, labels):
         # Calculate the Euclidean distance and calculate the contrastive loss
         # distance = F.pairwise_distance(output1_flat, output2_flat, keepdim=True)
 
         # L2
-        dist_squared = (output1-output2)**2
+        dist_squared = (output_im - output_lid) ** 2
         summed = torch.sum(dist_squared, dim=1)
 
         distance = torch.sqrt(summed)
+
         N, H, W = distance.shape
 
         # Step 3: Broadcast labels to match the dimensions of the tensor
@@ -26,5 +27,5 @@ class ContrastiveLoss(nn.Module):
         negative_loss = torch.pow(torch.clamp(self.margin - distance, min=0.0), 2) * (1 - labels_broadcasted)
 
         loss_contrastive = torch.mean(positive_loss + negative_loss)
-
+        # loss_contrastive = (positive_loss + negative_loss)
         return loss_contrastive

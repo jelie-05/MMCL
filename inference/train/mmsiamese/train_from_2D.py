@@ -3,14 +3,14 @@ from tqdm import tqdm
 from src.models.mm_siamese import lidar_backbone, image_backbone
 from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
 from .contrastive_loss import ContrastiveLoss as CL
-
+from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
 from src.utils.save_load_model import save_model
 
 
 def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
-def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="default"):
+def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise, masking, name="default"):
     """
     Train the classifier for a number of epochs.
     """
@@ -22,7 +22,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
     val_loader = val_gen.create_data(int(params.get('batch_size')), shuffle=False)
 
     """ Loss Function """
-    loss_func = CL(float(params.get('margin')))
+    loss_func = CL(margin=(params.get('margin')))
 
     """ Device """
     device = torch.device(params.get('device'))
@@ -72,7 +72,19 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
             pred_im = model_im.forward(left_img_batch)
             pred_lid = model_lid.forward(stacked_depth_batch)
 
-            loss = loss_func(pred_im, pred_lid, label_list)
+            # For pixel-wise comparison
+            N, C, H, W = left_img_batch.size()
+            if pixel_wise:
+                pixel_im = PixelwiseFeatureMaps(model=model_im, embeddings_value=pred_im,
+                                                input_image_size=(H, W))
+                pred_im = pixel_im.assign_embedding_value()
+                pixel_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
+                                                 input_image_size=(H, W))
+                pred_lid = pixel_lid.assign_embedding_value()
+                if masking:
+                    pred_lid = pred_lid # implement masking
+
+            loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list)
             loss.backward()
             optimizer_im.step()
             optimizer_lid.step()
@@ -113,6 +125,16 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
 
                 pred_im = model_im.forward(left_img_batch)
                 pred_lid = model_lid.forward(stacked_depth_val)
+
+                # For pixel-wise comparison
+                N, C, H, W = left_img_batch.size()
+                if pixel_wise:
+                    pixel_im = PixelwiseFeatureMaps(model=model_im, embeddings_value=pred_im,
+                                                    input_image_size=(H, W))
+                    pred_im = pixel_im.assign_embedding_value()
+                    pixel_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
+                                                     input_image_size=(H, W))
+                    pred_lid = pixel_lid.assign_embedding_value()
 
                 loss_val = loss_func(pred_im, pred_lid, label_val)
                 validation_loss += loss_val.item()
