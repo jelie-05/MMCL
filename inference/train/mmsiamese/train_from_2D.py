@@ -88,12 +88,12 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                                                  input_image_size=(H, W))
                 pred_lid = pred_lid.assign_embedding_value()
                 # implement masking here
-
+            
             loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list)
             loss.backward()
             optimizer_im.step()
             optimizer_lid.step()
-
+            
             training_loss += loss.item()
 
             # Update the progress bar.

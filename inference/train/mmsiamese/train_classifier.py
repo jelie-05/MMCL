@@ -78,7 +78,7 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
             loss = loss_func(pred_cls, label_list)
             loss.backward()  # Stage 2: Backward().
             optimizer.step()  # Stage 3: Update the parameters.
-
+        
             training_loss += loss.item()
 
             # Update the progress bar.
