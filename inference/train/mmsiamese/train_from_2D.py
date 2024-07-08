@@ -39,8 +39,8 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
     optimizer_lid = torch.optim.Adam(model_lid.parameters(), learning_rate)
 
     # Define the scheduler to decrease the learning rate by a factor of 0.1 every 30 epochs
-    scheduler = optim.lr_scheduler.StepLR(optimizer_im, step_size=30, gamma=0.1)
-    scheduler = optim.lr_scheduler.StepLR(optimizer_lid, step_size=30, gamma=0.1)
+    #scheduler = optim.lr_scheduler.StepLR(optimizer_im, step_size=30, gamma=0.1)
+    #scheduler = optim.lr_scheduler.StepLR(optimizer_lid, step_size=30, gamma=0.1)
     # scheduler.step() instead of optimizer
 
     for epoch in range(epochs):
