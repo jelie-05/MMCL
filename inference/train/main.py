@@ -1,7 +1,7 @@
 import argparse
 from mmsiamese.train_from_3D import main as train_3D
 from mmsiamese.train_from_2D import main as train_2D
-from mmsiamese.classifier_train import main as train_cls
+from mmsiamese.train_classifier import main as train_cls
 from torch.utils.tensorboard import SummaryWriter
 import os
 import yaml
@@ -30,6 +30,10 @@ parser.add_argument(
     default='classifier')
 parser.add_argument(
     '--lidar_3D', action='store_true', help='train with 3D data as input')
+parser.add_argument(
+    '--pixel_wise', action='store_true', help='comparing pixel-wise distance')
+parser.add_argument(
+    '--masking', action='store_true', help='enable masking')
 
 
 if __name__ == "__main__":
@@ -61,7 +65,7 @@ if __name__ == "__main__":
     if args.lidar_3D:
         train_3D(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_model_lid=args.model_lid, save_model_im=args.model_im)
     else:
-        train_2D(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_model_lid=args.model_lid, save_model_im=args.model_im)
+        train_2D(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_model_lid=args.model_lid, save_model_im=args.model_im, pixel_wise=args.pixel_wise, masking=args.masking)
 
     # Load pretrained model
     im_pretrained_path = os.path.join(root, 'outputs/models', args.model_im)
