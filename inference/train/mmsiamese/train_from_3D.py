@@ -157,8 +157,12 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, name="defa
                 tb_logger.add_scalar(f'classifier_{name}/val_loss', loss.item(),
                                      epoch * len(val_loader) + val_iteration)
 
-        # This value is used for the progress bar of the training loop.
+        training_loss /= len(train_loader)
         validation_loss /= len(val_loader)
+        tb_logger.add_scalar('training_loss_epoch', training_loss,
+                             epoch)
+        tb_logger.add_scalar('validation_loss_epoch', validation_loss,
+                             epoch)
 
     save_model(model_im, file_name=save_model_im)
     save_model(model_lid, file_name=save_model_lid)

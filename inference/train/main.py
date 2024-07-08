@@ -79,6 +79,6 @@ if __name__ == "__main__":
     tb_logger_cls = SummaryWriter(path_cls)
 
     train_cls(params=params['train_cls'], data_root=kitti_path, tb_logger=tb_logger_cls, 
-              pretrained_im=im_pretrained, pretrained_lid=lid_pretrained, name_cls=args.name_cls)
+              pretrained_im=im_pretrained, pretrained_lid=lid_pretrained, name_cls=args.name_cls, pixel_wise=args.pixel_wise, masking=args.masking)
 
 

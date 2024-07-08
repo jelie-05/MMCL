@@ -5,6 +5,7 @@ from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
 from .contrastive_loss import ContrastiveLoss as CL
 from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
 from src.utils.save_load_model import save_model
+import torch.optim as optim
 
 
 def create_tqdm_bar(iterable, desc):
@@ -36,6 +37,11 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
 
     optimizer_im = torch.optim.Adam(model_im.parameters(), learning_rate)
     optimizer_lid = torch.optim.Adam(model_lid.parameters(), learning_rate)
+
+    # Define the scheduler to decrease the learning rate by a factor of 0.1 every 30 epochs
+    scheduler = optim.lr_scheduler.StepLR(optimizer_im, step_size=30, gamma=0.1)
+    scheduler = optim.lr_scheduler.StepLR(optimizer_lid, step_size=30, gamma=0.1)
+    # scheduler.step() instead of optimizer
 
     for epoch in range(epochs):
 
@@ -81,8 +87,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                 pixel_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
                                                  input_image_size=(H, W))
                 pred_lid = pixel_lid.assign_embedding_value()
-                if masking:
-                    pred_lid = pred_lid # implement masking
+                # implement masking here
 
             loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list)
             loss.backward()

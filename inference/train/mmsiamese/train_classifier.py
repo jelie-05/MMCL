@@ -10,7 +10,7 @@ from src.utils.save_load_model import save_model
 def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
-def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, name="default"):
+def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, pixel_wise, masking, name="default"):
     """
     Train the classifier for a number of epochs.
     """
@@ -35,7 +35,7 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
     model_lid = pretrained_lid.to(device)
     model_lid.eval()
     model_im.eval()
-    model_cls = classifier_head(model_lid=model_lid, model_im=model_im).to(device)
+    model_cls = classifier_head(model_lid=model_lid, model_im=model_im, pixel_wise=pixel_wise, masking=masking).to(device)
 
     optimizer = torch.optim.Adam(model_cls.parameters(), learning_rate)
 
@@ -61,7 +61,8 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
             half_length = batch_length // 2
 
             # Create shuffled label tensor directly on the specified device
-            label_tensor = torch.cat([torch.zeros(half_length, device=device), torch.ones(half_length, device=device)])
+            label_tensor = torch.cat(
+                [torch.zeros(half_length, device=device), torch.ones(half_length, device=device)])
 
             # Shuffle the tensor on the GPU
             label_list = label_tensor[torch.randperm(label_tensor.size(0))]
@@ -70,7 +71,8 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
             stacked_depth_batch = torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
                                               depth_neg)
 
-            pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch)
+            N, C, H, W = left_img_batch.size()
+            pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch,  H=H, W=W)
             pred_cls = pred_cls.squeeze(dim=1)
 
             loss = loss_func(pred_cls, label_list)
@@ -113,7 +115,8 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
                 stacked_depth_batch = torch.where(label_val.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
                                                   depth_neg)
 
-                pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch).squeeze(dim=1)
+                N, C, H, W = left_img_batch.size()
+                pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch,  H=H, W=W).squeeze(dim=1)
 
                 loss = loss_func(pred_cls, label_val)
                 validation_loss += loss.item()
@@ -125,7 +128,11 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
                 tb_logger.add_scalar(f'siamese_{name}/val_loss', loss.item(),
                                      epoch * len(val_loader) + val_iteration)
 
-        # This value is used for the progress bar of the training loop.
+        training_loss /= len(train_loader)
         validation_loss /= len(val_loader)
+        tb_logger.add_scalar('training_loss_epoch', training_loss,
+                             epoch)
+        tb_logger.add_scalar('validation_loss_epoch', validation_loss,
+                             epoch)
 
     save_model(model_cls, file_name=name_cls)

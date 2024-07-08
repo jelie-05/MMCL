@@ -6,25 +6,20 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
 
 
-def PR_AuC(TP,TN,FP,FN):
+def PR(TP,TN,FP,FN):
     # Calculate Precision
     precision = TP / (TP + FP) if (TP + FP) > 0 else 0
 
     # Calculate Recall
     recall = TP / (TP + FN) if (TP + FN) > 0 else 0
 
-    pr_auc = auc(recall, precision)
-
     return {
         "Precision": precision,
         "Recall": recall,
-        "P-R AUC": pr_auc
     }
 
 
 def evaluation(device, data_root, model_cls):
-
-    device = torch.device(device)
 
     model_cls.to(device)
     model_cls.eval()
@@ -60,7 +55,8 @@ def evaluation(device, data_root, model_cls):
             stacked_depth_batch = torch.where(label_val.unsqueeze(2).unsqueeze(3).bool(), depth_batch,
                                               depth_neg)
 
-            pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch)
+            N, C, H, W = left_img_batch.size()
+            pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch, H=H, W=W)
 
             # pred_cls = torch.sigmoid(pred_cls)
             classified_pred = (pred_cls >= 0.5).int()
@@ -85,6 +81,6 @@ def evaluation(device, data_root, model_cls):
     print(f'Total False Positives (FP): {total_fp}')
     print(f'Total False Negatives (FN): {total_fn}')
 
-    PR = PR_AuC(total_tp, total_tn, total_fp, total_fn)
+    PR = PR(total_tp, total_tn, total_fp, total_fn)
 
     return PR

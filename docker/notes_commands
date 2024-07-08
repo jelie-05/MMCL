@@ -4,5 +4,7 @@ docker run --gpus all -v /home/ubuntu/Documents/students/Jeremialie/MMSiamese/da
 docker cp mmsiamese-container:/app/outputs /home/ubuntu/Documents/students/Jeremialie/MMSiamese
 docker stop mmsiamese-container
 docker rm mmsiamese-container
+docker container ls -a
+docker logs mmsiamese-container
 
 tensorboard --logdir outputs/logs --port 6006
