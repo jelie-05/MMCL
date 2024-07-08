@@ -50,17 +50,17 @@ class classifier_head(nn.Module):
         self.classifier_layers.load_state_dict(classifier_state_dict)
 
     def forward(self, image, lidar, H, W):
-        pred_im = self.model_im(image)
-        pred_lid = self.model_lid(lidar)
+        image = self.model_im(image)
+        lidar = self.model_lid(lidar)
         if self.pixel_wise:
-                pixel_im = PixelwiseFeatureMaps(model=self.model_im, embeddings_value=pred_im,
+                image = PixelwiseFeatureMaps(model=self.model_im, embeddings_value=image,
                                                 input_image_size=(H, W))
-                pred_im = pixel_im.assign_embedding_value()
-                pixel_lid = PixelwiseFeatureMaps(model=self.model_lid, embeddings_value=pred_lid,
+                image = image.assign_embedding_value()
+                lidar = PixelwiseFeatureMaps(model=self.model_lid, embeddings_value=lidar,
                                                  input_image_size=(H, W))
-                pred_lid = pixel_lid.assign_embedding_value()
+                lidar = lidar.assign_embedding_value()
 
         # concatenate x, y as z
-        z = torch.cat((pred_im, pred_lid), dim=1)
+        z = torch.cat((image, lidar), dim=1)
         z = self.classifier_layers(z)
         return z

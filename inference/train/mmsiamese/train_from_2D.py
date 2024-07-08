@@ -81,12 +81,12 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             # For pixel-wise comparison
             N, C, H, W = left_img_batch.size()
             if pixel_wise:
-                pixel_im = PixelwiseFeatureMaps(model=model_im, embeddings_value=pred_im,
+                pred_im = PixelwiseFeatureMaps(model=model_im, embeddings_value=pred_im,
                                                 input_image_size=(H, W))
-                pred_im = pixel_im.assign_embedding_value()
-                pixel_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
+                pred_im = pred_im.assign_embedding_value()
+                pred_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
                                                  input_image_size=(H, W))
-                pred_lid = pixel_lid.assign_embedding_value()
+                pred_lid = pred_lid.assign_embedding_value()
                 # implement masking here
 
             loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list)
@@ -134,12 +134,12 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                 # For pixel-wise comparison
                 N, C, H, W = left_img_batch.size()
                 if pixel_wise:
-                    pixel_im = PixelwiseFeatureMaps(model=model_im, embeddings_value=pred_im,
+                    pred_im = PixelwiseFeatureMaps(model=model_im, embeddings_value=pred_im,
                                                     input_image_size=(H, W))
-                    pred_im = pixel_im.assign_embedding_value()
-                    pixel_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
+                    pred_im = pred_im.assign_embedding_value()
+                    pred_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
                                                      input_image_size=(H, W))
-                    pred_lid = pixel_lid.assign_embedding_value()
+                    pred_lid = pred_lid.assign_embedding_value()
 
                 loss_val = loss_func(pred_im, pred_lid, label_val)
                 validation_loss += loss_val.item()
