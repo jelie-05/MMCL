@@ -27,7 +27,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
 
     """ Device """
     device = torch.device(params.get('device'))
-
+    print(torch.cuda.is_available())
     """ Other hyperparams """
     learning_rate = float(params.get('lr'))
     epochs = int(params.get('epoch'))
@@ -39,9 +39,8 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
     optimizer_lid = torch.optim.Adam(model_lid.parameters(), learning_rate)
 
     # Define the scheduler to decrease the learning rate by a factor of 0.1 every 30 epochs
-    #scheduler = optim.lr_scheduler.StepLR(optimizer_im, step_size=30, gamma=0.1)
-    #scheduler = optim.lr_scheduler.StepLR(optimizer_lid, step_size=30, gamma=0.1)
-    # scheduler.step() instead of optimizer
+    scheduler_im = optim.lr_scheduler.StepLR(optimizer_im, step_size=30, gamma=0.1)
+    scheduler_lid = optim.lr_scheduler.StepLR(optimizer_lid, step_size=30, gamma=0.1)
 
     for epoch in range(epochs):
 
@@ -80,16 +79,9 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
 
             # For pixel-wise comparison
             N, C, H, W = left_img_batch.size()
-            if pixel_wise:
-                pred_im = PixelwiseFeatureMaps(model=model_im, embeddings_value=pred_im,
-                                                input_image_size=(H, W))
-                pred_im = pred_im.assign_embedding_value()
-                pred_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
-                                                 input_image_size=(H, W))
-                pred_lid = pred_lid.assign_embedding_value()
-                # implement masking here
-            
-            loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list)
+
+            # ASSUMPTION: same convolution performed in model_im and model_lid!!! (should be true)
+            loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise)
             loss.backward()
             optimizer_im.step()
             optimizer_lid.step()
@@ -103,6 +95,10 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             # Update the tensorboard logger.
             tb_logger.add_scalar(f'siamese_{name}/train_loss', loss.item(),
                                  epoch * len(train_loader) + train_iteration)
+        
+        # Step the scheduler after each epoch
+        scheduler_im.step()
+        scheduler_lid.step()
 
         # Validation stage
         model_im.eval()
@@ -133,15 +129,8 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
 
                 # For pixel-wise comparison
                 N, C, H, W = left_img_batch.size()
-                if pixel_wise:
-                    pred_im = PixelwiseFeatureMaps(model=model_im, embeddings_value=pred_im,
-                                                    input_image_size=(H, W))
-                    pred_im = pred_im.assign_embedding_value()
-                    pred_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
-                                                     input_image_size=(H, W))
-                    pred_lid = pred_lid.assign_embedding_value()
 
-                loss_val = loss_func(pred_im, pred_lid, label_val)
+                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise)
                 validation_loss += loss_val.item()
 
                 # Update the progress bar.

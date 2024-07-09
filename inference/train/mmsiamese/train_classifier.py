@@ -3,6 +3,7 @@ from tqdm import tqdm
 from src.models.classifier_head import classifier_head
 from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
 import torch.nn as nn
+import torch.optim as optim
 
 from src.utils.save_load_model import save_model
 
@@ -38,6 +39,8 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
     model_cls = classifier_head(model_lid=model_lid, model_im=model_im, pixel_wise=pixel_wise, masking=masking).to(device)
 
     optimizer = torch.optim.Adam(model_cls.parameters(), learning_rate)
+    # Define the scheduler to decrease the learning rate by a factor of 0.1 every 30 epochs
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
 
     for epoch in range(epochs):
 
@@ -88,6 +91,8 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
             # Update the tensorboard logger.
             tb_logger.add_scalar(f'siamese_{name}/train_loss', loss.item(),
                                  epoch * len(train_loader) + train_iteration)
+
+        scheduler.step()
 
         # Validation stage, where we don't want to update the parameters. Pay attention to the classifier.eval() line
         # and "with torch.no_grad()" wrapper.

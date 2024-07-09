@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
 
 
 class ContrastiveLoss(nn.Module):
@@ -7,7 +8,7 @@ class ContrastiveLoss(nn.Module):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
 
-    def forward(self, output_im, output_lid, labels):
+    def forward(self, output_im, output_lid, labels, model_im, H, W, pixel_wise):
         # Calculate the Euclidean distance and calculate the contrastive loss
         # distance = F.pairwise_distance(output1_flat, output2_flat, keepdim=True)
 
@@ -16,6 +17,12 @@ class ContrastiveLoss(nn.Module):
         summed = torch.sum(dist_squared, dim=1)
 
         distance = torch.sqrt(summed)
+
+        if pixel_wise:
+            distance = distance.unsqueeze(1)
+            distance = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance, input_image_size=(H, W))
+            distance = distance.assign_embedding_value()
+            distance = distance.squeeze(1)
 
         N, H, W = distance.shape
 
