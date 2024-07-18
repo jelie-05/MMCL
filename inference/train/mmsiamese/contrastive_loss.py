@@ -8,7 +8,7 @@ class ContrastiveLoss(nn.Module):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
 
-    def forward(self, output_im, output_lid, labels, model_im, H, W, pixel_wise):
+    def forward(self, output_im, output_lid, labels, model_im, H, W, pixel_wise, mask):
         # Calculate the Euclidean distance and calculate the contrastive loss
         # distance = F.pairwise_distance(output1_flat, output2_flat, keepdim=True)
 
@@ -33,6 +33,9 @@ class ContrastiveLoss(nn.Module):
         positive_loss = torch.pow(distance, 2) * labels_broadcasted
         negative_loss = torch.pow(torch.clamp(self.margin - distance, min=0.0), 2) * (1 - labels_broadcasted)
 
-        loss_contrastive = torch.mean(positive_loss + negative_loss)
-        # loss_contrastive = (positive_loss + negative_loss)
+        loss_contrastive = (positive_loss + negative_loss)
+        if mask is not None and mask.any():
+            loss_contrastive = loss_contrastive[mask.bool()]
+
+        loss_contrastive = torch.mean(loss_contrastive)
         return loss_contrastive

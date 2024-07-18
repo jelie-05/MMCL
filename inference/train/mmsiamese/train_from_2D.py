@@ -11,10 +11,8 @@ import torch.optim as optim
 def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
+
 def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise, masking, name="default"):
-    """
-    Train the classifier for a number of epochs.
-    """
 
     """ Data Loader """
     train_gen = DataGenerator(data_root, 'train')
@@ -28,10 +26,12 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
     """ Device """
     device = torch.device(params.get('device'))
     print(torch.cuda.is_available())
+
     """ Other hyperparams """
     learning_rate = float(params.get('lr'))
     epochs = int(params.get('epoch'))
 
+    """ Initializing """
     model_im = image_backbone().to(device)
     model_lid = lidar_backbone().to(device)
 
@@ -57,10 +57,16 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             optimizer_im.zero_grad()
             optimizer_lid.zero_grad()
 
-            # TODO: NORMALIZE THE INPUTS AND TRANSFORMATIONS!!!!
             left_img_batch = batch['left_img'].to(device)
             depth_batch = batch['depth'].to(device)
             depth_neg = batch['depth_neg'].to(device)
+
+            # Calculate Mask
+            if masking:
+                mask = depth_batch != 0
+                mask = torch.tensor(mask, dtype=torch.bool)
+            else:
+                mask = None
 
             # Assign randomly label to each component of the batch
             batch_length = len(depth_batch)
@@ -81,7 +87,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             N, C, H, W = left_img_batch.size()
 
             # ASSUMPTION: same convolution performed in model_im and model_lid!!! (should be true)
-            loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise)
+            loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise, mask=mask)
             loss.backward()
             optimizer_im.step()
             optimizer_lid.step()
@@ -130,7 +136,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                 # For pixel-wise comparison
                 N, C, H, W = left_img_batch.size()
 
-                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise)
+                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise, masking=masking)
                 validation_loss += loss_val.item()
 
                 # Update the progress bar.

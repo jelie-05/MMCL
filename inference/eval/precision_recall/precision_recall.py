@@ -2,38 +2,40 @@ from sklearn.metrics import auc
 import torch
 import os
 import sys
+import numpy as np
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
+from sklearn.metrics import precision_recall_curve, auc
 
 
-def PR(TP,TN,FP,FN):
-    # Calculate Precision
-    precision = TP / (TP + FP) if (TP + FP) > 0 else 0
+def pr_auc(label, prediction):
+    # Convert tensors to numpy arrays
+    label = np.concatenate([tensor.cpu().numpy() for tensor in label])
+    prediction = np.concatenate([tensor.cpu().numpy() for tensor in prediction])
 
-    # Calculate Recall
-    recall = TP / (TP + FN) if (TP + FN) > 0 else 0
+    # Calculate precision-recall pairs for different thresholds
+    precision, recall, thresholds = precision_recall_curve(label, prediction)
+
+    # Calculate PR AUC
+    pr_auc = auc(recall, precision)
 
     return {
         "Precision": precision,
         "Recall": recall,
+        "thresholds": thresholds,
+        "pr_auc": pr_auc
     }
 
 
 def evaluation(device, data_root, model_cls):
-
     model_cls.to(device)
     model_cls.eval()
 
     eval_gen = DataGenerator(data_root, 'test')
-    # eval_gen = DataGenerator(data_root,'val')
     eval_dataloader = eval_gen.create_data(64)
 
-    # Initialize counters for confusion matrix components
-    total_tp = 0
-    total_tn = 0
-    total_fp = 0
-    total_fn = 0
-    iteration = 0
+    label = []
+    prediction = []
 
     with torch.no_grad():
         for batch in eval_dataloader:
@@ -58,29 +60,9 @@ def evaluation(device, data_root, model_cls):
             N, C, H, W = left_img_batch.size()
             pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch, H=H, W=W)
 
-            # pred_cls = torch.sigmoid(pred_cls)
-            classified_pred = (pred_cls >= 0.5).int()
+            label = label.append(label_val)
+            prediction = prediction.append(pred_cls)
 
-            # Calculate confusion matrix components on GPU: 1 = positive, 0 = negative
-            tp = torch.sum((label_val == 1) & (classified_pred == 1)).item()
-            tn = torch.sum((label_val == 0) & (classified_pred == 0)).item()
-            fp = torch.sum((label_val == 0) & (classified_pred == 1)).item()
-            fn = torch.sum((label_val == 1) & (classified_pred == 0)).item()
-
-            # Accumulate the results
-            total_tp += tp
-            total_tn += tn
-            total_fp += fp
-            total_fn += fn
-            print("batch {} done".format(iteration))
-            iteration += 1
-
-    # Display accumulated results
-    print(f'Total True Positives (TP): {total_tp}')
-    print(f'Total True Negatives (TN): {total_tn}')
-    print(f'Total False Positives (FP): {total_fp}')
-    print(f'Total False Negatives (FN): {total_fn}')
-
-    PR = PR(total_tp, total_tn, total_fp, total_fn)
+    PR = pr_auc(label=label, prediction=prediction)
 
     return PR
