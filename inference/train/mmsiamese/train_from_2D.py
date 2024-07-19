@@ -88,6 +88,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             optimizer_lid.step()
             
             training_loss += loss.item()
+            print(training_loss)
 
             # Update the progress bar.
             training_loop.set_postfix(curr_train_loss="{:.8f}".format(training_loss / (train_iteration + 1)),
