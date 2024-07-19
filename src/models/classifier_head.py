@@ -10,12 +10,11 @@ def set_parameter_requires_grad(model, feature_extracting):
 
 
 class classifier_head(nn.Module):
-    def __init__(self, model_im, model_lid, pixel_wise, masking):
+    def __init__(self, model_im, model_lid, pixel_wise):
         super().__init__()
         self.model_im = model_im
         self.model_lid = model_lid
         self.pixel_wise = pixel_wise
-        self.masking = masking
         set_parameter_requires_grad(self.model_im, feature_extracting=True)
         set_parameter_requires_grad(self.model_lid, feature_extracting=True)
 
@@ -53,12 +52,12 @@ class classifier_head(nn.Module):
         image = self.model_im(image)
         lidar = self.model_lid(lidar)
         if self.pixel_wise:
-                image = PixelwiseFeatureMaps(model=self.model_im, embeddings_value=image,
+            image = PixelwiseFeatureMaps(model=self.model_im, embeddings_value=image,
+                                            input_image_size=(H, W))
+            image = image.assign_embedding_value()
+            lidar = PixelwiseFeatureMaps(model=self.model_lid, embeddings_value=lidar,
                                                 input_image_size=(H, W))
-                image = image.assign_embedding_value()
-                lidar = PixelwiseFeatureMaps(model=self.model_lid, embeddings_value=lidar,
-                                                 input_image_size=(H, W))
-                lidar = lidar.assign_embedding_value()
+            lidar = lidar.assign_embedding_value()
 
         # concatenate x, y as z
         z = torch.cat((image, lidar), dim=1)

@@ -20,18 +20,14 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
     val_gen = DataGenerator(data_root, 'val')
     val_loader = val_gen.create_data(int(params.get('batch_size')), shuffle=False)
 
-    """ Loss Function """
-    loss_func = CL(margin=(params.get('margin')))
-
-    """ Device """
-    device = torch.device(params.get('device'))
-    print(torch.cuda.is_available())
-
     """ Other hyperparams """
     learning_rate = float(params.get('lr'))
     epochs = int(params.get('epoch'))
 
     """ Initializing """
+    loss_func = CL(margin=(params.get('margin')))
+    device = torch.device(params.get('device'))
+
     model_im = image_backbone().to(device)
     model_lid = lidar_backbone().to(device)
 
@@ -43,16 +39,15 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
     scheduler_lid = optim.lr_scheduler.StepLR(optimizer_lid, step_size=30, gamma=0.1)
 
     for epoch in range(epochs):
-
         training_loss = 0
         validation_loss = 0
 
-        # Training stage, where we want to update the parameters.
-        model_im.train()  # Set the model to training mode
+        # Training stage: set the model to training mode
+        model_im.train() 
         model_lid.train()
 
-        # Create a progress bar for the training loop.
         training_loop = create_tqdm_bar(train_loader, desc=f'Training Epoch [{epoch + 1}/{epochs}]')
+
         for train_iteration, batch in training_loop:
             optimizer_im.zero_grad()
             optimizer_lid.zero_grad()
@@ -64,11 +59,11 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             # Calculate Mask
             if masking:
                 mask = depth_batch != 0
-                mask = torch.tensor(mask, dtype=torch.bool)
+                mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
             else:
                 mask = None
 
-            # Assign randomly label to each component of the batch
+            # Assign label randomly to each component of the batch
             batch_length = len(depth_batch)
             half_length = batch_length // 2
             label_tensor = torch.cat(
@@ -86,7 +81,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             # For pixel-wise comparison
             N, C, H, W = left_img_batch.size()
 
-            # ASSUMPTION: same convolution performed in model_im and model_lid!!! (should be true)
+            # Calculating the loss
             loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise, mask=mask)
             loss.backward()
             optimizer_im.step()
@@ -118,6 +113,13 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                 depth_batch = val_batch['depth'].to(device)
                 depth_neg = val_batch['depth_neg'].to(device)
 
+                # Calculate Mask
+                if masking:
+                    mask = depth_batch != 0
+                    mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
+                else:
+                    mask = None
+
                 batch_length = len(depth_batch)
                 half_length = batch_length // 2
 
@@ -133,10 +135,8 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                 pred_im = model_im.forward(left_img_batch)
                 pred_lid = model_lid.forward(stacked_depth_val)
 
-                # For pixel-wise comparison
                 N, C, H, W = left_img_batch.size()
-
-                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise, masking=masking)
+                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise, mask=mask)
                 validation_loss += loss_val.item()
 
                 # Update the progress bar.
@@ -153,6 +153,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                              epoch)
         tb_logger.add_scalar('validation_loss_epoch', validation_loss,
                              epoch)
+        torch.cuda.empty_cache()
 
     save_model(model_im, file_name=save_model_im)
     save_model(model_lid, file_name=save_model_lid)
