@@ -83,6 +83,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
 
             # Calculating the loss
             loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise, mask=mask)
+            print(loss)
             loss.backward()
             optimizer_im.step()
             optimizer_lid.step()

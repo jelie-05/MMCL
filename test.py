@@ -6,13 +6,15 @@ from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
 from inference.train.mmsiamese.contrastive_loss import ContrastiveLoss as CL
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 device = torch.device("cuda:0")
 model_im = image_backbone().to(device)
 model_lid = lidar_backbone().to(device)
 
-eval_gen = DataGenerator(r'C:\Users\jerem\OneDrive\Me\StudiumMaster\00_Semesterarbeit\Project\MMSiamese\data\kitti',
-                         'test')
+root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+kitti_path = os.path.join(root, 'data', 'kitti')
+eval_gen = DataGenerator(kitti_path, 'val')
 eval_dataloader = eval_gen.create_data(64)
 
 loss_func = CL(margin=4)
@@ -32,6 +34,7 @@ with torch.no_grad():
         pixel_im = PixelwiseFeatureMaps(model=model_im, embeddings_value=pred_im,
                                         input_image_size=(H, W))
         pred_im = pixel_im.assign_embedding_value()
+        print(pred_im[0,0,:,:])
         pixel_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
                                          input_image_size=(H, W))
         pred_lid = pixel_lid.assign_embedding_value()

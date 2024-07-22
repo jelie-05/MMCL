@@ -22,6 +22,7 @@ class ContrastiveLoss(nn.Module):
             distance = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance, input_image_size=(H, W))
             distance = distance.assign_embedding_value()
             distance = distance.squeeze(1)
+        print(distance)
 
         # Step 3: Broadcast labels to match the dimensions of the tensor
         N, H_dist, W_dist = distance.shape
@@ -37,7 +38,7 @@ class ContrastiveLoss(nn.Module):
         if mask is not None and mask.any():
             mask = mask.squeeze(1)
             loss_contrastive = loss_contrastive[mask.bool()]
-
+        
         loss_contrastive = torch.mean(loss_contrastive)
         
         return loss_contrastive
