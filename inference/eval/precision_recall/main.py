@@ -25,8 +25,6 @@ parser.add_argument(
     '--lidar_3D', action='store_true', help='train with 3D data as input')
 parser.add_argument(
     '--pixel_wise', action='store_true', help='comparing pixel-wise distance')
-parser.add_argument(
-    '--masking', action='store_true', help='enable masking')
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -41,7 +39,7 @@ if __name__ == "__main__":
 
     im_pretrained = load_model_img(im_pretrained_path)
     lid_pretrained = load_model_lidar(lid_pretrained_path)
-    cls_pretrained = load_model_cls(cls_pretrained_path, model_im=im_pretrained, model_lid=lid_pretrained, pixel_wise=args.pixel_wise, masking=args.masking)
+    cls_pretrained = load_model_cls(cls_pretrained_path, model_im=im_pretrained, model_lid=lid_pretrained, pixel_wise=args.pixel_wise)
 
     device = torch.device("cuda:0")
     PR = evaluation(device=device, data_root=kitti_path, model_cls=cls_pretrained)

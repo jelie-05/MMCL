@@ -15,10 +15,10 @@ def load_model_lidar(model_path):
     return model
 
 
-def load_model_cls(model_path, model_im, model_lid, pixel_wise, masking):
+def load_model_cls(model_path, model_im, model_lid, pixel_wise):
     model_dict = pickle.load(open(model_path, 'rb'))["cifar_classification_ptl"]
 
-    model = classifier_head(model_im=model_im, model_lid=model_lid, pixel_wise=pixel_wise, masking=masking)
+    model = classifier_head(model_im=model_im, model_lid=model_lid, pixel_wise=pixel_wise)
     model.load_classifier_layers(model_dict["state_dict"])
 
     print("model is loaded")
