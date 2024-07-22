@@ -88,7 +88,6 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             optimizer_lid.step()
             
             training_loss += loss.item()
-            print(training_loss)
 
             # Update the progress bar.
             training_loop.set_postfix(curr_train_loss="{:.8f}".format(training_loss / (train_iteration + 1)),
@@ -137,7 +136,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                 pred_lid = model_lid.forward(stacked_depth_val)
 
                 N, C, H, W = left_img_batch.size()
-                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise, mask=mask)
+                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_val, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise, mask=mask)
                 validation_loss += loss_val.item()
 
                 # Update the progress bar.
