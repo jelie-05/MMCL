@@ -13,7 +13,7 @@ model_im = image_backbone().to(device)
 model_lid = lidar_backbone().to(device)
 
 root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
-kitti_path = os.path.join(root, 'data', 'kitti')
+kitti_path = os.path.join(root, '../data', 'kitti')
 eval_gen = DataGenerator(kitti_path, 'val')
 eval_dataloader = eval_gen.create_data(64)
 

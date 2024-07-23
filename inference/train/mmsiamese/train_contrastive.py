@@ -13,7 +13,6 @@ def create_tqdm_bar(iterable, desc):
 
 
 def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise, masking, name="default"):
-
     """ Data Loader """
     train_gen = DataGenerator(data_root, 'train')
     train_loader = train_gen.create_data(int(params.get('batch_size')), shuffle=True)
@@ -82,7 +81,8 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             N, C, H, W = left_img_batch.size()
 
             # Calculating the loss
-            loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise, mask=mask)
+            loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W,
+                             pixel_wise=pixel_wise, mask=mask)
             print(loss)
             loss.backward()
             optimizer_im.step()
@@ -137,7 +137,8 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                 pred_lid = model_lid.forward(stacked_depth_val)
 
                 N, C, H, W = left_img_batch.size()
-                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_val, model_im=model_im, H=H, W=W, pixel_wise=pixel_wise, mask=mask)
+                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_val, model_im=model_im,
+                                     H=H, W=W, pixel_wise=pixel_wise, mask=mask)
                 validation_loss += loss_val.item()
 
                 # Update the progress bar.
