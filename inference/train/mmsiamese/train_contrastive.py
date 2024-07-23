@@ -1,6 +1,6 @@
 import torch
 from tqdm import tqdm
-from src.models.mm_siamese import lidar_backbone, image_backbone
+from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
 from .contrastive_loss import ContrastiveLoss as CL
 from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
@@ -27,8 +27,8 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
     loss_func = CL(margin=(params.get('margin')))
     device = torch.device(params.get('device'))
 
-    model_im = image_backbone().to(device)
-    model_lid = lidar_backbone().to(device)
+    model_im = resnet18_2B_im().to(device)
+    model_lid = resnet18_2B_lid().to(device)
 
     optimizer_im = torch.optim.Adam(model_im.parameters(), learning_rate)
     optimizer_lid = torch.optim.Adam(model_lid.parameters(), learning_rate)

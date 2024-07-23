@@ -1,15 +1,15 @@
 from torchvision.models import resnet18
 import torch
 from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
-from src.models.mm_siamese import lidar_backbone, image_backbone
+from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
 from inference.train.mmsiamese.contrastive_loss import ContrastiveLoss as CL
 import numpy as np
 import matplotlib.pyplot as plt
 
 device = torch.device("cuda:0")
-model_im = image_backbone().to(device)
-model_lid = lidar_backbone().to(device)
+model_im = resnet18_2B_im().to(device)
+model_lid = resnet18_2B_lid().to(device)
 
 eval_gen = DataGenerator(r'C:\Users\jerem\OneDrive\Me\StudiumMaster\00_Semesterarbeit\Project\MMSiamese\data\kitti',
                          'test')

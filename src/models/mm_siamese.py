@@ -9,7 +9,7 @@ def set_parameter_requires_grad(model, feature_extracting):
             param.requires_grad = False # Freeze
 
 
-class image_backbone(nn.Module):
+class resnet18_2B_im(nn.Module):
     def __init__(self,
                  freeze=False):
         super().__init__()
@@ -27,7 +27,7 @@ class image_backbone(nn.Module):
         return output_im
 
 
-class lidar_backbone(nn.Module):
+class resnet18_2B_lid(nn.Module):
 
     def __init__(self,
                  freeze=False):
