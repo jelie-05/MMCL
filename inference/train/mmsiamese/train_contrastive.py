@@ -1,7 +1,7 @@
 import torch
 from tqdm import tqdm
 from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
-from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
+from src.dataset.kitti_loader.dataset_2D import DataGenerator
 from .contrastive_loss import ContrastiveLoss as CL
 from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
 from src.utils.save_load_model import save_model

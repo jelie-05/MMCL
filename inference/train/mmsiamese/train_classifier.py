@@ -1,7 +1,7 @@
 import torch
 from tqdm import tqdm
 from src.models.classifier_head import classifier_head
-from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
+from src.dataset.kitti_loader.dataset_2D import DataGenerator
 import torch.nn as nn
 import torch.optim as optim
 

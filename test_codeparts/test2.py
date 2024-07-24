@@ -2,7 +2,7 @@ from torchvision.models import resnet18
 import torch
 from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
 from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
-from src.dataset.kitti_loader_2D.dataset_2D import DataGenerator
+from src.dataset.kitti_loader.dataset_2D import DataGenerator
 from inference.train.mmsiamese.contrastive_loss import ContrastiveLoss as CL
 import numpy as np
 import matplotlib.pyplot as plt
