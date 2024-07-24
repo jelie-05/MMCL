@@ -1,14 +1,13 @@
 import os
 
 # Specify the path to the folder list file
-sync_list_path = './sync_list.txt'
+sync_list_path = 'list_sync_all.txt'
 
 # Specify the output file path
-output_file_path = './complete_filenames.txt'
+output_file_path = './filenames_all.txt'
 
 current_file_path = os.path.abspath(__file__)
 root = os.path.abspath(os.path.join(current_file_path, '../../../../../..'))
-print(root)
 
 # Read the folder paths from the folder list file
 with open(sync_list_path, 'r') as file:
