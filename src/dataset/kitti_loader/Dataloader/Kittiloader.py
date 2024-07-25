@@ -49,8 +49,8 @@ class Kittiloader(object):
 
     def _read_data(self, item_files):
         l_rgb_path = self._check_path(item_files['l_rgb'], err_info="Panic::Cannot find Left Image. Filename: {}".format(item_files['l_rgb']))
-        cam_path = self._check_path(item_files['cam_intrin'], err_info="Panic::Cannot find Camera Infos. Filename: {}".format(item_files['l_rgb']))
-        depth_path = self._check_path(item_files['depth'], err_info="Panic::Cannot find depth file. Filename: {}".format(item_files['l_rgb']))
+        cam_path = self._check_path(item_files['cam_intrin'], err_info="Panic::Cannot find Camera Infos. Filename: {}".format(item_files['cam_intrin']))
+        depth_path = self._check_path(item_files['depth'], err_info="Panic::Cannot find depth file. Filename: {}".format(item_files['depth']))
 
         l_rgb = Image.open(l_rgb_path).convert('RGB')
         w, h = l_rgb.size
