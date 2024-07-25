@@ -27,15 +27,9 @@ class TransToPIL(BaseMethod):
 
         if not self._is_pil_image(self.left_img):
             data_item['left_img'] = self.to_pil(self.left_img)
-        if not self._is_pil_image(self.right_img):
-            data_item['right_img'] = self.to_pil(self.right_img)
         if not self._is_pil_image(self.depth):
-        #     data_item['depth'] = self.to_pil(self.depth)
             data_item['depth'] = Image.fromarray(self.depth)
-        if not self._is_pil_image(self.depth_interp):
-            data_item['depth_interp'] = self.to_pil(self.depth_interp)
         if not self._is_pil_image(self.depth_neg):
-        #     data_item['depth_neg'] = self.to_pil(self.depth_neg)
             data_item['depth_neg'] = Image.fromarray(self.depth_neg)
 
         return data_item
@@ -76,13 +70,9 @@ class Scale(BaseMethod):
         self.set_data(data_item)
 
         if self.mode in ["pair", "Img"]:
-            data_item['left_img'] = self.scale(self.left_img)       # PIL type
-            data_item['right_img'] = self.scale(self.right_img)
-            # data_item['left_img'] = Fun.interpolate(self.left_img, size=(self.size[0], self.size[1]), mode='bilinear', align_corners=False)
-            # data_item['right_img'] = Fun.interpolate(self.right_img, size=(self.size[0], self.size[1]), mode='bilinear', align_corners=False)
+            data_item['left_img'] = self.scale(self.left_img)
         if self.mode in ["pair", "depth"]:
-            data_item['depth'] = self._downscale_lidar_tensor(self.depth)       # Torch.Tensor
-            data_item['depth_interp'] = self._downscale_lidar_tensor(self.depth_interp)
+            data_item['depth'] = self._downscale_lidar_tensor(self.depth)
             data_item['depth_neg'] = self._downscale_lidar_tensor(self.depth_neg)
 
         return data_item
@@ -97,9 +87,7 @@ class RandomHorizontalFlip(BaseMethod):
 
         if random.random() < 0.5:
             data_item['left_img'] = self.left_img.transpose(Image.FLIP_LEFT_RIGHT)
-            data_item['right_img'] = self.right_img.transpose(Image.FLIP_LEFT_RIGHT)
             data_item['depth'] = self.depth.transpose(Image.FLIP_LEFT_RIGHT)
-            data_item['depth_interp'] = self.depth_interp.transpose(Image.FLIP_LEFT_RIGHT)
             data_item['depth_neg'] = self.depth_neg.transpose(Image.FLIP_LEFT_RIGHT)
 
         return data_item
@@ -120,9 +108,7 @@ class RandomRotate(BaseMethod):
         if random.random() < 0.5:
             rotate_pil = self.rotate_pil_func()
             data_item['left_img'] = rotate_pil(self.left_img, Image.BICUBIC)
-            data_item['right_img'] = rotate_pil(self.right_img, Image.BICUBIC)
             data_item['depth'] = rotate_pil(self.depth, Image.BILINEAR)
-            data_item['depth_interp'] = rotate_pil(self.depth_interp, Image.BILINEAR)
             data_item['depth_neg'] = rotate_pil(self.depth_neg, Image.BILINEAR)
 
         return data_item
@@ -148,7 +134,6 @@ class ImgAug(BaseMethod):
         self.set_data(data_item)
 
         data_item['left_img'] = self.adjust_pil(self.left_img)
-        data_item['right_img'] = self.adjust_pil(self.right_img)
 
         return data_item
 
@@ -163,10 +148,9 @@ class ToTensor(BaseMethod):
 
         if self.mode == "Img":
             data_item['left_img'] = self.totensor(self.left_img)
-            data_item['right_img'] = self.totensor(self.right_img)
+
         if self.mode == "depth":
             data_item['depth'] = self.totensor(self.depth)
-            data_item['depth_interp'] = self.totensor(self.depth_interp)
             data_item['depth_neg'] = self.totensor(self.depth_neg)
 
         return data_item
@@ -181,7 +165,6 @@ class ImgNormalize(BaseMethod):
         self.set_data(data_item)
 
         data_item['left_img'] = self.normalize(self.left_img)
-        data_item['right_img'] = self.normalize(self.right_img)
 
         return data_item
 
@@ -208,16 +191,6 @@ class InputNormalize(BaseMethod):
         data_item['depth'] = normalize_lidar(self.depth)
         data_item['depth_neg'] = normalize_lidar(self.depth_neg)
 
-        return data_item
-
-
-class Transfb(BaseMethod):
-    def __init__(self):
-        BaseMethod.__init__(self)
-
-    def __call__(self, data_item):
-        self.set_data(data_item)
-        data_item['fb'] = torch.from_numpy(self.fb)
         return data_item
 
 

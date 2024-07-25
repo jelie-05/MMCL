@@ -49,22 +49,16 @@ class Kittiloader(object):
 
     def _read_data(self, item_files):
         l_rgb_path = self._check_path(item_files['l_rgb'], err_info="Panic::Cannot find Left Image. Filename: {}".format(item_files['l_rgb']))
-        r_rgb_path = self._check_path(item_files['r_rgb'], err_info="Panic::Cannot find Right Image. Filename: {}".format(item_files['l_rgb']))
         cam_path = self._check_path(item_files['cam_intrin'], err_info="Panic::Cannot find Camera Infos. Filename: {}".format(item_files['l_rgb']))
         depth_path = self._check_path(item_files['depth'], err_info="Panic::Cannot find depth file. Filename: {}".format(item_files['l_rgb']))
 
         l_rgb = Image.open(l_rgb_path).convert('RGB')
-        r_rgb = Image.open(r_rgb_path).convert('RGB')
         w, h = l_rgb.size
-        focal_length, baseline = get_focal_length_baseline(cam_path, cam=self.cam)
         depth, depth_interp, depth_neg = get_depth(cam_path, depth_path, [h,w], cam=self.cam, interp=True, vel_depth=True)
 
         data = {}
         data['left_img'] = l_rgb
-        data['right_img'] = r_rgb
         data['depth'] = depth.astype(np.float32)
-        data['depth_interp'] = depth_interp.astype(np.float32)
-        data['fb'] = np.array(focal_length * baseline).astype(np.float32)
         data['loc_l_rgb'] = item_files['l_rgb']
         data['depth_neg'] = depth_neg.astype(np.float32)
         return data
@@ -76,10 +70,5 @@ class Kittiloader(object):
         """
         item_files = self.files[idx]
         data_item = self._read_data(item_files)
-
-        if interp_method == 'nyu':
-            image_data = (data_item['left_img'], data_item['right_img'])[self.cam==3]
-            image_gray_arr = np.array(image_data.convert('L'))
-            data_item['depth_interp'] = fill_depth_colorization(image_gray_arr, data_item['depth'])
 
         return data_item

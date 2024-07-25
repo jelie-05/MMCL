@@ -15,10 +15,7 @@ class BaseMethod(object):
 
     def set_data(self, data_item):
         self.left_img = data_item['left_img']
-        self.right_img = data_item['right_img']
         self.depth = data_item['depth']
-        self.depth_interp = data_item['depth_interp']
-        self.fb = data_item['fb']
         self.depth_neg = data_item['depth_neg']
 
     @staticmethod

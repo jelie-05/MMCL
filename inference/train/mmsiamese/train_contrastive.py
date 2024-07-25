@@ -1,5 +1,10 @@
 import torch
 from tqdm import tqdm
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+
 from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.dataset.kitti_loader.dataset_2D import DataGenerator
 from .contrastive_loss import ContrastiveLoss as CL
@@ -83,7 +88,6 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             # Calculating the loss
             loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W,
                              pixel_wise=pixel_wise, mask=mask)
-            print(loss)
             loss.backward()
             optimizer_im.step()
             optimizer_lid.step()

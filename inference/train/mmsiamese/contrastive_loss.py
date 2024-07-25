@@ -22,7 +22,6 @@ class ContrastiveLoss(nn.Module):
             distance = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance, input_image_size=(H, W))
             distance = distance.assign_embedding_value()
             distance = distance.squeeze(1)
-        print(distance)
 
         # Step 3: Broadcast labels to match the dimensions of the tensor
         N, H_dist, W_dist = distance.shape
