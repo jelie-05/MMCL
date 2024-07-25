@@ -7,8 +7,8 @@ if __name__ == "__main__":
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
     kitti_path = os.path.join(root, 'data', 'kitti')
 
-    test_gen = DataGenerator(kitti_path, 'val')
-    test_dataloader = test_gen.create_data(64)
+    test_gen = DataGenerator(kitti_path, 'check')
+    test_dataloader = test_gen.create_data(2)
 
     for batch in test_dataloader:
         left_img_batch = batch['left_img']  # batch of left image, id 02
@@ -23,7 +23,7 @@ if __name__ == "__main__":
         # Permute
         lidar = depth_1.permute(1, 2, 0).numpy()  # position (H, W, 1) = (ca. 100x600x1)
         img_np1 = left_img_batch[0].permute(1, 2, 0).numpy()
-        img_np2 = left_img_batch[2].permute(1, 2, 0).numpy()
+        img_np2 = left_img_batch[1].permute(1, 2, 0).numpy()
 
         # Reshape tensor into (x, y, value)
         values_store = []
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         values_store_neg = np.delete(values_store_neg, np.where(values_store_neg[:, 2] == 0), axis=0)
 
         # negative sample
-        depth_neg2 = depth_neg[2]
+        depth_neg2 = depth_neg[1]
         lidar_neg2 = depth_neg2.permute(1, 2, 0).numpy()
 
         # Reshape tensor into (x, y, value)
@@ -64,21 +64,15 @@ if __name__ == "__main__":
         # values_store_neg = values_store_neg[::2]
         values_store_neg2 = np.delete(values_store_neg2, np.where(values_store_neg2[:, 2] == 0), axis=0)
 
-        plt.figure(figsize=(72, 24))
-
-        plt.subplot(3, 1, 1)
+        plt.figure(figsize=(15, 7))
         plt.imshow(img_np1)
-        plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='rainbow_r', alpha=0.5, s=5)
+        plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='rainbow_r', alpha=0.5, s=3)
+        plt.tight_layout()
+        plt.show()
 
-        plt.subplot(3, 1, 2)
+        plt.figure(figsize=(15, 7))
         plt.imshow(img_np1)
         plt.scatter(values_store_neg[:, 0], values_store_neg[:, 1], c=values_store_neg[:, 2], cmap='rainbow_r', alpha=0.5,
                     s=5)
-
-        plt.subplot(3, 1, 3)
-        plt.imshow(img_np2)
-        plt.scatter(values_store_neg2[:, 0], values_store_neg2[:, 1], c=values_store_neg2[:, 2], cmap='rainbow_r',
-                    alpha=0.5, s=5)
-
-        # Show the plot
+        plt.tight_layout()
         plt.show()
