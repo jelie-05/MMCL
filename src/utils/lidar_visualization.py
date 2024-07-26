@@ -65,7 +65,7 @@ if __name__ == "__main__":
         values_store_neg2 = np.delete(values_store_neg2, np.where(values_store_neg2[:, 2] == 0), axis=0)
 
         plt.figure(figsize=(15, 7))
-        plt.imshow(img_np1)
+        plt.imshow(img_np1, alpha=0.0)
         plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='rainbow_r', alpha=0.5, s=3)
         plt.tight_layout()
         plt.show()
