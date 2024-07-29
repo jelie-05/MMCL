@@ -44,3 +44,5 @@ if __name__ == "__main__":
     device = torch.device("cuda:0")
     PR = evaluation(device=device, data_root=kitti_path, model_cls=cls_pretrained)
     print(PR)
+
+# python3 inference/eval/precision_recall/main.py --model_lid lidar_240719_full_1 --model_im image_240719_full_1 --name_cls cls_240719_full_1
