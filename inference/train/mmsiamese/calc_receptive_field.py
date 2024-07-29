@@ -76,6 +76,8 @@ class PixelwiseFeatureMaps:
         count = torch.zeros((N, 1, input_H, input_W), device=self.embeddings_value.device)
 
         start_x, end_x, start_y, end_y = self.calculate_receptive_fields()
+        print(f"start_x: {start_x}")
+        print(f"start_y: {start_y}")
 
         for i in range(H):
             for j in range(W):

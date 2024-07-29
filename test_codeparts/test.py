@@ -45,6 +45,7 @@ with torch.no_grad():
         pixel_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
                                          input_image_size=(H, W))
         pred_lid = pixel_lid.assign_embedding_value()
+        print(pred_lid[0,0,:,:])
 
         N, C, H, W = left_img_batch.size()
         
