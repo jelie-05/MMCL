@@ -39,4 +39,5 @@ class CustTransformer(BaseTransformer):
     def get_depth_transform(self):
         return transforms.Compose([augmethods.ToTensor("depth"),
                                    augmethods.Scale("depth", [188, 621]),
-                                   augmethods.RandCrop()])
+                                   augmethods.RandCrop(),
+                                   augmethods.InputNormalize()])

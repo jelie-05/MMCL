@@ -38,6 +38,6 @@ class ContrastiveLoss(nn.Module):
             mask = mask.squeeze(1)
             loss_contrastive = loss_contrastive[mask.bool()]
         
-        loss_contrastive = torch.mean(loss_contrastive)
+        # loss_contrastive = torch.mean(loss_contrastive)
         
         return loss_contrastive

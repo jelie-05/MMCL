@@ -3,7 +3,7 @@ import random
 
 # Read the lines from the input file
 project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
-rel_path = 'src/dataset/kitti_loader/Dataloader/filenames_complete/eigen_train_files.txt'
+rel_path = 'src/dataset/kitti_loader/Dataloader/filenames/eigen_check_files.txt'
 full_filename = os.path.join(project_path, rel_path)
 
 with open(full_filename, 'r') as f:

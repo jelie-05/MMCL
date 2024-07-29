@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-
 class PixelwiseFeatureMaps:
     def __init__(self, model, embeddings_value, input_image_size):
         self.model = model
@@ -86,6 +85,8 @@ class PixelwiseFeatureMaps:
                 result[:, :, sx:ex, sy:ey] += self.embeddings_value[:, :, i, j].unsqueeze(-1).unsqueeze(-1)
                 count[:, :, sx:ex, sy:ey] += 1
 
+        # Avoid division by zero
+        count = count + (count == 0).float()
         result /= count
 
         return result

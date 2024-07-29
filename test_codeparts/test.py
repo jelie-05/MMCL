@@ -1,12 +1,17 @@
 from torchvision.models import resnet18
 import torch
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
 from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.dataset.kitti_loader.dataset_2D import DataGenerator
 from inference.train.mmsiamese.contrastive_loss import ContrastiveLoss as CL
 import numpy as np
 import matplotlib.pyplot as plt
-import os
+
 
 device = torch.device("cuda:0")
 model_im = resnet18_2B_im().to(device)
@@ -14,10 +19,12 @@ model_lid = resnet18_2B_lid().to(device)
 
 root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 kitti_path = os.path.join(root, '../data', 'kitti')
-eval_gen = DataGenerator(kitti_path, 'val')
-eval_dataloader = eval_gen.create_data(64)
+eval_gen = DataGenerator(kitti_path, 'check')
+eval_dataloader = eval_gen.create_data(32)
 
 loss_func = CL(margin=4)
+masking = False
+pixel_wise =True
 
 with torch.no_grad():
     for batch in eval_dataloader:
@@ -39,13 +46,23 @@ with torch.no_grad():
                                          input_image_size=(H, W))
         pred_lid = pixel_lid.assign_embedding_value()
 
-        loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list)
+        N, C, H, W = left_img_batch.size()
+        
+        if masking:
+            mask = depth_batch != 0
+            mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
+        else:
+            mask = None
+        
+        loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W,
+                             pixel_wise=pixel_wise, mask=mask)
 
         # Convert the tensor to a NumPy array
         array = loss[1,:,:].cpu().numpy()
+        print(array.shape)
 
         # Plot the array
-        # plt.figure(figsize=(2, 1))  # Adjust figsize to match your image dimensions
+        plt.figure(figsize=(1, 1))  # Adjust figsize to match your image dimensions
         plt.imshow(array, cmap='viridis')  # You can change 'viridis' to any other colormap you prefer
         plt.axis('off')  # Optional: Turn off the axis
         plt.tight_layout()  # Adjusts the plot to fit the figure area
