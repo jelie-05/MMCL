@@ -31,6 +31,10 @@ parser.add_argument(
     '--pixel_wise', action='store_true', help='comparing pixel-wise distance')
 parser.add_argument(
     '--masking', action='store_true', help='enable masking')
+parser.add_argument(
+    '--model', type=str,
+    help='type of model',
+    default='mmsiamese')
 
 
 if __name__ == "__main__":
