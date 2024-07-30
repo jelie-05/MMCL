@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import torchvision
+
 
 class PixelwiseFeatureMaps:
     def __init__(self, model, embeddings_value, input_image_size):
@@ -8,46 +10,44 @@ class PixelwiseFeatureMaps:
         self.input_image_size = input_image_size  # (H, W) of the input image
 
     def _extract_params(self):
-        layers = list(self.model.children())
-        params = []
-        for layer in layers:
+        def extract_from_layer(layer):
+            params = []
             if isinstance(layer, nn.Conv2d):
                 params.append({
                     'layer_type': 'conv',
-                    'kernel_size': layer.kernel_size,
-                    'stride': layer.stride,
-                    'padding': layer.padding
+                    'kernel_size': layer.kernel_size if isinstance(layer.kernel_size, tuple) else (
+                    layer.kernel_size, layer.kernel_size),
+                    'stride': layer.stride if isinstance(layer.stride, tuple) else (layer.stride, layer.stride),
+                    'padding': layer.padding if isinstance(layer.padding, tuple) else (layer.padding, layer.padding)
                 })
             elif isinstance(layer, nn.MaxPool2d):
                 params.append({
                     'layer_type': 'pool',
-                    'kernel_size': layer.kernel_size,
-                    'stride': layer.stride,
-                    'padding': layer.padding
+                    'kernel_size': layer.kernel_size if isinstance(layer.kernel_size, tuple) else (
+                    layer.kernel_size, layer.kernel_size),
+                    'stride': layer.stride if isinstance(layer.stride, tuple) else (layer.stride, layer.stride),
+                    'padding': layer.padding if isinstance(layer.padding, tuple) else (layer.padding, layer.padding)
                 })
-            elif isinstance(layer, nn.Sequential):
-                for sub_layer in layer:
-                    if isinstance(sub_layer, nn.Sequential):
-                        for block in sub_layer:
-                            if isinstance(block, nn.Conv2d):
-                                params.append({
-                                    'layer_type': 'conv',
-                                    'kernel_size': block.kernel_size,
-                                    'stride': block.stride,
-                                    'padding': block.padding
-                                })
-                    else:
-                        if isinstance(sub_layer, nn.Conv2d):
-                            params.append({
-                                'layer_type': 'conv',
-                                'kernel_size': sub_layer.kernel_size,
-                                'stride': sub_layer.stride,
-                                'padding': sub_layer.padding
-                            })
+            elif isinstance(layer, (nn.BatchNorm2d, nn.ReLU, nn.Identity)):
+                # Skip layers that don't affect the receptive field directly
+                pass
+            elif isinstance(layer, nn.Sequential) or isinstance(layer, torchvision.models.resnet.BasicBlock):
+                for name, sub_layer in layer.named_children():
+                    params.extend(extract_from_layer(sub_layer))
+            else:
+                raise ValueError(f"Unsupported layer type: {type(layer)}")
+            return params
+
+        layers = list(self.model.children())
+        params = []
+        for layer in layers:
+            params.extend(extract_from_layer(layer))
+
         return params
 
     def calculate_receptive_fields(self):
         layer_params = self._extract_params()
+        print(f"layerparams:{layer_params}")
         H, W = self.input_image_size
 
         # Initialize receptive field parameters
@@ -76,8 +76,6 @@ class PixelwiseFeatureMaps:
         count = torch.zeros((N, 1, input_H, input_W), device=self.embeddings_value.device)
 
         start_x, end_x, start_y, end_y = self.calculate_receptive_fields()
-        print(f"start_x: {start_x}")
-        print(f"start_y: {start_y}")
 
         for i in range(H):
             for j in range(W):
