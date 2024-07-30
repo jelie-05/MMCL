@@ -58,8 +58,21 @@ def image_lidar_visualization(image, lid_pos, lid_neg):
     values_store_neg = np.delete(values_store_neg, np.where(values_store_neg[:, 2] == 0), axis=0)
 
     plt.figure(figsize=(15, 4.8))
-    plt.imshow(img_np1, alpha=1.0)
+    plt.imshow(img_np1, alpha=0.0)
     plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='rainbow_r', alpha=0.5, s=3)
+    plt.xticks([])
+    plt.yticks([])
+    plt.tight_layout()
+    plt.show()
+
+    bool_store = (values_store[:,2] > 0.0).astype(int)
+    print(values_store[:,2])
+    print(bool_store)
+
+    plt.figure(figsize=(15, 4.8))
+    plt.imshow(img_np1, alpha=0.0)
+    plt.scatter(values_store[:, 0], values_store[:, 1], c=bool_store, cmap='gray_r', alpha=1, s=3)
+    plt.gca().set_facecolor('black')
     plt.xticks([])
     plt.yticks([])
     plt.tight_layout()
@@ -67,8 +80,8 @@ def image_lidar_visualization(image, lid_pos, lid_neg):
 
     plt.figure(figsize=(15, 4.8))
     plt.imshow(img_np1)
-    plt.scatter(values_store_neg[:, 0], values_store_neg[:, 1], c=values_store_neg[:, 2], cmap='rainbow_r', alpha=0.5,
-                s=5)
+    # plt.scatter(values_store_neg[:, 0], values_store_neg[:, 1], c=values_store_neg[:, 2], cmap='rainbow_r', alpha=0.5,
+    #             s=5)
     plt.xticks([])
     plt.yticks([])
     plt.tight_layout()
