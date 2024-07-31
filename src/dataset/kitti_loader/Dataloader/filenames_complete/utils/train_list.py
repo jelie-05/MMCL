@@ -8,7 +8,7 @@ sync_test_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/filename
 
 sync_list_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/filenames_complete/list_sync_all.txt')
 
-output_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/filenames_complete/list_sync_train_all.txt')
+output_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/filenames_complete/list_sync_train_eval.txt')
 
 # Read patterns from remove.txt
 with open(sync_test_path, 'r') as remove_file:
