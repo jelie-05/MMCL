@@ -29,7 +29,7 @@ model_lid = lid_pretrained.to(device)
 eval_gen = DataGenerator(kitti_path, 'check', perturb_filenames="perturbation_neg.csv")
 eval_dataloader = eval_gen.create_data(8)
 
-masking = True
+masking = False
 pixel_wise = True
 
 def image_lidar_visualization(image, lid_pos, lid_neg):
@@ -138,6 +138,7 @@ with torch.no_grad():
             # print(mask.shape)
         else:
             mask = None
+            mask_neg = None
 
         cl_loss, cl_loss_nomask, loss = loss_map(output_im=pred_im, output_lid=pred_lid, model_im=model_im, H=H, W=W,
                         pixel_wise=pixel_wise, mask=mask)
