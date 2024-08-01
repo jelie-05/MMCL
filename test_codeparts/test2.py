@@ -1,50 +1,33 @@
-from torchvision.models import resnet18
 import torch
-from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
-from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
-from src.dataset.kitti_loader.dataset_2D import DataGenerator
-from inference.train.mmsiamese.contrastive_loss import ContrastiveLoss as CL
-import numpy as np
-import matplotlib.pyplot as plt
 
-device = torch.device("cuda:0")
-model_im = resnet18_2B_im().to(device)
-model_lid = resnet18_2B_lid().to(device)
+torch.set_printoptions(profile="full")
 
-eval_gen = DataGenerator(r'C:\Users\jerem\OneDrive\Me\StudiumMaster\00_Semesterarbeit\Project\MMSiamese\data\kitti',
-                         'test')
-eval_dataloader = eval_gen.create_data(64)
+distance_map = torch.randn(2,5,5)
+print(distance_map)
+mask = torch.randint(0, 2, distance_map.shape)
+print(mask)
+labels = torch.cat([torch.zeros(1), torch.ones(1)])
 
-loss_func = CL(margin=4)
+N, H_dist, W_dist = distance_map.shape
+labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)
 
-with torch.no_grad():
-    for batch in eval_dataloader:
-        left_img_batch = batch['left_img'].to(device)
-        depth_batch = batch['depth'].to(device)
+distance_map = distance_map * mask
 
-        # Prediction & Backpropagation
-        pred_im = model_im.forward(left_img_batch)
-        pred_lid = model_lid.forward(depth_batch)
-        label_list = torch.ones(len(depth_batch), device=device)
+# Calculate the contrastive loss
+positive_loss = torch.pow(distance_map, 2) * labels_broadcasted
+negative_loss = torch.pow(torch.clamp(4 - distance_map, min=0.0), 2) * (1 - labels_broadcasted)
 
-        # For pixel-wise comparison
-        N, C, H, W = left_img_batch.size()
-        pixel_im = PixelwiseFeatureMaps(model=model_im, embeddings_value=pred_im,
-                                        input_image_size=(H, W))
-        pred_im = pixel_im.assign_embedding_value()
-        pixel_lid = PixelwiseFeatureMaps(model=model_lid, embeddings_value=pred_lid,
-                                         input_image_size=(H, W))
-        pred_lid = pixel_lid.assign_embedding_value()
+non_zero_counts = torch.tensor([torch.count_nonzero(mask[i]).item() for i in range(mask.size(0))])
+print(non_zero_counts.shape)
 
-        loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list)
+# Summing over the correct dimensions (H and W)
+sum_distance_map = distance_map.sum(dim=(1,2))  # Summing over H and W dimensions
+print(sum_distance_map.shape)
+print(sum_distance_map)
+non_zero_counts = non_zero_counts.to(distance_map.device)  # Move counts tensor to the same device
 
-        # Convert the tensor to a NumPy array
-        array = loss[1,:,:].cpu().numpy()
+# Averaging for non-zero counts only
+loss_contrastive = sum_distance_map / non_zero_counts # Broadcasting to match dimensions
 
-        # Plot the array
-        # plt.figure(figsize=(2, 1))  # Adjust figsize to match your image dimensions
-        plt.imshow(array, cmap='viridis')  # You can change 'viridis' to any other colormap you prefer
-        plt.axis('off')  # Optional: Turn off the axis
-        plt.tight_layout()  # Adjusts the plot to fit the figure area
-        plt.show()
-
+print(loss_contrastive.shape)
+print(loss_contrastive)

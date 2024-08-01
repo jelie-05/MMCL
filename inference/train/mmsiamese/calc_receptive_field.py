@@ -47,7 +47,7 @@ class PixelwiseFeatureMaps:
 
     def calculate_receptive_fields(self):
         layer_params = self._extract_params()
-        print(f"layerparams:{layer_params}")
+        # print(f"layerparams:{layer_params}")
         H, W = self.input_image_size
 
         # Initialize receptive field parameters

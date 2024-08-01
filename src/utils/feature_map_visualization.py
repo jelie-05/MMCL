@@ -3,7 +3,7 @@ import torch
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
 from src.dataset.kitti_loader.dataset_2D import DataGenerator
@@ -13,7 +13,7 @@ from matplotlib.colors import LogNorm
 from src.utils.save_load_model import load_model_lidar, load_model_img
 
 device = torch.device("cuda:0")
-root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 kitti_path = os.path.join(root, 'data', 'kitti')
 
 # Load pretrained model
@@ -28,9 +28,9 @@ model_im = im_pretrained.to(device)
 model_lid = lid_pretrained.to(device)
 
 eval_gen = DataGenerator(kitti_path, 'check')
-eval_dataloader = eval_gen.create_data(16)
+eval_dataloader = eval_gen.create_data(8)
 
-masking = False
+masking = True
 pixel_wise = True
 
 def image_lidar_visualization(image, lid_pos, lid_neg):
@@ -58,30 +58,28 @@ def image_lidar_visualization(image, lid_pos, lid_neg):
     values_store_neg = np.delete(values_store_neg, np.where(values_store_neg[:, 2] == 0), axis=0)
 
     plt.figure(figsize=(15, 4.8))
-    plt.imshow(img_np1, alpha=0.0)
+    plt.imshow(img_np1, alpha=1.0)
     plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='rainbow_r', alpha=0.5, s=3)
     plt.xticks([])
     plt.yticks([])
     plt.tight_layout()
     plt.show()
 
-    bool_store = (values_store[:,2] > 0.0).astype(int)
-    print(values_store[:,2])
-    print(bool_store)
-
-    plt.figure(figsize=(15, 4.8))
-    plt.imshow(img_np1, alpha=0.0)
-    plt.scatter(values_store[:, 0], values_store[:, 1], c=bool_store, cmap='gray_r', alpha=1, s=3)
-    plt.gca().set_facecolor('black')
-    plt.xticks([])
-    plt.yticks([])
-    plt.tight_layout()
-    plt.show()
+    # bool_store = (values_store[:,2] > 0.0).astype(int)
+    #
+    # plt.figure(figsize=(15, 4.8))
+    # plt.imshow(img_np1, alpha=0.0)
+    # plt.scatter(values_store[:, 0], values_store[:, 1], c=bool_store, cmap='gray_r', alpha=1, s=3)
+    # plt.gca().set_facecolor('black')
+    # plt.xticks([])
+    # plt.yticks([])
+    # plt.tight_layout()
+    # plt.show()
 
     plt.figure(figsize=(15, 4.8))
     plt.imshow(img_np1)
-    # plt.scatter(values_store_neg[:, 0], values_store_neg[:, 1], c=values_store_neg[:, 2], cmap='rainbow_r', alpha=0.5,
-    #             s=5)
+    plt.scatter(values_store_neg[:, 0], values_store_neg[:, 1], c=values_store_neg[:, 2], cmap='rainbow_r', alpha=0.5,
+                s=5)
     plt.xticks([])
     plt.yticks([])
     plt.tight_layout()
@@ -91,28 +89,25 @@ def loss_map(output_im, output_lid, model_im, H, W, pixel_wise, mask):
     # L2 Distances of feature embeddings
     dist_squared = (output_im - output_lid) ** 2
     summed = torch.sum(dist_squared, dim=1)
-
     distance = torch.sqrt(summed)
-    distance_map = torch.zeros(size=(H,W))
 
-    # Map back the each distance back into original size of image/lidar
     if pixel_wise:
         distance_map = distance.unsqueeze(1)
         distance_map = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance_map, input_image_size=(H, W))
-        distance_map = distance_map.assign_embedding_value()
-        distance_map = distance_map.squeeze(1)
+        distance_map = distance_map.assign_embedding_value().squeeze(1)
         distance_map = torch.pow(distance_map, 2)
 
-        # Apply Masking to the loss function
         if mask is not None and mask.any():
+            loss_contrastive_nomask = torch.mean(distance_map)
             distance_map = distance_map * mask
+            loss_contrastive = torch.sum(distance_map) / torch.count_nonzero(mask)
+        else:
+            loss_contrastive = loss_contrastive_nomask = torch.mean(distance_map)
+    else:
+        distance_map = torch.pow(distance, 2)
+        loss_contrastive = loss_contrastive_nomask = torch.mean(distance_map)
 
-    # Calculate the contrastive loss
-    loss_contrastive = torch.pow(distance, 2)
-    loss_contrastive = torch.mean(loss_contrastive)
-
-    return loss_contrastive, distance_map
-
+    return loss_contrastive, loss_contrastive_nomask, distance_map
 
 model_im.eval()
 model_lid.eval()
@@ -138,16 +133,20 @@ with torch.no_grad():
 
         if masking:
             mask = (lid_pos_sample > 0.0).int()
-            # mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
+            mask_neg = (lid_neg_sample > 0.0).int()
+            # print(mask.shape)
         else:
             mask = None
 
-        cl_loss, loss = loss_map(output_im=pred_im, output_lid=pred_lid, model_im=model_im, H=H, W=W,
+        cl_loss, cl_loss_nomask, loss = loss_map(output_im=pred_im, output_lid=pred_lid, model_im=model_im, H=H, W=W,
                         pixel_wise=pixel_wise, mask=mask)
-        print(cl_loss)
-        cl_neg, loss_neg = loss_map(output_im=pred_im, output_lid=pred_neg, model_im=model_im, H=H, W=W,
-                            pixel_wise=pixel_wise, mask=mask)
-        print(cl_neg)
+        print(f"cl_loss:{cl_loss}")
+        print(f"cl_nomask:{cl_loss_nomask}")
+
+        cl_neg, cl_nomask_neg, loss_neg = loss_map(output_im=pred_im, output_lid=pred_neg, model_im=model_im, H=H, W=W,
+                            pixel_wise=pixel_wise, mask=mask_neg)
+        print(f"cl_neg: {cl_neg}")
+        print(f"cl_neg_nomask:{cl_nomask_neg}")
 
         # Convert the tensor to a NumPy array
         array = loss.cpu().numpy().squeeze(0)
