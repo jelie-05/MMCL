@@ -9,48 +9,47 @@ class ContrastiveLoss(nn.Module):
         self.margin = margin
 
     def forward(self, output_im, output_lid, labels, model_im, H, W, pixel_wise, mask):
-        
+
         # L2 Distances of feature embeddings
-        dist_squared = (output_im - output_lid) ** 2
-        summed = torch.sum(dist_squared, dim=1)
-        distance = torch.sqrt(summed)
+        distance = torch.sqrt(torch.sum((output_im - output_lid) ** 2, dim=1))
 
         # Map back each distance back into original size of image/lidar
         if pixel_wise:
-            distance_map = distance.unsqueeze(1)
-            distance_map = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance_map, input_image_size=(H, W))
+            distance_map = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance.unsqueeze(1),
+                                                input_image_size=(H, W))
             distance_map = distance_map.assign_embedding_value().squeeze(1)
 
             N, H_dist, W_dist = distance_map.shape
-            labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)  # Combine reshape and expand
+            labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)
 
             if mask is not None and mask.any():
                 distance_map = distance_map * mask
-                non_zero_counts = torch.tensor([torch.count_nonzero(mask[i]).item() for i in range(mask.size(0))])
+                non_zero_counts = mask.flatten(1).sum(dim=1)
 
                 positive_loss = torch.pow(distance_map, 2) * labels_broadcasted
-                negative_loss = torch.pow(torch.clamp(self.margin - distance_map, min=0.0), 2) * (1 - labels_broadcasted)
-                loss_map = (positive_loss + negative_loss)
+                negative_loss = torch.pow(torch.clamp(self.margin - distance_map, min=0.0), 2) * (
+                            1 - labels_broadcasted)
+                loss_map = positive_loss + negative_loss
 
-                # Summing over the correct dimensions (H and W)
-                sum_loss_map = loss_map.sum(dim=(1, 2))  # Summing over H and W dimensions
-                non_zero_counts = non_zero_counts.to(distance_map.device)  # Move counts tensor to the same device
+                sum_loss_map = loss_map.sum(dim=(1, 2))
 
-                # Averaging for non-zero counts only
-                loss_contrastive = sum_loss_map / non_zero_counts  # Broadcasting to match dimensions
+                # Avoid division by zero
+                non_zero_counts[non_zero_counts == 0] = 1
+                non_zero_counts = non_zero_counts.to(distance_map.device)
+
+                loss_contrastive = sum_loss_map / non_zero_counts
+                loss_contrastive = loss_contrastive.mean()  # Mean over batch
             else:
                 positive_loss = torch.pow(distance_map, 2) * labels_broadcasted
-                negative_loss = torch.pow(torch.clamp(self.margin - distance_map, min=0.0), 2) * (1 - labels_broadcasted)
-                loss_contrastive = (positive_loss + negative_loss)
-                loss_contrastive = torch.mean(loss_contrastive)
-
+                negative_loss = torch.pow(torch.clamp(self.margin - distance_map, min=0.0), 2) * (
+                            1 - labels_broadcasted)
+                loss_contrastive = (positive_loss + negative_loss).mean()
         else:
             N, H_dist, W_dist = distance.shape
-            labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)  # Combine reshape and expand
+            labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)
 
             positive_loss = torch.pow(distance, 2) * labels_broadcasted
             negative_loss = torch.pow(torch.clamp(self.margin - distance, min=0.0), 2) * (1 - labels_broadcasted)
-            loss_contrastive = (positive_loss + negative_loss)
-            loss_contrastive = torch.mean(loss_contrastive)
+            loss_contrastive = (positive_loss + negative_loss).mean()
 
         return loss_contrastive
