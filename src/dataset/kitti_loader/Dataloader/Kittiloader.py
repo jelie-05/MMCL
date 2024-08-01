@@ -6,8 +6,7 @@ from __future__ import print_function
 import os
 import numpy as np
 from PIL import Image
-from .filldepth import fill_depth_colorization
-from .bin2depth import get_depth, get_focal_length_baseline
+from .bin2depth import get_depth
 
 
 class Kittiloader(object):
@@ -16,11 +15,12 @@ class Kittiloader(object):
     param mode: 'train', 'test' or 'val'
     param cam: camera id. 2 represents the left cam, 3 represents the right one
     """
-    def __init__(self, kittiDir, mode, cam=2):
+    def __init__(self, kittiDir, mode, perturb_filenames, cam=2):
         self.mode = mode
         self.cam = cam
         self.files = []
         self.kitti_root = kittiDir
+        self.perturb_filenames = perturb_filenames
 
         # read filenames files
         currpath = os.path.dirname(os.path.realpath(__file__))
@@ -36,7 +36,9 @@ class Kittiloader(object):
                     "l_rgb": data_info[0],
                     "r_rgb": data_info[1],
                     "cam_intrin": data_info[2],
-                    "depth": data_info[3]
+                    "depth": data_info[3],
+                    "name": data_info[4],
+                    "perturb_filename": self.perturb_filenames
                 })
 
     def data_length(self):
@@ -51,19 +53,20 @@ class Kittiloader(object):
         l_rgb_path = self._check_path(item_files['l_rgb'], err_info="Panic::Cannot find Left Image. Filename: {}".format(item_files['l_rgb']))
         cam_path = self._check_path(item_files['cam_intrin'], err_info="Panic::Cannot find Camera Infos. Filename: {}".format(item_files['cam_intrin']))
         depth_path = self._check_path(item_files['depth'], err_info="Panic::Cannot find depth file. Filename: {}".format(item_files['depth']))
+        perturb_path = self._check_path(item_files['perturb_filename'], err_info="Panic::Cannot find perturbation file. Filename: {}".format(item_files['perturb_filename']))
 
         l_rgb = Image.open(l_rgb_path).convert('RGB')
         w, h = l_rgb.size
-        depth, depth_interp, depth_neg = get_depth(cam_path, depth_path, [h,w], cam=self.cam, interp=True, vel_depth=True)
+        depth, depth_neg = get_depth(cam_path, depth_path, [h,w], perturb_path, item_files['name'], cam=self.cam, vel_depth=True, augmentation=True)
 
         data = {}
         data['left_img'] = l_rgb
         data['depth'] = depth.astype(np.float32)
-        data['loc_l_rgb'] = item_files['l_rgb']
         data['depth_neg'] = depth_neg.astype(np.float32)
+        data['name'] = item_files['name']
         return data
 
-    def load_item(self, idx, interp_method='linear'):
+    def load_item(self, idx):
         """
         load an item for training or test
         interp_method can be selected from [linear', 'nyu']

@@ -20,9 +20,30 @@ def generate_random_value(value_range):
     return round(random.uniform(*value_range)*np.random.choice([-1, 1]), 2)
 
 # Define the ranges for the values
-x_range = (0.1, 0.5)
-y_range = (0.1, 0.5)
-z_range = (0.1, 0.5)
+# x_range = (0.1, 0.5)
+# y_range = (0.1, 0.5)
+# z_range = (0.1, 0.5)
+# range_rad1 = (0.5, 5)
+# range_rad2 = (0.5, 5)
+# range_rad3 = (0.5, 5)
+
+# x_range = (0, 0.1)
+# y_range = (0, 0.1)
+# z_range = (0, 0.1)
+# range_rad1 = (0, 0.5)
+# range_rad2 = (0, 0.5)
+# range_rad3 = (0, 0.5)
+
+# x_range = (0.2, 1)
+# y_range = (0.2, 1)
+# z_range = (0.2, 1)
+# range_rad1 = (1, 10)
+# range_rad2 = (1, 10)
+# range_rad3 = (1, 10)
+
+x_range = (0, 0)
+y_range = (0, 0)
+z_range = (0, 0)
 range_rad1 = (0.5, 5)
 range_rad2 = (0.5, 5)
 range_rad3 = (0.5, 5)
@@ -31,8 +52,8 @@ range_rad3 = (0.5, 5)
 current_file_path = os.path.abspath(__file__)
 root = os.path.abspath(os.path.join(current_file_path, '../../../../../../..'))
 
-input_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/perturbation_csv/eigen_files_all_corrected.txt')
-output_csv_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/perturbation_csv/perturbation.csv')
+input_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/perturbation_csv/eigen_test_files.txt')
+output_csv_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/perturbation_csv/perturbation_only_rot.csv')
 
 # Create the name list from the text file
 name_list = []

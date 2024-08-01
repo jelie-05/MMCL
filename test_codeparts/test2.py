@@ -1,55 +1,24 @@
-import torch
-import torch.nn as nn
-from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
+import csv
+import os
 
+# Define file paths
+current_file_path = os.path.abspath(__file__)
+root = os.path.abspath(os.path.join(current_file_path, '../..'))
 
-class ContrastiveLoss(nn.Module):
-    def __init__(self, margin=4.0):
-        super(ContrastiveLoss, self).__init__()
-        self.margin = margin
+csv_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/perturbation_csv/perturbation_neg.csv')
 
-    def forward(self, output_im, output_lid, labels, model_im, H, W, pixel_wise, mask):
+# Read the CSV file
+def find_row_by_name(filename, target_name):
+    with open(filename, mode='r') as file:
+        csv_reader = csv.DictReader(file)
+        for row in csv_reader:
+            if row['name'] == target_name:
+                return row
+    return None
 
-        # L2 Distances of feature embeddings
-        distance = torch.sqrt(torch.sum((output_im - output_lid) ** 2, dim=1))
+target_name = "2011_09_26_drive_0101_sync_0000000667"
 
-        # Map back each distance back into original size of image/lidar
-        if pixel_wise:
-            distance_map = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance.unsqueeze(1),
-                                                input_image_size=(H, W))
-            distance_map = distance_map.assign_embedding_value().squeeze(1)
-
-            N, H_dist, W_dist = distance_map.shape
-            labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)
-
-            if mask is not None and mask.any():
-                distance_map = distance_map * mask
-                non_zero_counts = mask.flatten(1).sum(dim=1)
-
-                positive_loss = torch.pow(distance_map, 2) * labels_broadcasted
-                negative_loss = torch.pow(torch.clamp(self.margin - distance_map, min=0.0), 2) * (
-                            1 - labels_broadcasted)
-                loss_map = positive_loss + negative_loss
-
-                sum_loss_map = loss_map.sum(dim=(1, 2))
-
-                # Avoid division by zero
-                non_zero_counts[non_zero_counts == 0] = 1
-                non_zero_counts = non_zero_counts.to(distance_map.device)
-
-                loss_contrastive = sum_loss_map / non_zero_counts
-                loss_contrastive = loss_contrastive.mean()  # Mean over batch
-            else:
-                positive_loss = torch.pow(distance_map, 2) * labels_broadcasted
-                negative_loss = torch.pow(torch.clamp(self.margin - distance_map, min=0.0), 2) * (
-                            1 - labels_broadcasted)
-                loss_contrastive = (positive_loss + negative_loss).mean()
-        else:
-            N, H_dist, W_dist = distance.shape
-            labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)
-
-            positive_loss = torch.pow(distance, 2) * labels_broadcasted
-            negative_loss = torch.pow(torch.clamp(self.margin - distance, min=0.0), 2) * (1 - labels_broadcasted)
-            loss_contrastive = (positive_loss + negative_loss).mean()
-
-        return loss_contrastive
+row = find_row_by_name(csv_file_path, target_name)
+print(row)
+x = row['x']
+print(type(x))

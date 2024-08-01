@@ -9,7 +9,6 @@ from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
 from src.dataset.kitti_loader.dataset_2D import DataGenerator
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 from src.utils.save_load_model import load_model_lidar, load_model_img
 
 device = torch.device("cuda:0")
@@ -27,7 +26,7 @@ lid_pretrained = load_model_lidar(lid_pretrained_path)
 model_im = im_pretrained.to(device)
 model_lid = lid_pretrained.to(device)
 
-eval_gen = DataGenerator(kitti_path, 'check')
+eval_gen = DataGenerator(kitti_path, 'check', perturb_filenames="perturbation_neg.csv")
 eval_dataloader = eval_gen.create_data(8)
 
 masking = True
@@ -117,12 +116,14 @@ with torch.no_grad():
         left_img_batch = batch['left_img'].to(device)
         depth_batch = batch['depth'].to(device)
         depth_neg = batch['depth_neg'].to(device)
+        name = batch['name']
 
         i = 0
 
         image_sample = left_img_batch[i]
         lid_pos_sample = depth_batch[i]
         lid_neg_sample = depth_neg[i]
+        print(f"file name: {name[i]}")
 
         # Prediction & Backpropagation
         pred_im = model_im.forward(image_sample.unsqueeze(0))

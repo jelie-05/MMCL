@@ -11,18 +11,19 @@ class KittiDataset(Dataset):
     def __init__(self,
                  kittiDir,
                  mode,
+                 perturb_filenames,
                  transform=None):
         self.mode = mode
         self.kitti_root = kittiDir
+        self.perturb_filenames = perturb_filenames
         self.transform = transform
 
         # use left image by default
-        self.kittiloader = Kittiloader(kittiDir, mode, cam=2)
+        self.kittiloader = Kittiloader(kittiDir, mode, perturb_filenames, cam=2)
 
     def __getitem__(self, idx):
         # load an item according to the given index
         data_item = self.kittiloader.load_item(idx)     # get a set of data
-
         data_transed = self.transform(data_item)        # transform the set of data with CustTransformer.get_transform()
 
         return data_transed
@@ -35,9 +36,11 @@ class DataGenerator(object):
     def __init__(self,
                  KittiDir,
                  phase,
+                 perturb_filenames,
                  high_gpu=True):
         self.phase = phase
         self.high_gpu = high_gpu
+        self.perturb_filenames = perturb_filenames
 
         if not self.phase in ['train', 'test', 'val', 'check', 'checkval']:
             raise ValueError("Panic::Invalid phase parameter")
@@ -47,6 +50,7 @@ class DataGenerator(object):
         transformer = CustTransformer(self.phase)
         self.dataset = KittiDataset(KittiDir,
                                     phase,
+                                    perturb_filenames,
                                     transformer.get_transform())
 
     def create_data(self, batch_size, nthreads=0, shuffle=False):

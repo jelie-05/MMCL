@@ -1,7 +1,8 @@
 import os
 import numpy as np
-import csv
+from PIL import Image
 from collections import Counter
+from scipy.interpolate import LinearNDInterpolator
 
 
 def read_calib_file(path):
@@ -34,68 +35,48 @@ def load_velodyne_points(file_name):
     points[:, 3] = 1.0  # homogeneous
     return points
 
-def find_row_by_name(filename, target_name):
-    with open(filename, mode='r') as file:
-        csv_reader = csv.DictReader(file)
-        for perturbation in csv_reader:
-            if perturbation['name'] == target_name:
-                return perturbation
-    return None
-def disturb_matrices(perturbation_csv, target_name):
 
-    perturbation = find_row_by_name(perturbation_csv, target_name)
-    theta_rad1 = float(perturbation["theta_rad1"])/180 * 2 * np.pi
-    theta_rad2 = float(perturbation["theta_rad2"])/180 * 2 * np.pi
-    theta_rad3 = float(perturbation["theta_rad3"])/180 * 2 * np.pi
-    x = float(perturbation["x"])
-    y = float(perturbation["y"])
-    z = float(perturbation["z"])
+def lin_interp(shape, xyd):
+    # taken from https://github.com/hunse/kitti
+    m, n = shape
+    ij, d = xyd[:, 1::-1], xyd[:, 2]
+    f = LinearNDInterpolator(ij, d, fill_value=0)
+    J, I = np.meshgrid(np.arange(n), np.arange(m))
+    IJ = np.vstack([I.flatten(), J.flatten()]).T
+    disparity = f(IJ).reshape(shape)
+    return disparity
 
-    R1 = np.array([[np.cos(theta_rad1), -np.sin(theta_rad1), 0, 0],
-                   [np.sin(theta_rad1), np.cos(theta_rad1), 0, 0],
-                   [0, 0, 1, 0],
-                   [0, 0, 0, 1]])
-    R2 = np.array([[1, 0, 0, 0],
-                   [0, np.cos(theta_rad2), -np.sin(theta_rad2), 0],
-                   [0, np.sin(theta_rad2), np.cos(theta_rad2), 0],
-                   [0, 0, 0, 1]])
-    R3 = np.array([[np.cos(theta_rad3), 0, np.sin(theta_rad3), 0],
-                   [0, 1, 0, 0],
-                   [-np.sin(theta_rad3), 0, np.cos(theta_rad3), 0],
-                   [0, 0, 0, 1]])
-    rot_error = np.dot(R1, np.dot(R2, R3))
+def disturb_matrices(csv_path):
+    theta = 0
 
-    translation_error = np.array([[0, 0, 0, x],
-                                  [0, 0, 0, y],
-                                  [0, 0, 0, z],
-                                  [0, 0, 0, 0]])
+# Function to randomly zero out at least one error
+def choose_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z):
+    # Collect all errors in a list
+    errors = [theta_rad1, theta_rad2, theta_rad3, x, y, z]
+    # Randomly choose how many errors to zero out (1 or 2)
+    num_zero_out = np.random.choice([1, 2, 3, 4, 5])
+    # Randomly choose which errors to zero out
+    zero_out_indices = np.random.choice(range(len(errors)), num_zero_out, replace=False)
 
-    return rot_error, translation_error
+    for index in zero_out_indices:
+        errors[index] = 0
 
-def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, vel_depth=False, augmentation=True):
+    return errors
+
+def get_depth(calib_dir, velo_file_name, im_shape, cam=2, interp=False, vel_depth=False):
     # load calibration files
     cam2cam = read_calib_file(os.path.join(calib_dir, 'calib_cam_to_cam.txt'))
     velo2cam = read_calib_file(os.path.join(calib_dir, 'calib_velo_to_cam.txt'))
-
-    perturb_dir = os.path.dirname(perturb_path)
-    augmentation_csv = os.path.join(perturb_dir, 'perturbation_pos_augmentation.csv')
-    # augmentation_csv = os.path.abspath(augmentation_csv)
 
     # Equal to matrix Tr_velo_to_cam
     velo2cam = np.hstack((velo2cam['R'].reshape(3,3), velo2cam['T'][..., np.newaxis]))
     velo2cam = np.vstack((velo2cam, np.array([0, 0, 0, 1.0])))
 
-    if augmentation:
-        rot_error, translation_error = disturb_matrices(perturbation_csv=augmentation_csv, target_name=name)
-        velo2cam_augmented = np.dot(velo2cam, rot_error) + translation_error
-    else:
-        velo2cam_augmented = velo2cam
-
     # compute projection matrix velodyne->image plane
     R_cam2rect = np.eye(4)
     R_cam2rect[:3,:3] = cam2cam['R_rect_00'].reshape(3,3)
     P_rect = cam2cam['P_rect_0'+str(cam)].reshape(3,4)
-    P_velo2im = np.dot(np.dot(P_rect, R_cam2rect), velo2cam_augmented)
+    P_velo2im = np.dot(np.dot(P_rect, R_cam2rect), velo2cam)
 
     # load velodyne points and remove all behind image plane (approximation)
     # each row of the velodyne data is forward, left, up, reflectance
@@ -132,9 +113,44 @@ def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, ve
         depth[y_loc, x_loc] = velo_pts_im[pts, 2].min()
     depth[depth<0] = 0
 
-    # Introducing Pertubation
-    rot_error, translation_error = disturb_matrices(perturbation_csv=perturb_path, target_name=name)
-    velo2cam_error = np.dot(velo2cam, rot_error) + translation_error
+    # For negative samples
+    # Translation and Rotation Calibration Error
+    # DONE: checked for randomness of different files. Explanation: each file are called independently with Kittiloader.load_item (a function of get_depth)
+    # TODO: check why not all points translated?
+    # Rotation Angles
+    theta1 = np.random.uniform(1,5)  # Yaw
+    theta_rad1 = theta1/180 * 2 * np.pi * np.random.choice([-1, 1])
+    theta2 = np.random.uniform(1,5)  # Roll
+    theta_rad2 = theta2 / 180 * 2 * np.pi * np.random.choice([-1, 1])
+    theta3 = np.random.uniform(1,5)  # Pitch
+    theta_rad3 = theta3 / 180 * 2 * np.pi * np.random.choice([-1, 1])
+
+    # Translation
+    x = np.random.uniform(0.1,0.5) * np.random.choice([-1, 1])  # in m
+    y = np.random.uniform(0.1,0.5) * np.random.choice([-1, 1])
+    z = np.random.uniform(0.1,0.5) * np.random.choice([-1, 1])
+
+    theta_rad1, theta_rad2, theta_rad3, x, y, z = choose_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z)
+
+    R1 = np.array([[np.cos(theta_rad1), -np.sin(theta_rad1), 0, 0],
+                  [np.sin(theta_rad1), np.cos(theta_rad1), 0, 0],
+                   [0, 0, 1, 0],
+                   [0, 0, 0, 1]])
+    R2 = np.array([[1, 0, 0, 0],
+                   [0, np.cos(theta_rad2), -np.sin(theta_rad2), 0],
+                   [0, np.sin(theta_rad2), np.cos(theta_rad2), 0],
+                   [0, 0, 0, 1]])
+    R3 = np.array([[np.cos(theta_rad3), 0, np.sin(theta_rad3), 0],
+                   [0, 1, 0, 0],
+                   [-np.sin(theta_rad3), 0, np.cos(theta_rad3), 0],
+                   [0, 0, 0, 1]])
+
+    Translation_error = np.array([[0, 0, 0, x],
+                                  [0, 0, 0, y],
+                                  [0, 0, 0, z],
+                                 [0, 0, 0, 0]])
+
+    velo2cam_error = np.dot(velo2cam, np.dot(R1, np.dot(R2, R3))) + Translation_error
 
     # compute projection matrix velodyne->image plane
     P_velo2im2 = np.dot(np.dot(P_rect, R_cam2rect), velo2cam_error)
@@ -169,4 +185,28 @@ def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, ve
         depth_neg[y_loc, x_loc] = velo_pts_im2[pts, 2].min()
     depth_neg[depth_neg < 0] = 0
 
-    return depth, depth_neg
+    if interp:
+        # interpolate the depth map to fill in holes
+        depth_interp = lin_interp(im_shape, velo_pts_im)
+        return depth, depth_interp, depth_neg
+    else:
+        return depth
+
+
+def get_focal_length_baseline(calib_dir, cam):
+    cam2cam = read_calib_file(os.path.join(calib_dir, 'calib_cam_to_cam.txt'))
+    P2_rect = cam2cam['P_rect_02'].reshape(3,4)
+    P3_rect = cam2cam['P_rect_03'].reshape(3,4)
+
+    # cam 2 is left of camera 0  -6cm
+    # cam 3 is to the right  +54cm
+    b2 = P2_rect[0,3] / -P2_rect[0,0]
+    b3 = P3_rect[0,3] / -P3_rect[0,0]
+    baseline = b3-b2
+
+    if cam==2:
+        focal_length = P2_rect[0,0]
+    elif cam==3:
+        focal_length = P3_rect[0,0]
+
+    return focal_length, baseline
