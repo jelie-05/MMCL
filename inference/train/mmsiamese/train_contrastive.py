@@ -60,15 +60,6 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             depth_batch = batch['depth'].to(device)
             depth_neg = batch['depth_neg'].to(device)
 
-            # Calculate Mask
-            if masking:
-                mask = (depth_batch > 0.0).int()
-                mask_neg = (depth_neg > 0.0).int()
-                # mask = depth_batch != 0
-                # mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
-            else:
-                mask = None
-
             # Assign label randomly to each component of the batch
             batch_length = len(depth_batch)
             half_length = batch_length // 2
@@ -80,8 +71,16 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             stacked_depth_batch = torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
                                               depth_neg)
             
-            stacked_mask= torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), mask,
+            # Calculate Mask
+            if masking:
+                mask = (depth_batch != 0.0).int()
+                mask_neg = (depth_neg != 0.0).int()
+                stacked_mask= torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), mask,
                                               mask_neg)
+                # mask = depth_batch != 0
+                # mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
+            else:
+                stacked_mask = None
 
             # Prediction & Backpropagation
             pred_im = model_im.forward(left_img_batch)
