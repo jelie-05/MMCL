@@ -59,9 +59,9 @@ if __name__ == "__main__":
     url = tb.launch()
     print(f"TensorBoard started at {url}")
 
-    # Train Model
-    train_contrastive(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_model_lid=args.name_lid,
-                      save_model_im=args.name_im, pixel_wise=args.pixel_wise, masking=args.masking)
+    # # Train Model
+    # train_contrastive(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_model_lid=args.name_lid,
+    #                   save_model_im=args.name_im, pixel_wise=args.pixel_wise, masking=args.masking)
 
     # Load pretrained model
     im_pretrained_path = os.path.join(root, 'outputs/models', args.name_im)
