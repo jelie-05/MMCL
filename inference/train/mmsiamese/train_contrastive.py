@@ -17,11 +17,11 @@ def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
 
-def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise, masking, name="default"):
+def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise, masking, perturb_filename, name="default"):
     """ Data Loader """
-    train_gen = DataGenerator(data_root, 'train')
+    train_gen = DataGenerator(data_root, 'train', perturb_filename)
     train_loader = train_gen.create_data(int(params.get('batch_size')), shuffle=True)
-    val_gen = DataGenerator(data_root, 'val')
+    val_gen = DataGenerator(data_root, 'val', perturb_filename)
     val_loader = val_gen.create_data(int(params.get('batch_size')), shuffle=False)
 
     """ Other hyperparams """
@@ -62,8 +62,10 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
 
             # Calculate Mask
             if masking:
-                mask = depth_batch != 0
-                mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
+                mask = (depth_batch > 0.0).int()
+                mask_neg = (depth_neg > 0.0).int()
+                # mask = depth_batch != 0
+                # mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
             else:
                 mask = None
 
@@ -77,6 +79,9 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             # Stack depth batches according to labels (depth_batch or depth_neg)
             stacked_depth_batch = torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
                                               depth_neg)
+            
+            stacked_mask= torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), mask,
+                                              mask_neg)
 
             # Prediction & Backpropagation
             pred_im = model_im.forward(left_img_batch)
@@ -87,7 +92,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
 
             # Calculating the loss
             loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W,
-                             pixel_wise=pixel_wise, mask=mask)
+                             pixel_wise=pixel_wise, mask=stacked_mask)
             loss.backward()
             optimizer_im.step()
             optimizer_lid.step()
@@ -120,8 +125,10 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
 
                 # Calculate Mask
                 if masking:
-                    mask = depth_batch != 0
-                    mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
+                    mask = (depth_batch > 0.0).int()
+                    mask_neg = (depth_neg > 0.0).int()
+                    # mask = depth_batch != 0
+                    # mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
                 else:
                     mask = None
 
@@ -136,13 +143,16 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                 # Stack depth batches according to labels
                 stacked_depth_val = torch.where(label_val.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
                                                   depth_neg)
+                
+                stacked_mask= torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), mask,
+                                              mask_neg)
 
                 pred_im = model_im.forward(left_img_batch)
                 pred_lid = model_lid.forward(stacked_depth_val)
 
                 N, C, H, W = left_img_batch.size()
                 loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_val, model_im=model_im,
-                                     H=H, W=W, pixel_wise=pixel_wise, mask=mask)
+                                     H=H, W=W, pixel_wise=pixel_wise, mask=stacked_mask)
                 validation_loss += loss_val.item()
 
                 # Update the progress bar.

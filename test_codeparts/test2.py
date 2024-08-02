@@ -1,24 +1,40 @@
-import csv
+import sys
 import os
+import torch
 
-# Define file paths
-current_file_path = os.path.abspath(__file__)
-root = os.path.abspath(os.path.join(current_file_path, '../..'))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.dataset.kitti_loader.dataset_2D import DataGenerator
 
-csv_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/perturbation_csv/perturbation_neg.csv')
 
-# Read the CSV file
-def find_row_by_name(filename, target_name):
-    with open(filename, mode='r') as file:
-        csv_reader = csv.DictReader(file)
-        for row in csv_reader:
-            if row['name'] == target_name:
-                return row
-    return None
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
+kitti_path = os.path.join(root, 'data', 'kitti')
+print(kitti_path)
 
-target_name = "2011_09_26_drive_0101_sync_0000000667"
+train_gen = DataGenerator(kitti_path, 'train', perturb_filenames="perturbation_neg.csv")
+train_loader = train_gen.create_data(64, shuffle=True)
 
-row = find_row_by_name(csv_file_path, target_name)
-print(row)
-x = row['x']
-print(type(x))
+device = torch.device("cuda:0")
+
+for batch in train_loader:
+    left_img_batch = batch['left_img'].to(device)
+    depth_batch = batch['depth'].to(device)
+    depth_neg = batch['depth_neg'].to(device)
+
+    mask = (depth_neg > 0.0).int().squeeze(1)
+
+    depth_neg = depth_neg.squeeze(1)
+    print(depth_neg.shape)
+
+
+    print(mask.shape)
+    non_zero_counts = mask.flatten(1).sum(dim=1)
+    print(non_zero_counts)
+
+    a = depth_neg * mask
+    print(a.shape)
+
+    sum_loss_map = a.sum(dim=(1, 2))
+    print(sum_loss_map)
+    b = sum_loss_map/non_zero_counts
+    print(b)
+    print(b.mean())

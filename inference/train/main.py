@@ -35,6 +35,10 @@ parser.add_argument(
     '--model', type=str,
     help='type of model',
     default='mmsiamese')
+parser.add_argument(
+    '--perturbation', type=str,
+    help='filename for perturbation',
+    default='perturbation_neg.csv')
 
 
 if __name__ == "__main__":
@@ -59,9 +63,9 @@ if __name__ == "__main__":
     url = tb.launch()
     print(f"TensorBoard started at {url}")
 
-    # # Train Model
-    # train_contrastive(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_model_lid=args.name_lid,
-    #                   save_model_im=args.name_im, pixel_wise=args.pixel_wise, masking=args.masking)
+    # Train Model
+    train_contrastive(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_model_lid=args.name_lid,
+                      save_model_im=args.name_im, pixel_wise=args.pixel_wise, masking=args.masking, perturb_filename=args.perturbation)
 
     # Load pretrained model
     im_pretrained_path = os.path.join(root, 'outputs/models', args.name_im)
@@ -75,6 +79,6 @@ if __name__ == "__main__":
     tb_logger_cls = SummaryWriter(path_cls)
 
     train_cls(params=params['train_cls'], data_root=kitti_path, tb_logger=tb_logger_cls, pretrained_im=im_pretrained,
-              pretrained_lid=lid_pretrained, name_cls=args.name_cls, pixel_wise=args.pixel_wise)
+              pretrained_lid=lid_pretrained, name_cls=args.name_cls, pixel_wise=args.pixel_wise, perturb_filename=args.perturbation)
 
 

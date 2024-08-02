@@ -23,7 +23,7 @@ class ContrastiveLoss(nn.Module):
             labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)
 
             if mask is not None and mask.any():
-                distance_map = distance_map * mask
+                distance_map = distance_map * mask.squeeze(1)
                 non_zero_counts = mask.flatten(1).sum(dim=1)
 
                 positive_loss = torch.pow(distance_map, 2) * labels_broadcasted
