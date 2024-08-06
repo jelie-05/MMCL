@@ -73,7 +73,7 @@ def evaluation(device, data_root, model_cls, perturb_file):
     eval_gen = DataGenerator(data_root, 'test', perturb_filenames=perturb_file)
     eval_dataloader = eval_gen.create_data(64)
     
-    num_run = '3'
+    num_run = '5'
     output_dir = os.path.join(os.path.dirname(__file__), 'outputs')
     os.makedirs(output_dir, exist_ok=True)
     fp_output_file = os.path.join(output_dir, f'output_{num_run}_fp.txt')
@@ -147,7 +147,7 @@ def evaluation(device, data_root, model_cls, perturb_file):
         for item in fn_list:
             f.write("%s\n" % item)
     
-    np.set_printoptions(threshold=np.inf) 
+    # np.set_printoptions(threshold=np.inf) 
     results = pr_auc(label=label, prediction=prediction)
  
     with open(results_file, 'w') as f:
