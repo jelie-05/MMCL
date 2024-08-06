@@ -55,7 +55,7 @@ if __name__ == "__main__":
     # Tensorboard Setup
     path = "outputs/logs"
     num_of_runs = len(os.listdir(path)) if os.path.exists(path) else 0
-    path_siamese = os.path.join(path, f'run_{num_of_runs + 1}')
+    path_siamese = os.path.join(path, f'run_{args.name_im}_{num_of_runs + 1}')
     tb_logger = SummaryWriter(path_siamese)
     port = 6006
     tb = program.TensorBoard()
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     # Tensorboard Setup
     num_of_runs = len(os.listdir(path)) if os.path.exists(path) else 0
-    path_cls = os.path.join(path, f'run_cls{num_of_runs + 1}')
+    path_cls = os.path.join(path, f'run_{args.name_cls}_cls{num_of_runs + 1}')
     tb_logger_cls = SummaryWriter(path_cls)
 
     train_cls(params=params['train_cls'], data_root=kitti_path, tb_logger=tb_logger_cls, pretrained_im=im_pretrained,
