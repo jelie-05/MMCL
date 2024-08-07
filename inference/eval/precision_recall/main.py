@@ -5,10 +5,7 @@ from src.utils.save_load_model import load_model_lidar, load_model_img, load_mod
 import torch
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    '--fname', type=str,
-    help='name of config file to load',
-    default='configs.yaml')
+
 parser.add_argument(
     '--name_lid', type=str,
     help='name of lidar model to save',

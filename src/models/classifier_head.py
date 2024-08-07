@@ -14,6 +14,7 @@ class classifier_head(nn.Module):
         super().__init__()
         self.model_im = model_im
         self.model_lid = model_lid
+
         self.pixel_wise = pixel_wise
         set_parameter_requires_grad(self.model_im, feature_extracting=True)
         set_parameter_requires_grad(self.model_lid, feature_extracting=True)
@@ -49,8 +50,11 @@ class classifier_head(nn.Module):
         self.classifier_layers.load_state_dict(classifier_state_dict)
 
     def forward(self, image, lidar, H, W):
-        image = self.model_im(image)
-        lidar = self.model_lid(lidar)
+        self.model_lid.eval()
+        self.model_im.eval()
+        with torch.no_grad:
+            image = self.model_im(image)
+            lidar = self.model_lid(lidar)
 
         z = torch.cat((image, lidar), dim=1)
         z = self.classifier_layers(z)

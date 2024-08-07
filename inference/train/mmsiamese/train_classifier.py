@@ -31,8 +31,8 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
     model_lid = pretrained_lid.to(device)
     model_lid.eval()
     model_im.eval()
-    model_cls = classifier_head(model_lid=model_lid, model_im=model_im, pixel_wise=pixel_wise).to(device)
 
+    model_cls = classifier_head(model_lid=model_lid, model_im=model_im, pixel_wise=pixel_wise).to(device)
     optimizer = torch.optim.Adam(model_cls.parameters(), learning_rate)
 
     # Define the scheduler to decrease the learning rate by a factor of 0.1 every 30 epochs
