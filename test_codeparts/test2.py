@@ -1,24 +1,57 @@
-import csv
-import os
+import torch
+import torch.nn as nn
+import torch.optim as optim
 
-# Define file paths
-current_file_path = os.path.abspath(__file__)
-root = os.path.abspath(os.path.join(current_file_path, '../..'))
+# Define a simple neural network
+class SimpleNN(nn.Module):
+    def __init__(self):
+        super(SimpleNN, self).__init__()
+        self.linear = nn.Linear(2, 1)
 
-csv_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/perturbation_csv/perturbation_neg.csv')
+    def forward(self, x):
+        return self.linear(x)
 
-# Read the CSV file
-def find_row_by_name(filename, target_name):
-    with open(filename, mode='r') as file:
-        csv_reader = csv.DictReader(file)
-        for row in csv_reader:
-            if row['name'] == target_name:
-                return row
-    return None
+# Define the custom MSE loss function
+class CustomMSELoss(nn.Module):
+    def __init__(self):
+        super(CustomMSELoss, self).__init__()
 
-target_name = "2011_09_26_drive_0101_sync_0000000667"
+    def forward(self, input, target):
+        loss = torch.mean((input - target) ** 2)
+        return loss
 
-row = find_row_by_name(csv_file_path, target_name)
-print(row)
-x = row['x']
-print(type(x))
+# Instantiate the model, loss function, and optimizer
+model = SimpleNN()
+criterion = CustomMSELoss()
+optimizer = optim.SGD(model.parameters(), lr=0.01)
+
+# Dummy data for demonstration
+inputs = torch.tensor([[1.0, 2.0], [3.0, 4.0]], requires_grad=True)
+targets = torch.tensor([[3.0], [7.0]])
+
+# Forward pass: Compute predicted outputs by passing inputs to the model
+outputs = model(inputs)
+
+# Compute the loss
+loss = criterion(outputs, targets)
+print('Loss:', loss.item())
+
+# Backward pass: Compute gradient of the loss with respect to model parameters
+loss.backward()
+
+# Print gradients
+print('Gradients:')
+for name, param in model.named_parameters():
+    if param.grad is not None:
+        print(f'{name}: {param.grad}')
+
+# Update model parameters
+optimizer.step()
+
+# Zero the gradients after updating
+optimizer.zero_grad()
+
+# Perform another forward pass to see the updated loss
+outputs = model(inputs)
+loss = criterion(outputs, targets)
+print('Updated Loss:', loss.item())
