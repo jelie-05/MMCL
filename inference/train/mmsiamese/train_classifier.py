@@ -69,6 +69,7 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
                                               depth_neg)
 
             N, C, H, W = left_img_batch.size()
+
             pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch,  H=H, W=W)
             pred_cls = pred_cls.squeeze(dim=1)
 
@@ -85,8 +86,6 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
             # Update the tensorboard logger.
             tb_logger.add_scalar(f'classifier_{name}/train_loss', loss.item(),
                                  epoch * len(train_loader) + train_iteration)
-
-        scheduler.step()
 
         # Validation stage
         model_cls.eval()
@@ -123,13 +122,15 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
                 # Update the tensorboard logger.
                 tb_logger.add_scalar(f'classifier_{name}/val_loss', loss.item(),
                                      epoch * len(val_loader) + val_iteration)
+                
+        scheduler.step()
 
         training_loss /= len(train_loader)
         validation_loss /= len(val_loader)
-        tb_logger.add_scalar('training_loss_epoch', training_loss,
+        tb_logger.add_scalar('training_cls_loss_epoch', training_loss,
                              epoch)
-        tb_logger.add_scalar('validation_loss_epoch', validation_loss,
+        tb_logger.add_scalar('validation_cls_loss_epoch', validation_loss,
                              epoch)
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
 
     save_model(model_cls, file_name=name_cls)

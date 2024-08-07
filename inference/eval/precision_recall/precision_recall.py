@@ -70,10 +70,10 @@ def evaluation(device, data_root, model_cls, perturb_file):
     model_cls.to(device)
     model_cls.eval()
 
-    eval_gen = DataGenerator(data_root, 'test', perturb_filenames=perturb_file)
+    eval_gen = DataGenerator(data_root, 'val', perturb_filenames=perturb_file)
     eval_dataloader = eval_gen.create_data(64)
     
-    num_run = '5'
+    num_run = '6'
     output_dir = os.path.join(os.path.dirname(__file__), 'outputs')
     os.makedirs(output_dir, exist_ok=True)
     fp_output_file = os.path.join(output_dir, f'output_{num_run}_fp.txt')
@@ -113,7 +113,9 @@ def evaluation(device, data_root, model_cls, perturb_file):
             stacked_depth_batch = torch.where(label_val.unsqueeze(2).unsqueeze(3).bool(), depth_batch,
                                               depth_neg)
             N, C, H, W = left_img_batch.size()
-            pred_cls = model_cls(image=left_img_batch, lidar=stacked_depth_batch, H=H, W=W)
+
+            pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch, H=H, W=W)
+            print(pred_cls)
             
             # Concatenate the batch results to the full tensors
             label = torch.cat((label, label_val), dim=0)
