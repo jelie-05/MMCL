@@ -11,12 +11,12 @@ from src.utils.save_load_model import save_model
 def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
-def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, pixel_wise, name="default"):
+def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, pixel_wise, perturb_filename, name="default"):
 
     """ Data Loader """
-    train_gen = DataGenerator(data_root, 'train')
+    train_gen = DataGenerator(data_root, 'train', perturb_filename)
     train_loader = train_gen.create_data(int(params.get('batch_size')), shuffle=True)
-    val_gen = DataGenerator(data_root, 'val')
+    val_gen = DataGenerator(data_root, 'val', perturb_filename)
     val_loader = val_gen.create_data(int(params.get('batch_size')), shuffle=False) 
 
     """ Other hyperparams """

@@ -1,4 +1,3 @@
-
 docker build -t mmsiamese:latest -f docker/Dockerfile .
 docker run --gpus all -v /home/ubuntu/Documents/students/Jeremialie/MMSiamese/data/kitti:/app/data/kitti --name mmsiamese-container mmsiamese:latest
 # docker run --rm -it -v /home/ubuntu/Documents/students/Jeremialie/MMSiamese/data/kitti:/app/data/kitti -e NVIDIA_DRIVER_CAPABILITIES=all --runtime=nvidia --gpus all --name mmsiamese-container mmsiamese:latest

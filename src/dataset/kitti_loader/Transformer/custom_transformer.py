@@ -37,6 +37,13 @@ class CustTransformer(BaseTransformer):
                                        augmethods.Scale("Img", [188, 621])])
 
     def get_depth_transform(self):
+        # if self.phase == "train" or self.phase == "check":
+        #     return transforms.Compose([augmethods.ToTensor("depth"),
+        #                            augmethods.Scale("depth", [188, 621]),
+        #                            augmethods.RandCrop()])
+        # else:
+        #     return transforms.Compose([augmethods.ToTensor("depth"),
+        #                            augmethods.Scale("depth", [188, 621])])
         return transforms.Compose([augmethods.ToTensor("depth"),
                                    augmethods.Scale("depth", [188, 621]),
                                    augmethods.RandCrop()])

@@ -35,6 +35,10 @@ parser.add_argument(
     '--model', type=str,
     help='type of model',
     default='mmsiamese')
+parser.add_argument(
+    '--perturbation', type=str,
+    help='filename for perturbation',
+    default='perturbation_neg.csv')
 
 
 if __name__ == "__main__":
@@ -51,7 +55,7 @@ if __name__ == "__main__":
     # Tensorboard Setup
     path = "outputs/logs"
     num_of_runs = len(os.listdir(path)) if os.path.exists(path) else 0
-    path_siamese = os.path.join(path, f'run_{num_of_runs + 1}')
+    path_siamese = os.path.join(path, f'run_{args.name_im}_{num_of_runs + 1}')
     tb_logger = SummaryWriter(path_siamese)
     port = 6006
     tb = program.TensorBoard()
@@ -61,7 +65,7 @@ if __name__ == "__main__":
 
     # Train Model
     train_contrastive(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_model_lid=args.name_lid,
-                      save_model_im=args.name_im, pixel_wise=args.pixel_wise, masking=args.masking)
+                      save_model_im=args.name_im, pixel_wise=args.pixel_wise, masking=args.masking, perturb_filename=args.perturbation)
 
     # Load pretrained model
     im_pretrained_path = os.path.join(root, 'outputs/models', args.name_im)
@@ -71,10 +75,10 @@ if __name__ == "__main__":
 
     # Tensorboard Setup
     num_of_runs = len(os.listdir(path)) if os.path.exists(path) else 0
-    path_cls = os.path.join(path, f'run_cls{num_of_runs + 1}')
+    path_cls = os.path.join(path, f'run_{args.name_cls}_cls{num_of_runs + 1}')
     tb_logger_cls = SummaryWriter(path_cls)
 
     train_cls(params=params['train_cls'], data_root=kitti_path, tb_logger=tb_logger_cls, pretrained_im=im_pretrained,
-              pretrained_lid=lid_pretrained, name_cls=args.name_cls, pixel_wise=args.pixel_wise)
+              pretrained_lid=lid_pretrained, name_cls=args.name_cls, pixel_wise=args.pixel_wise, perturb_filename=args.perturbation)
 
 

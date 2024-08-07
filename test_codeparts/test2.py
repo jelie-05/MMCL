@@ -1,57 +1,41 @@
+import sys
+import os
 import torch
-import torch.nn as nn
-import torch.optim as optim
 
-# Define a simple neural network
-class SimpleNN(nn.Module):
-    def __init__(self):
-        super(SimpleNN, self).__init__()
-        self.linear = nn.Linear(2, 1)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.dataset.kitti_loader.dataset_2D import DataGenerator
 
-    def forward(self, x):
-        return self.linear(x)
 
-# Define the custom MSE loss function
-class CustomMSELoss(nn.Module):
-    def __init__(self):
-        super(CustomMSELoss, self).__init__()
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
+kitti_path = os.path.join(root, 'data', 'kitti')
+print(kitti_path)
 
-    def forward(self, input, target):
-        loss = torch.mean((input - target) ** 2)
-        return loss
+train_gen = DataGenerator(kitti_path, 'train', perturb_filenames="perturbation_neg.csv")
+train_loader = train_gen.create_data(64, shuffle=True)
 
-# Instantiate the model, loss function, and optimizer
-model = SimpleNN()
-criterion = CustomMSELoss()
-optimizer = optim.SGD(model.parameters(), lr=0.01)
+device = torch.device("cuda:0")
 
-# Dummy data for demonstration
-inputs = torch.tensor([[1.0, 2.0], [3.0, 4.0]], requires_grad=True)
-targets = torch.tensor([[3.0], [7.0]])
+for batch in train_loader:
+    left_img_batch = batch['left_img'].to(device)
+    depth_batch = batch['depth'].to(device)
+    depth_neg = batch['depth_neg'].to(device)
 
-# Forward pass: Compute predicted outputs by passing inputs to the model
-outputs = model(inputs)
+    mask = (depth_neg > 0.0).int().squeeze(1)
 
-# Compute the loss
-loss = criterion(outputs, targets)
-print('Loss:', loss.item())
+    depth_neg = depth_neg.squeeze(1)
+    print(depth_neg.shape)
 
-# Backward pass: Compute gradient of the loss with respect to model parameters
-loss.backward()
 
-# Print gradients
-print('Gradients:')
-for name, param in model.named_parameters():
-    if param.grad is not None:
-        print(f'{name}: {param.grad}')
+    print(mask.shape)
+    non_zero_counts = mask.flatten(1).sum(dim=1)
+    print(non_zero_counts)
 
-# Update model parameters
-optimizer.step()
+    a = depth_neg * mask
+    print(a.shape)
 
-# Zero the gradients after updating
-optimizer.zero_grad()
+    sum_loss_map = a.sum(dim=(1, 2))
+    print(sum_loss_map)
+    b = sum_loss_map/non_zero_counts
+    print(b)
+    print(b.mean())
 
-# Perform another forward pass to see the updated loss
-outputs = model(inputs)
-loss = criterion(outputs, targets)
-print('Updated Loss:', loss.item())
