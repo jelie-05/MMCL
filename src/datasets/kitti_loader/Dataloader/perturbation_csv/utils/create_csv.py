@@ -41,19 +41,19 @@ def generate_random_value(value_range):
 # range_rad2 = (1, 10)
 # range_rad3 = (1, 10)
 
-x_range = (0, 0)
-y_range = (0, 0)
-z_range = (0, 0)
-range_rad1 = (0.5, 5)
-range_rad2 = (0.5, 5)
-range_rad3 = (0.5, 5)
+x_range = (0.1, 0.11)
+y_range = (0.1, 0.11)
+z_range = (0.1, 0.11)
+range_rad1 = (0.5, 0.51)
+range_rad2 = (0.5, 0.51)
+range_rad3 = (0.5, 0.51)
 
 # Define file paths
 current_file_path = os.path.abspath(__file__)
 root = os.path.abspath(os.path.join(current_file_path, '../../../../../../..'))
 
-input_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/perturbation_csv/eigen_test_files.txt')
-output_csv_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/perturbation_csv/perturbation_only_rot.csv')
+input_file_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/perturbation_csv/eigen_files_all_corrected.txt')
+output_csv_file_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/perturbation_csv/perturbation_pos_augmentation.csv')
 
 # Create the name list from the text file
 name_list = []

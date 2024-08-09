@@ -72,7 +72,7 @@ def disturb_matrices(perturbation_csv, target_name):
 
     return rot_error, translation_error
 
-def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, vel_depth=False, augmentation=True):
+def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, vel_depth=False, augmentation=False):
     # load calibration files
     cam2cam = read_calib_file(os.path.join(calib_dir, 'calib_cam_to_cam.txt'))
     velo2cam = read_calib_file(os.path.join(calib_dir, 'calib_velo_to_cam.txt'))

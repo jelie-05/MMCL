@@ -52,7 +52,7 @@ class classifier_head(nn.Module):
     def forward(self, image, lidar, H, W):
         self.model_lid.eval()
         self.model_im.eval()
-        with torch.no_grad:
+        with torch.no_grad():
             image = self.model_im(image)
             lidar = self.model_lid(lidar)
 

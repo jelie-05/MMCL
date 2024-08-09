@@ -3,7 +3,7 @@ import torch
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
 from src.datasets.kitti_loader.dataset_2D import DataGenerator
@@ -121,9 +121,9 @@ with torch.no_grad():
         image_sample = left_img_batch[i]
         lid_pos_sample = depth_batch[i]
         print(lid_pos_sample.shape)
-        # lid_neg_sample = depth_neg[i]
-        lid_neg_sample = depth_batch[i].clone()
-        lid_neg_sample[:, 75:125,75:250] = 0    # Patched
+        lid_neg_sample = depth_neg[i]
+        # lid_neg_sample = depth_batch[i].clone()
+        # lid_neg_sample[:, 75:125,75:250] = 0    # Patched
         print(f"file name: {name[i]}")
 
         image_lidar_visualization(image=image_sample, lid_pos=lid_pos_sample, lid_neg=lid_neg_sample)

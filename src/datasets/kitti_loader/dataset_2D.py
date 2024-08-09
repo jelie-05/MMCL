@@ -12,14 +12,16 @@ class KittiDataset(Dataset):
                  kittiDir,
                  mode,
                  perturb_filenames,
-                 transform=None):
+                 transform=None,
+                 augmentation=False):
         self.mode = mode
         self.kitti_root = kittiDir
         self.perturb_filenames = perturb_filenames
         self.transform = transform
+        self.augmentation = augmentation
 
         # use left image by default
-        self.kittiloader = Kittiloader(kittiDir, mode, perturb_filenames, cam=2)
+        self.kittiloader = Kittiloader(kittiDir, mode, perturb_filenames, cam=2, augmentation=self.augmentation)
 
     def __getitem__(self, idx):
         # load an item according to the given index
@@ -37,10 +39,12 @@ class DataGenerator(object):
                  KittiDir,
                  phase,
                  perturb_filenames,
-                 high_gpu=True):
+                 high_gpu=True,
+                 augmentation=False):
         self.phase = phase
         self.high_gpu = high_gpu
         self.perturb_filenames = perturb_filenames
+        self.augmentation = augmentation
 
         if not self.phase in ['train', 'test', 'val', 'check', 'checkval']:
             raise ValueError("Panic::Invalid phase parameter")
@@ -51,7 +55,8 @@ class DataGenerator(object):
         self.dataset = KittiDataset(KittiDir,
                                     phase,
                                     perturb_filenames,
-                                    transformer.get_transform())
+                                    transformer.get_transform(),
+                                    augmentation=self.augmentation)
 
     def create_data(self, batch_size, nthreads=0, shuffle=False):
         # use page locked gpu memory by default
