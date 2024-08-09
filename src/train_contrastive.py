@@ -99,7 +99,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                                       val_loss="{:.8f}".format(validation_loss))
 
             # Update the tensorboard logger.
-            logger.add_scalar(f'siamese_{name}/train_loss', loss.item(),
+            logger.add_scalar(f'siamese_{save_name}/train_loss', loss.item(),
                                  epoch * len(train_loader) + train_iteration)
 
         # Validation stage
@@ -114,35 +114,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                 depth_batch = val_batch['depth'].to(device)
                 depth_neg = val_batch['depth_neg'].to(device)
 
-                # Calculate Mask
-                if masking:
-                    mask = (depth_batch > 0.0).int()
-                    mask_neg = (depth_neg > 0.0).int()
-                    # mask = depth_batch != 0
-                    # mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
-                else:
-                    mask = None
-
-                batch_length = len(depth_batch)
-                half_length = batch_length // 2
-
-                # Create shuffled label tensor directly on the specified device
-                label_tensor_val = torch.cat(
-                    [torch.zeros(half_length, device=device), torch.ones(half_length, device=device)])
-                label_val = label_tensor_val[torch.randperm(label_tensor_val.size(0))]
-
-                # Stack depth batches according to labels
-                stacked_depth_val = torch.where(label_val.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
-                                                depth_neg)
-
-                if masking:
-                    mask = (depth_batch != 0.0).int()
-                    mask_neg = (depth_neg != 0.0).int()
-                    stacked_mask = torch.where(label_val.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), mask,
-                                               mask_neg)
-                else:
-                    stacked_mask = None
-
+                stacked_depth_val, label_val, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
 
                 pred_im = model_im.forward(left_img_batch)
                 pred_lid = model_lid.forward(stacked_depth_val)
@@ -156,7 +128,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                 val_loop.set_postfix(val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)))
 
                 # Update the tensorboard logger.
-                logger.add_scalar(f'siamese_{name}/val_loss', loss_val.item(),
+                logger.add_scalar(f'siamese_{save_name}/val_loss', loss_val.item(),
                                      epoch * len(val_loader) + val_iteration)
 
         # Epoch-wise calculation
@@ -169,6 +141,8 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
         # Step the scheduler after each epoch
         scheduler_im.step()
         scheduler_lid.step()
-
+        
+    save_name_im = save_name + 'im'
+    save_name_lid = save_name + 'lid'
     save_model(model_im, file_name=save_name_im)
     save_model(model_lid, file_name=save_name_lid)

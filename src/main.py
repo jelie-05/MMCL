@@ -11,9 +11,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '--config', type=str,
     help='name of config file to load',
-    default='configs.yaml')
+    default='configs_contrastive.yaml')
 parser.add_argument(
-    '--name', type=str,
+    '--save_name', type=str,
     help='name of model for saving',
     default='dates')
 parser.add_argument(
@@ -30,7 +30,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    print(root)
     configs_path = os.path.join(root, 'configs', args.config)
     kitti_path = os.path.join(root, 'data', 'kitti')
 
@@ -50,8 +49,7 @@ if __name__ == "__main__":
     print(f"TensorBoard started at {url}")
 
     # Train Model
-    train_contrastive(params=params['train'], tb_logger=tb_logger, data_root=kitti_path, save_name_lid=args.name_lid,
-                      save_name_im=args.name_im, pixel_wise=args.pixel_wise, masking=args.masking, perturb_filename=args.perturbation)
+    train_contrastive(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True')
 
     # Load pretrained model
     im_pretrained_path = os.path.join(root, 'outputs/models', args.name_im)

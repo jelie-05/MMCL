@@ -7,33 +7,31 @@ from src.datasets.kitti_loader.dataset_2D import DataGenerator
 from src.utils.logger import tb_logger
 import torch.nn as nn
 import torch.optim as optim
-
+from tensorboard import program
 from src.utils.save_load_model import save_model
+from src.utils.helper import gen_mixed_data
 
 
 def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
 
-def main(args, project_root, pretrained_im, pretrained_lid, name_cls, pixel_wise, perturb_filename,
-         name="default"):
+def main(args, project_root, pretrained_im, pretrained_lid, save_name, pixel_wise, masking, logger_launch='True'):
 
-    logger = tb_logger(project_root, args, name_cls)
+    if not torch.cuda.is_available():
+        device = torch.device('cpu')
+    else:
+        device = torch.device('cuda:0')
+        torch.cuda.set_device(device)
 
-    """ Data Loader """
+    logger = tb_logger(project_root, args, save_name)
+
+    """ Loader """
     data_root = os.path.join(project_root, args['data']['dataset_path'])
-    train_gen = DataGenerator(data_root, 'train', perturb_filename)
-    train_loader = train_gen.create_data(int(args.get('batch_size')), shuffle=True)
-    val_gen = DataGenerator(data_root, 'val', perturb_filename)
-    val_loader = val_gen.create_data(int(args.get('batch_size')), shuffle=False)
-
-    """ Other hyperparams """
-    learning_rate = float(args.get('lr'))
-    epochs = int(args.get('epoch'))
-
-    """ Initialize """
-    loss_func = nn.BCELoss()
-    device = torch.device(args.get('device'))
+    train_gen = DataGenerator(data_root, 'train', args['data']['perturbation_file'])
+    val_gen = DataGenerator(data_root, 'val', args['data']['perturbation_file'])
+    train_loader = train_gen.create_data(args['data']['batch_size'], shuffle=True)
+    val_loader = val_gen.create_data(args['data']['batch_size'], shuffle=False)
 
     model_im = pretrained_im.to(device)
     model_lid = pretrained_lid.to(device)
@@ -41,12 +39,25 @@ def main(args, project_root, pretrained_im, pretrained_lid, name_cls, pixel_wise
     model_im.eval()
     model_cls = classifier_head(model_lid=model_lid, model_im=model_im, pixel_wise=pixel_wise).to(device)
 
-    optimizer = torch.optim.Adam(model_cls.parameters(), learning_rate)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30,
-                                          gamma=0.1)  # decrease lr by a factor of 0.1/30 epochs
+    """ Optimization """
+    learning_rate = float(args['optimization']['lr'])
+    epochs = int(args['optimization']['epochs'])
+
+    loss_func = nn.BCELoss()
+
+    optimizer = torch.optim.Adam(model_cls.parameters(), lr=learning_rate)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args['optimization']['scheduler_step'],
+                                          gamma=args['optimization']['scheduler_gamma'])
+    
+    logger = tb_logger(args, project_root, save_name)
+    if logger_launch:
+        port = 6006
+        tb = program.TensorBoard()
+        tb.configure(argv=[None, '--logdir', args['logging']['rel_path'], '--port', str(port)])
+        url = tb.launch()
+        print(f"TensorBoard started at {url}")
 
     for epoch in range(epochs):
-
         training_loss = 0
         validation_loss = 0
 
@@ -62,18 +73,8 @@ def main(args, project_root, pretrained_im, pretrained_lid, name_cls, pixel_wise
             left_img_batch = batch['left_img'].to(device)
             depth_batch = batch['depth'].to(device)
             depth_neg = batch['depth_neg'].to(device)
-
-            batch_length = len(depth_batch)
-            half_length = batch_length // 2
-
-            # Create shuffled label tensor
-            label_tensor = torch.cat(
-                [torch.zeros(half_length, device=device), torch.ones(half_length, device=device)])
-            label_list = label_tensor[torch.randperm(label_tensor.size(0))]
-
-            # Stack depth batches according to labels
-            stacked_depth_batch = torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
-                                              depth_neg)
+            
+            stacked_depth_batch, label_list, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
 
             N, C, H, W = left_img_batch.size()
 
@@ -91,7 +92,7 @@ def main(args, project_root, pretrained_im, pretrained_lid, name_cls, pixel_wise
                                       val_loss="{:.8f}".format(validation_loss))
 
             # Update the tensorboard logger.
-            tb_logger.add_scalar(f'classifier_{name}/train_loss', loss.item(),
+            tb_logger.add_scalar(f'classifier_{save_name}/train_loss', loss.item(),
                                  epoch * len(train_loader) + train_iteration)
 
         # Validation stage
@@ -103,18 +104,8 @@ def main(args, project_root, pretrained_im, pretrained_lid, name_cls, pixel_wise
                 left_img_batch = val_batch['left_img'].to(device)
                 depth_batch = val_batch['depth'].to(device)
                 depth_neg = val_batch['depth_neg'].to(device)
-
-                batch_length = len(depth_batch)
-                half_length = batch_length // 2
-
-                # Create shuffled label tensor
-                label_tensor = torch.cat(
-                    [torch.zeros(half_length, device=device), torch.ones(half_length, device=device)])
-                label_val = label_tensor[torch.randperm(label_tensor.size(0))]
-
-                # Stack depth batches according to labels
-                stacked_depth_batch = torch.where(label_val.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
-                                                  depth_neg)
+                
+                stacked_depth_batch, label_val, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
 
                 N, C, H, W = left_img_batch.size()
                 pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch, H=H, W=W).squeeze(dim=1)
@@ -126,7 +117,7 @@ def main(args, project_root, pretrained_im, pretrained_lid, name_cls, pixel_wise
                 val_loop.set_postfix(val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)))
 
                 # Update the tensorboard logger.
-                tb_logger.add_scalar(f'classifier_{name}/val_loss', loss.item(),
+                tb_logger.add_scalar(f'classifier_{save_name}/val_loss', loss.item(),
                                      epoch * len(val_loader) + val_iteration)
 
         scheduler.step()
@@ -139,4 +130,5 @@ def main(args, project_root, pretrained_im, pretrained_lid, name_cls, pixel_wise
                              epoch)
         # torch.cuda.empty_cache()
 
+    name_cls = save_name + 'cls'
     save_model(model_cls, file_name=name_cls)
