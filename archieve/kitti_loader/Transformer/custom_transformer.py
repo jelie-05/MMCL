@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import torchvision.transforms as transforms
-import src.dataset.kitti_loader.Transformer.custom_methods as augmethods
+import src.datasets.kitti_loader.Transformer.custom_methods as augmethods
 from .base_transformer import BaseTransformer
 
 

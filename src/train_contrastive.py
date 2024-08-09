@@ -7,47 +7,63 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../.
 
 from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.datasets.kitti_loader.dataset_2D import DataGenerator
-from .contrastive_loss import ContrastiveLoss as CL
-from .cosine_similarity import CosineSim as CS
+from src.utils.contrastive_loss import ContrastiveLoss as CL
+from src.utils.cosine_similarity import CosineSim as CS
+from src.utils.helper import gen_mixed_data
+from src.utils.logger import tb_logger
 from src.utils.save_load_model import save_model
 import torch.optim as optim
+from tensorboard import program
 
 
 def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
 
-def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise, masking, perturb_filename, name="default"):
-    """ Data Loader """
-    train_gen = DataGenerator(data_root, 'train', perturb_filename)
-    train_loader = train_gen.create_data(int(params.get('batch_size')), shuffle=True)
-    val_gen = DataGenerator(data_root, 'val', perturb_filename)
-    val_loader = val_gen.create_data(int(params.get('batch_size')), shuffle=False)
+def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True'):
 
-    """ Other hyperparams """
-    learning_rate = float(params.get('lr'))
-    epochs = int(params.get('epoch'))
+    if not torch.cuda.is_available():
+        device = torch.device('cpu')
+    else:
+        device = torch.device('cuda:0')
+        torch.cuda.set_device(device)
 
-    """ Initializing """
-    loss_func = CL(margin=(params.get('margin')))
-    device = torch.device(params.get('device'))
+    data_root = os.path.join(project_root, args['data']['dataset_path'])
+    train_gen = DataGenerator(data_root, 'train', args['data']['perturbation_file'])
+    val_gen = DataGenerator(data_root, 'val', args['data']['perturbation_file'])
+    train_loader = train_gen.create_data(args['data']['batch_size'], shuffle=True)
+    val_loader = val_gen.create_data(args['data']['batch_size'], shuffle=False)
 
     model_im = resnet18_2B_im().to(device)
     model_lid = resnet18_2B_lid().to(device)
 
-    optimizer_im = torch.optim.Adam(model_im.parameters(), learning_rate)
-    optimizer_lid = torch.optim.Adam(model_lid.parameters(), learning_rate)
+    """ Optimization """
+    learning_rate = float(args['optimization']['lr'])
+    epochs = int(args['optimization']['epochs'])
+    loss_func = CL(margin=args['optimization']['margin'])
 
-    # Define the scheduler to decrease the learning rate by a factor of 0.1 every 30 epochs
-    scheduler_im = optim.lr_scheduler.StepLR(optimizer_im, step_size=30, gamma=0.1)
-    scheduler_lid = optim.lr_scheduler.StepLR(optimizer_lid, step_size=30, gamma=0.1)
+    optimizer_im = torch.optim.Adam(model_im.parameters(), learning_rate)
+    scheduler_im = optim.lr_scheduler.StepLR(optimizer_im, step_size=args['optimization']['scheduler_step'],
+                                             gamma=args['optimization']['scheduler_gamma'])
+
+    optimizer_lid = torch.optim.Adam(model_lid.parameters(), learning_rate)
+    scheduler_lid = optim.lr_scheduler.StepLR(optimizer_lid, step_size=args['optimization']['scheduler_step'],
+                                              gamma=args['optimization']['scheduler_gamma'])
+
+    logger = tb_logger(args, project_root, save_name)
+    if logger_launch:
+        port = 6006
+        tb = program.TensorBoard()
+        tb.configure(argv=[None, '--logdir', args['logging']['rel_path'], '--port', str(port)])
+        url = tb.launch()
+        print(f"TensorBoard started at {url}")
 
     for epoch in range(epochs):
         training_loss = 0
         validation_loss = 0
 
         # Training stage: set the model to training mode
-        model_im.train() 
+        model_im.train()
         model_lid.train()
 
         training_loop = create_tqdm_bar(train_loader, desc=f'Training Epoch [{epoch + 1}/{epochs}]')
@@ -60,27 +76,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             depth_batch = batch['depth'].to(device)
             depth_neg = batch['depth_neg'].to(device)
 
-            # Assign label randomly to each component of the batch
-            batch_length = len(depth_batch)
-            half_length = batch_length // 2
-            label_tensor = torch.cat(
-                [torch.zeros(half_length, device=device), torch.ones(half_length, device=device)])
-            label_list = label_tensor[torch.randperm(label_tensor.size(0))]
-
-            # Stack depth batches according to labels (depth_batch or depth_neg)
-            stacked_depth_batch = torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
-                                              depth_neg)
-            
-            # Calculate Mask
-            if masking:
-                mask = (depth_batch != 0.0).int()
-                mask_neg = (depth_neg != 0.0).int()
-                stacked_mask= torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), mask,
-                                              mask_neg)
-                # mask = depth_batch != 0
-                # mask = torch.tensor(mask.clone().detach().bool(), dtype=torch.bool)
-            else:
-                stacked_mask = None
+            stacked_depth_batch, label_list, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
 
             # Prediction & Backpropagation
             pred_im = model_im.forward(left_img_batch)
@@ -95,7 +91,7 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
             loss.backward()
             optimizer_im.step()
             optimizer_lid.step()
-            
+
             training_loss += loss.item()
 
             # Update the progress bar.
@@ -103,12 +99,8 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                                       val_loss="{:.8f}".format(validation_loss))
 
             # Update the tensorboard logger.
-            tb_logger.add_scalar(f'siamese_{name}/train_loss', loss.item(),
+            logger.add_scalar(f'siamese_{name}/train_loss', loss.item(),
                                  epoch * len(train_loader) + train_iteration)
-        
-        # Step the scheduler after each epoch
-        scheduler_im.step()
-        scheduler_lid.step()
 
         # Validation stage
         model_im.eval()
@@ -141,10 +133,16 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
 
                 # Stack depth batches according to labels
                 stacked_depth_val = torch.where(label_val.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
-                                                  depth_neg)
-                
-                stacked_mask = torch.where(label_val.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), mask,
-                                              mask_neg)
+                                                depth_neg)
+
+                if masking:
+                    mask = (depth_batch != 0.0).int()
+                    mask_neg = (depth_neg != 0.0).int()
+                    stacked_mask = torch.where(label_val.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), mask,
+                                               mask_neg)
+                else:
+                    stacked_mask = None
+
 
                 pred_im = model_im.forward(left_img_batch)
                 pred_lid = model_lid.forward(stacked_depth_val)
@@ -158,17 +156,19 @@ def main(params, data_root, tb_logger, save_model_im, save_model_lid, pixel_wise
                 val_loop.set_postfix(val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)))
 
                 # Update the tensorboard logger.
-                tb_logger.add_scalar(f'siamese_{name}/val_loss', loss_val.item(),
+                logger.add_scalar(f'siamese_{name}/val_loss', loss_val.item(),
                                      epoch * len(val_loader) + val_iteration)
 
         # Epoch-wise calculation
         training_loss /= len(train_loader)
         validation_loss /= len(val_loader)
-        tb_logger.add_scalar('training_loss_epoch', training_loss,
+        logger.add_scalar('training_loss_epoch', training_loss,
                              epoch)
-        tb_logger.add_scalar('validation_loss_epoch', validation_loss,
+        logger.add_scalar('validation_loss_epoch', validation_loss,
                              epoch)
-        torch.cuda.empty_cache()
+        # Step the scheduler after each epoch
+        scheduler_im.step()
+        scheduler_lid.step()
 
-    save_model(model_im, file_name=save_model_im)
-    save_model(model_lid, file_name=save_model_lid)
+    save_model(model_im, file_name=save_name_im)
+    save_model(model_lid, file_name=save_name_lid)

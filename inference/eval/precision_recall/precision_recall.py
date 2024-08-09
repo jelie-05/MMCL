@@ -5,7 +5,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
-from src.dataset.kitti_loader.dataset_2D import DataGenerator
+from src.datasets.kitti_loader.dataset_2D import DataGenerator
 from sklearn.metrics import precision_recall_curve
 
 

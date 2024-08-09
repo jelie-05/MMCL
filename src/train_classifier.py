@@ -1,7 +1,10 @@
+import os
+
 import torch
 from tqdm import tqdm
 from src.models.classifier_head import classifier_head
 from src.datasets.kitti_loader.dataset_2D import DataGenerator
+from src.utils.logger import tb_logger
 import torch.nn as nn
 import torch.optim as optim
 
@@ -11,21 +14,26 @@ from src.utils.save_load_model import save_model
 def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
-def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, pixel_wise, perturb_filename, name="default"):
+
+def main(args, project_root, pretrained_im, pretrained_lid, name_cls, pixel_wise, perturb_filename,
+         name="default"):
+
+    logger = tb_logger(project_root, args, name_cls)
 
     """ Data Loader """
+    data_root = os.path.join(project_root, args['data']['dataset_path'])
     train_gen = DataGenerator(data_root, 'train', perturb_filename)
-    train_loader = train_gen.create_data(int(params.get('batch_size')), shuffle=True)
+    train_loader = train_gen.create_data(int(args.get('batch_size')), shuffle=True)
     val_gen = DataGenerator(data_root, 'val', perturb_filename)
-    val_loader = val_gen.create_data(int(params.get('batch_size')), shuffle=False) 
+    val_loader = val_gen.create_data(int(args.get('batch_size')), shuffle=False)
 
     """ Other hyperparams """
-    learning_rate = float(params.get('lr'))
-    epochs = int(params.get('epoch'))
+    learning_rate = float(args.get('lr'))
+    epochs = int(args.get('epoch'))
 
     """ Initialize """
     loss_func = nn.BCELoss()
-    device = torch.device(params.get('device'))
+    device = torch.device(args.get('device'))
 
     model_im = pretrained_im.to(device)
     model_lid = pretrained_lid.to(device)
@@ -34,7 +42,8 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
     model_cls = classifier_head(model_lid=model_lid, model_im=model_im, pixel_wise=pixel_wise).to(device)
 
     optimizer = torch.optim.Adam(model_cls.parameters(), learning_rate)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1) # decrease lr by a factor of 0.1/30 epochs
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30,
+                                          gamma=0.1)  # decrease lr by a factor of 0.1/30 epochs
 
     for epoch in range(epochs):
 
@@ -42,7 +51,7 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
         validation_loss = 0
 
         # Training stage: set the model to training mode
-        model_cls.train() 
+        model_cls.train()
 
         # Create a progress bar for the training loop.
         training_loop = create_tqdm_bar(train_loader, desc=f'Training Epoch [{epoch + 1}/{epochs}]')
@@ -68,13 +77,13 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
 
             N, C, H, W = left_img_batch.size()
 
-            pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch,  H=H, W=W)
+            pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch, H=H, W=W)
             pred_cls = pred_cls.squeeze(dim=1)
 
             loss = loss_func(pred_cls, label_list)
-            loss.backward() 
+            loss.backward()
             optimizer.step()
-        
+
             training_loss += loss.item()
 
             # Update the progress bar.
@@ -91,8 +100,7 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
 
         with torch.no_grad():
             for val_iteration, val_batch in val_loop:
-
-                left_img_batch = val_batch['left_img'].to(device) 
+                left_img_batch = val_batch['left_img'].to(device)
                 depth_batch = val_batch['depth'].to(device)
                 depth_neg = val_batch['depth_neg'].to(device)
 
@@ -109,7 +117,7 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
                                                   depth_neg)
 
                 N, C, H, W = left_img_batch.size()
-                pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch,  H=H, W=W).squeeze(dim=1)
+                pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch, H=H, W=W).squeeze(dim=1)
 
                 loss = loss_func(pred_cls, label_val)
                 validation_loss += loss.item()
@@ -120,7 +128,7 @@ def main(params, data_root, tb_logger, pretrained_im, pretrained_lid, name_cls, 
                 # Update the tensorboard logger.
                 tb_logger.add_scalar(f'classifier_{name}/val_loss', loss.item(),
                                      epoch * len(val_loader) + val_iteration)
-                
+
         scheduler.step()
 
         training_loss /= len(train_loader)

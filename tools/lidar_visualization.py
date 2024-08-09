@@ -1,10 +1,10 @@
-from src.dataset.kitti_loader.dataset_2D import DataGenerator
+from src.datasets.kitti_loader.dataset_2D import DataGenerator
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
-    root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
     kitti_path = os.path.join(root, 'data', 'kitti')
 
     test_gen = DataGenerator(kitti_path, 'check')

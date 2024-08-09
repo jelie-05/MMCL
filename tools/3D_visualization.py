@@ -9,7 +9,7 @@ def load_velodyne_bin_file(bin_file_path):
     return point_cloud
 
 # Load the point cloud data from a .bin file
-root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
 bin_file_path = os.path.join(root, "./data/kitti/2011_09_26/2011_09_26_drive_0001_sync/velodyne_points/data/0000000004.bin")
 point_cloud_data = load_velodyne_bin_file(bin_file_path)
 

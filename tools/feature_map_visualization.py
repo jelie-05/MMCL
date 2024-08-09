@@ -3,16 +3,16 @@ import torch
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
-from src.dataset.kitti_loader.dataset_2D import DataGenerator
+from src.datasets.kitti_loader.dataset_2D import DataGenerator
 import numpy as np
 import matplotlib.pyplot as plt
 from src.utils.save_load_model import load_model_lidar, load_model_img
 
 device = torch.device("cuda:0")
-root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 kitti_path = os.path.join(root, 'data', 'kitti')
 
 # Load pretrained model
@@ -32,29 +32,27 @@ eval_dataloader = eval_gen.create_data(8)
 masking = False
 pixel_wise = True
 
-def image_lidar_visualization(image, lid_pos, lid_neg):
-    # Permute
-    lidar = lid_pos.permute(1, 2, 0).cpu().numpy()  # position (H, W, 1) = (ca. 100x600x1)
-    lidar_neg = lid_neg.permute(1, 2, 0).cpu().numpy()
-    img_np1 = image.permute(1, 2, 0).cpu().numpy()
-
+def lidar_scatter(lidar):
+    lidar = lidar.permute(1, 2, 0).cpu().numpy()
     values_store = []
-    values_store_neg = []
-
     lidar = np.squeeze(lidar)
-    lidar_neg = np.squeeze(lidar_neg)
 
     for (i, j), value in np.ndenumerate(lidar):
         values_store.append([j, i, value])
 
-    for (i, j), value in np.ndenumerate(lidar_neg):
-        values_store_neg.append([j, i, value])
-
     values_store = np.array(values_store)
     values_store = np.delete(values_store, np.where(values_store[:, 2] == 0), axis=0)
 
-    values_store_neg = np.array(values_store_neg)
-    values_store_neg = np.delete(values_store_neg, np.where(values_store_neg[:, 2] == 0), axis=0)
+    return values_store
+
+def image_lidar_visualization(image, lid_pos, lid_neg):
+
+    mask = (lid_pos != 0).int()
+    # Permute
+    img_np1 = image.permute(1, 2, 0).cpu().numpy()
+    values_store = lidar_scatter(lid_pos)
+    values_store_neg = lidar_scatter(lid_neg)
+    values_store_mask = lidar_scatter(mask)
 
     plt.figure(figsize=(15, 4.8))
     plt.imshow(img_np1, alpha=1.0)
@@ -64,20 +62,18 @@ def image_lidar_visualization(image, lid_pos, lid_neg):
     plt.tight_layout()
     plt.show()
 
-    # bool_store = (values_store[:,2] > 0.0).astype(int)
-    #
-    # plt.figure(figsize=(15, 4.8))
-    # plt.imshow(img_np1, alpha=0.0)
-    # plt.scatter(values_store[:, 0], values_store[:, 1], c=bool_store, cmap='gray_r', alpha=1, s=3)
-    # plt.gca().set_facecolor('black')
-    # plt.xticks([])
-    # plt.yticks([])
-    # plt.tight_layout()
-    # plt.show()
-
     plt.figure(figsize=(15, 4.8))
     plt.imshow(img_np1)
     plt.scatter(values_store_neg[:, 0], values_store_neg[:, 1], c=values_store_neg[:, 2], cmap='rainbow_r', alpha=0.5,
+                s=5)
+    plt.xticks([])
+    plt.yticks([])
+    plt.tight_layout()
+    plt.show()
+
+    plt.figure(figsize=(15, 4.8))
+    plt.imshow(img_np1, alpha=0.0)
+    plt.scatter(values_store_mask[:, 0], values_store_mask[:, 1], c=values_store_mask[:, 2], cmap='grey', alpha=0.5,
                 s=5)
     plt.xticks([])
     plt.yticks([])

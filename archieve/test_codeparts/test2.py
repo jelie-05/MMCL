@@ -3,7 +3,7 @@ import os
 import torch
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.dataset.kitti_loader.dataset_2D import DataGenerator
+from src.datasets.kitti_loader.dataset_2D import DataGenerator
 
 
 root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))

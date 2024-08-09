@@ -2,8 +2,8 @@ import os
 import torch
 import numpy as np
 from PIL import Image
-from src.dataset.kitti_loader.Dataloader import Kittiloader
-from src.dataset.kitti_loader.Transformer.custom_transformer import CustTransformer
+from src.datasets.kitti_loader.Dataloader import Kittiloader
+from src.datasets.kitti_loader.Transformer.custom_transformer import CustTransformer
 from torch.utils.data import Dataset, DataLoader
 
 

@@ -9,12 +9,25 @@ class ContrastiveLoss(nn.Module):
         self.margin = margin
 
     def forward(self, tensor1, tensor2, label):
-        diff = tensor1 - tensor2  # Step 1: Element-wise difference
-        squared_diff = diff ** 2  # Step 2: Square the differences
-        sum_squared_diff = torch.sum(squared_diff, dim=1)
-        sum_squared_diff = torch.sum(sum_squared_diff, dim=1)
-        sum_squared_diff = torch.sum(sum_squared_diff, dim=1)
-        distance = torch.sqrt(sum_squared_diff)
+
+        # Ver 1
+        distances = F.pairwise_distance(tensor1.view(tensor1.size(0), -1), tensor2.view(tensor2.size(0), -1))
+        loss1 = 0.5 * (label * distances.pow(2) + (1 - label) * F.relu(self.margin - distances).pow(2))
+        print(loss1.mean())
+
+        # diff = tensor1 - tensor2  # Step 1: Element-wise difference
+        # squared_diff = diff ** 2  # Step 2: Square the differences
+        # sum_squared_diff = torch.sum(squared_diff, dim=1)
+        # sum_squared_diff = torch.sum(sum_squared_diff, dim=1)
+        # sum_squared_diff = torch.sum(sum_squared_diff, dim=1)
+        # distance = torch.sqrt(sum_squared_diff)
+
+        n,c,h,w = tensor1.shape
+        flattened1 = tensor1.view(n,-1)
+        flattened2 = tensor2.view(n, -1)
+        diff = (flattened1-flattened2) ** 2
+        distance = torch.sqrt(torch.sum(diff, dim=1))
+        print(distance.shape)
 
         loss = 0.5 * (label * distance.pow(2) + (1 - label) * F.relu(self.margin - distance).pow(2))
 
