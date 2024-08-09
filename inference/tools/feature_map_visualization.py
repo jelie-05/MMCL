@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from src.utils.save_load_model import load_model_lidar, load_model_img
 
 device = torch.device("cuda:0")
-root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 kitti_path = os.path.join(root, 'data', 'kitti')
 
 # Load pretrained model
@@ -54,6 +54,8 @@ def image_lidar_visualization(image, lid_pos, lid_neg):
     values_store_neg = lidar_scatter(lid_neg)
     values_store_mask = lidar_scatter(mask)
 
+    check = (values_store[:,0] == values_store_mask[:,0])
+    print(check)
     plt.figure(figsize=(15, 4.8))
     plt.imshow(img_np1, alpha=1.0)
     plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='rainbow_r', alpha=0.5, s=3)
@@ -65,7 +67,7 @@ def image_lidar_visualization(image, lid_pos, lid_neg):
     plt.figure(figsize=(15, 4.8))
     plt.imshow(img_np1)
     plt.scatter(values_store_neg[:, 0], values_store_neg[:, 1], c=values_store_neg[:, 2], cmap='rainbow_r', alpha=0.5,
-                s=5)
+                s=3)
     plt.xticks([])
     plt.yticks([])
     plt.tight_layout()
@@ -118,8 +120,13 @@ with torch.no_grad():
 
         image_sample = left_img_batch[i]
         lid_pos_sample = depth_batch[i]
-        lid_neg_sample = depth_neg[i]
+        print(lid_pos_sample.shape)
+        # lid_neg_sample = depth_neg[i]
+        lid_neg_sample = depth_batch[i].clone()
+        lid_neg_sample[:, 75:125,75:250] = 0    # Patched
         print(f"file name: {name[i]}")
+
+        image_lidar_visualization(image=image_sample, lid_pos=lid_pos_sample, lid_neg=lid_neg_sample)
 
         # Prediction & Backpropagation
         pred_im = model_im.forward(image_sample.unsqueeze(0))
@@ -150,7 +157,6 @@ with torch.no_grad():
         array = loss.cpu().numpy().squeeze(0)
         array_neg = loss_neg.cpu().numpy().squeeze(0)
         max_value = int(np.max(array_neg))
-        image_lidar_visualization(image=image_sample, lid_pos=lid_pos_sample, lid_neg=lid_neg_sample)
 
         text = f"CL loss: {cl_loss:.3f}"
         text_neg = f"CL loss: {cl_neg:.3f}"
