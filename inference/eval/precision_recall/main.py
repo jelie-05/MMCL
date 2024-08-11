@@ -1,6 +1,6 @@
 import argparse
 import os
-from precision_recall import evaluation
+from precision_recall2 import evaluation
 from src.utils.save_load_model import load_model_lidar, load_model_img, load_model_cls
 import torch
 
@@ -26,6 +26,10 @@ parser.add_argument(
     '--perturbation', type=str,
     help='filename for perturbation',
     default='perturbation_neg.csv')
+parser.add_argument(
+    '--failure_mode', type=str,
+    help='type of failure',
+    default='labeled')
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -43,7 +47,7 @@ if __name__ == "__main__":
     cls_pretrained = load_model_cls(cls_pretrained_path, model_im=im_pretrained, model_lid=lid_pretrained, pixel_wise=args.pixel_wise)
 
     device = torch.device("cuda:0")
-    PR = evaluation(device=device, data_root=kitti_path, model_cls=cls_pretrained, perturb_file=args.perturbation)
+    PR = evaluation(device=device, data_root=kitti_path, model_cls=cls_pretrained, perturb_file=args.perturbation, mode=args.failure_mode)
     print(PR)
 
-# python3 inference/eval/precision_recall/main.py --name_lid lidar_240719_full_1 --name_im image_240719_full_1 --name_cls cls_240719_full_1
+# python3 inference/eval/precision_recall/main.py --name_lid 240725_full_1_lid --name_im 240725_full_1_im --name_cls 240725_full_1_cls

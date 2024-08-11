@@ -41,12 +41,12 @@ def generate_random_value(value_range):
 # range_rad2 = (1, 10)
 # range_rad3 = (1, 10)
 
-x_range = (0.1, 0.11)
-y_range = (0.1, 0.11)
-z_range = (0.1, 0.11)
-range_rad1 = (0.5, 0.51)
-range_rad2 = (0.5, 0.51)
-range_rad3 = (0.5, 0.51)
+# x_range = (0.1, 0.11)
+# y_range = (0.1, 0.11)
+# z_range = (0.1, 0.11)
+# range_rad1 = (0.5, 0.51)
+# range_rad2 = (0.5, 0.51)
+# range_rad3 = (0.5, 0.51)
 
 # Define file paths
 current_file_path = os.path.abspath(__file__)

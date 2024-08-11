@@ -119,11 +119,23 @@ with torch.no_grad():
         i = 0
 
         image_sample = left_img_batch[i]
+
+        # Positive Sample
         lid_pos_sample = depth_batch[i]
-        print(lid_pos_sample.shape)
-        lid_neg_sample = depth_neg[i]
+
+        # Normal Negative Sample (pertubated)
+        # lid_neg_sample = depth_neg[i]
+
+        # Patched
         # lid_neg_sample = depth_batch[i].clone()
-        # lid_neg_sample[:, 75:125,75:250] = 0    # Patched
+        # lid_neg_sample[:, 75:125,75:250] = 0
+
+        # Scaled
+        # lid_neg_sample = depth_batch[i].clone()
+        # lid_neg_sample[:, 75:125,75:250] = 0.2 * lid_neg_sample[:, 75:125,75:250]
+
+        # Random Assigned
+        lid_neg_sample = depth_batch[i+5]
         print(f"file name: {name[i]}")
 
         image_lidar_visualization(image=image_sample, lid_pos=lid_pos_sample, lid_neg=lid_neg_sample)

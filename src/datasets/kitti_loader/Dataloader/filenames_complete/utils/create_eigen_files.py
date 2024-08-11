@@ -4,14 +4,14 @@ current_file_path = os.path.abspath(__file__)
 root = os.path.abspath(os.path.join(current_file_path, '../../../../../../..'))
 
 # Specify the path to the folder list file
-sync_list_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/filenames_complete/utils/list_sync_all.txt')
-output_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/filenames_complete/filenames_all.txt')
+# sync_list_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/filenames_complete/utils/list_sync_all.txt')
+# output_file_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/filenames_complete/filenames_all.txt')
 
-# sync_list_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/filenames_complete/utils/list_sync_test.txt')
-# output_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/filenames_complete/eigen_test_files.txt')
+sync_list_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/filenames_complete/utils/list_sync_test.txt')
+output_file_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/filenames_complete/eigen_test_files.txt')
 
-# sync_list_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/filenames_complete/utils/list_sync_train_mini.txt')
-# output_file_path = os.path.join(root,'src/dataset/kitti_loader/Dataloader/filenames_complete/eigen_train_files.txt')
+# sync_list_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/filenames_complete/utils/list_sync_train_mini.txt')
+# output_file_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/filenames_complete/eigen_train_files.txt')
 
 # Read the folder paths from the folder list file
 with open(sync_list_path, 'r') as file:
@@ -39,9 +39,14 @@ with open(output_file_path, 'w') as output_file:
                 image02_name = os.path.join(date_folder, sync_name, r'image_02/data', f'{number_parts}.png')
                 image03_name = os.path.join(date_folder, sync_name, r'image_03/data', f'{number_parts}.png')
                 lidar_name = os.path.join(date_folder, sync_name, r'velodyne_points/data', f'{number_parts}.bin')
+                perturbation_name = sync_name + '_' + number_parts
+
+                image02_name = image02_name.replace('\\', '/')
+                image03_name = image03_name.replace('\\', '/')
+                lidar_name = lidar_name.replace('\\', '/')
 
                 # Write the folder name (optional, for clarity)
-                output_file.write(f"{image02_name} {image03_name} {date_folder} {lidar_name}\n")
+                output_file.write(f"{image02_name} {image03_name} {date_folder} {lidar_name} {perturbation_name}\n")
 
         else:
             output_file.write(f"Folder: {image02_path} (Invalid path)\n\n")
