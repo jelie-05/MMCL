@@ -42,9 +42,9 @@ if __name__ == "__main__":
     lid_pretrained_path = os.path.join(root, 'outputs/models', args.name_lid)
     cls_pretrained_path = os.path.join(root, 'outputs/models', args.name_cls)
 
-    im_pretrained = load_model_img(im_pretrained_path)
-    lid_pretrained = load_model_lidar(lid_pretrained_path)
-    cls_pretrained = load_model_cls(cls_pretrained_path, model_im=im_pretrained, model_lid=lid_pretrained, pixel_wise=args.pixel_wise)
+    im_pretrained = load_model_img(im_pretrained_path).eval()
+    lid_pretrained = load_model_lidar(lid_pretrained_path).eval()
+    cls_pretrained = load_model_cls(cls_pretrained_path, model_im=im_pretrained, model_lid=lid_pretrained, pixel_wise=args.pixel_wise).eval()
 
     device = torch.device("cuda:0")
     PR = evaluation(device=device, data_root=kitti_path, model_cls=cls_pretrained, perturb_file=args.perturbation, mode=args.failure_mode)

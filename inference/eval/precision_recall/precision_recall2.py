@@ -137,11 +137,29 @@ def evaluation(device, data_root, model_cls, perturb_file, mode='labeled'):
                 stacked_depth_batch = torch.cat((depth_batch, depth_neg), dim=0)
             elif mode == 'random_paired':
                 label_val = torch.cat(
-                    [torch.zeros(batch_length, device=device), torch.zeros(batch_length, device=device)]).unsqueeze(1)
+                    [torch.ones(batch_length, device=device), torch.zeros(batch_length, device=device)]).unsqueeze(1)
+                shuffled_depth_batch = depth_batch.clone()
+                shuffled_depth_batch = shuffled_depth_batch[torch.randperm(shuffled_depth_batch.size(0))]
                 left_img_batch = torch.cat((left_img_batch, left_img_batch), dim=0)
-                stacked_depth_batch = torch.cat((depth_batch, depth_batch), dim=0)
-                indices = torch.randperm(stacked_depth_batch.size(0))
-                stacked_depth_batch = stacked_depth_batch[indices]
+                stacked_depth_batch = torch.cat((depth_batch, shuffled_depth_batch), dim=0)
+            elif mode == 'random_value':
+                label_val = torch.cat(
+                    [torch.ones(batch_length, device=device), torch.zeros(batch_length, device=device)]).unsqueeze(1)
+                scaled_depth_batch = depth_batch.clone()
+                non_zero_mask = scaled_depth_batch != 0
+                non_zero_values = scaled_depth_batch[non_zero_mask]
+
+                overall_min = non_zero_values.min().item()
+                overall_max = non_zero_values.max().item()
+
+                # Generate random values in the range [overall_min, overall_max] with the same shape as non-zero elements
+                random_values = torch.rand_like(non_zero_values, device=device) * (
+                            overall_max - overall_min) + overall_min
+
+                # Replace the non-zero elements in the batch with the generated random values
+                scaled_depth_batch[non_zero_mask] = random_values
+                left_img_batch = torch.cat((left_img_batch, left_img_batch), dim=0)
+                stacked_depth_batch = torch.cat((depth_batch, scaled_depth_batch), dim=0)
 
             N, C, H, W = left_img_batch.size()
 
@@ -168,6 +186,10 @@ def evaluation(device, data_root, model_cls, perturb_file, mode='labeled'):
     print(f'False Positives: {sum_FP}')
     print(f'False Negatives: {sum_FN}')
 
+    accuracy = (TP+TN)/(TP+TN+FP+FN)
+    precision = TP/(TP+FP)
+    recall = TP/(TP+FN)
+
     # Save FP list to a text file
     with open(fp_output_file, 'w') as f:
         f.write("False Positives (FP):\n")
@@ -188,6 +210,9 @@ def evaluation(device, data_root, model_cls, perturb_file, mode='labeled'):
         f.write("TN(0.5): %i\n" % sum_TN)
         f.write("FP(0.5): %i\n" % sum_FP)
         f.write("FN(0.5): %i\n" % sum_FN)
+        f.write("accuracy(0.5): %i\n" % accuracy)
+        f.write("precision(0.5): %i\n" % precision)
+        f.write("recall(0.5): %i\n" % recall)
         f.write("Precision:\n")
         f.write("%s\n" % results["Precision"])
         f.write("Recall:\n")
