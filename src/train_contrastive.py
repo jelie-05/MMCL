@@ -51,10 +51,10 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     scheduler_gamma = args['optimization']['scheduler_gamma']
 
     data_root = os.path.join(project_root, dataset_path)
-    # train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)
-    # val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file, augmentation=augmentation)
-    train_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
-    val_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
+    train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)
+    val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file, augmentation=augmentation)
+    # train_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
+    # val_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
     train_loader = train_gen.create_data(batch_size, shuffle=True)
     val_loader = val_gen.create_data(batch_size, shuffle=False)
 
