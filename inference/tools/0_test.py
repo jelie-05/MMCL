@@ -51,7 +51,7 @@ class ContrastiveLoss(nn.Module):
 
 
 # Example usage
-batch_size, channels, height, width = 64, 10, 100, 200
+batch_size, channels, height, width = 3, 4, 5, 5
 tensor1 = torch.randn(batch_size, channels, height, width)
 tensor2 = torch.randn(batch_size, channels, height, width)
 labels = torch.randint(0, 2, (batch_size,)).float()  # 0 for dissimilar, 1 for similar pairs

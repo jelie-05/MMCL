@@ -1,11 +1,19 @@
 import argparse
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
 from train_contrastive import main as train_contrastive
 from train_classifier import main as train_cls
 from torch.utils.tensorboard import SummaryWriter
 import yaml
 from tensorboard import program
 from src.utils.save_load_model import load_model_lidar, load_model_img
-import os
+from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
+from src.models.classifier_head import classifier_head
+from src.utils.helper import load_checkpoint
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -21,10 +29,11 @@ parser.add_argument(
 parser.add_argument(
     '--masking', action='store_true', help='enable masking')
 parser.add_argument(
+    '--augmentation', action='store_true', help='enable augmentation for correct calibration')
+parser.add_argument(
     '--model', type=str,
     help='type of model',
     default='mmsiamese')
-
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -37,32 +46,23 @@ if __name__ == "__main__":
     with open(configs_path, 'r') as y_file:
         params = yaml.load(y_file, Loader=yaml.FullLoader)
 
-    # Tensorboard Setup
-    path = "outputs/logs"
-    num_of_runs = len(os.listdir(path)) if os.path.exists(path) else 0
-    path_siamese = os.path.join(path, f'run_{args.name_im}_{num_of_runs + 1}')
-    tb_logger = SummaryWriter(path_siamese)
-    port = 6006
-    tb = program.TensorBoard()
-    tb.configure(argv=[None, '--logdir', path, '--port', str(port)])
-    url = tb.launch()
-    print(f"TensorBoard started at {url}")
-
     # Train Model
-    train_contrastive(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True')
+    # train_contrastive(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True', augmentation=args.augmentation)
 
     # Load pretrained model
-    im_pretrained_path = os.path.join(root, 'outputs/models', args.name_im)
-    lid_pretrained_path = os.path.join(root, 'outputs/models', args.name_lid)
-    im_pretrained = load_model_img(im_pretrained_path)
-    lid_pretrained = load_model_lidar(lid_pretrained_path)
+    name_im = args.save_name + '_im'
+    name_lid = args.save_name + '_lid'
+    im_pretrained_path = os.path.join(root, 'outputs/models', name_im)
+    lid_pretrained_path = os.path.join(root, 'outputs/models', name_lid)
+    im_pretrained = load_model_img(im_pretrained_path).eval()
+    lid_pretrained = load_model_lidar(lid_pretrained_path).eval()
 
-    # Tensorboard Setup
-    num_of_runs = len(os.listdir(path)) if os.path.exists(path) else 0
-    path_cls = os.path.join(path, f'run_{args.name_cls}_cls{num_of_runs + 1}')
-    tb_logger_cls = SummaryWriter(path_cls)
+    path = os.path.join(root, 'outputs/models', 'test_contrastive-latest.pth.tar')
 
-    train_cls(args=params['train_cls'], data_root=kitti_path, tb_logger=tb_logger_cls, pretrained_im=im_pretrained,
-              pretrained_lid=lid_pretrained, name_cls=args.name_cls, pixel_wise=args.pixel_wise, perturb_filename=args.perturbation)
+    model_im, model_lid, model_cls, epoch = load_checkpoint(r_path=path, model_im=resnet18_2B_im(), model_lid=resnet18_2B_lid(), 
+                                                            model_cls=classifier_head(model_im=resnet18_2B_im(), model_lid=resnet18_2B_lid()))
+
+    # train_cls(args=params, project_root=root, pretrained_im=im_pretrained, pretrained_lid=lid_pretrained, save_name=args.save_name, 
+    #           pixel_wise=args.pixel_wise, masking=args.masking, augmentation=args.augmentation)
 
 

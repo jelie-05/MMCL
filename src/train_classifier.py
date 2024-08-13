@@ -16,7 +16,7 @@ def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
 
-def main(args, project_root, pretrained_im, pretrained_lid, save_name, pixel_wise, masking, logger_launch='True'):
+def main(args, project_root, pretrained_im, pretrained_lid, save_name, pixel_wise, masking, augmentation='False'):
 
     if not torch.cuda.is_available():
         device = torch.device('cpu')
@@ -24,12 +24,14 @@ def main(args, project_root, pretrained_im, pretrained_lid, save_name, pixel_wis
         device = torch.device('cuda:0')
         torch.cuda.set_device(device)
 
-    logger = tb_logger(project_root, args, save_name)
+    logger = tb_logger(root=project_root, args=args['logging_cls'], name=save_name)
 
     """ Loader """
     data_root = os.path.join(project_root, args['data']['dataset_path'])
-    train_gen = DataGenerator(data_root, 'train', args['data']['perturbation_file'])
-    val_gen = DataGenerator(data_root, 'val', args['data']['perturbation_file'])
+    # train_gen = DataGenerator(data_root, 'train', args['data']['perturbation_file'], augmentation=augmentation)
+    # val_gen = DataGenerator(data_root, 'val', args['data']['perturbation_file'], augmentation=augmentation)
+    train_gen = DataGenerator(data_root, 'check', args['data']['perturbation_file'], augmentation=augmentation)
+    val_gen = DataGenerator(data_root, 'check', args['data']['perturbation_file'], augmentation=augmentation)
     train_loader = train_gen.create_data(args['data']['batch_size'], shuffle=True)
     val_loader = val_gen.create_data(args['data']['batch_size'], shuffle=False)
 
@@ -40,22 +42,14 @@ def main(args, project_root, pretrained_im, pretrained_lid, save_name, pixel_wis
     model_cls = classifier_head(model_lid=model_lid, model_im=model_im, pixel_wise=pixel_wise).to(device)
 
     """ Optimization """
-    learning_rate = float(args['optimization']['lr'])
-    epochs = int(args['optimization']['epochs'])
+    learning_rate = float(args['optimization_cls']['lr'])
+    epochs = int(args['optimization_cls']['epochs'])
 
     loss_func = nn.BCELoss()
 
     optimizer = torch.optim.Adam(model_cls.parameters(), lr=learning_rate)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args['optimization']['scheduler_step'],
-                                          gamma=args['optimization']['scheduler_gamma'])
-    
-    logger = tb_logger(args, project_root, save_name)
-    if logger_launch:
-        port = 6006
-        tb = program.TensorBoard()
-        tb.configure(argv=[None, '--logdir', args['logging']['rel_path'], '--port', str(port)])
-        url = tb.launch()
-        print(f"TensorBoard started at {url}")
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args['optimization_cls']['scheduler_step'],
+                                          gamma=args['optimization_cls']['scheduler_gamma'])
 
     for epoch in range(epochs):
         training_loss = 0
@@ -92,7 +86,7 @@ def main(args, project_root, pretrained_im, pretrained_lid, save_name, pixel_wis
                                       val_loss="{:.8f}".format(validation_loss))
 
             # Update the tensorboard logger.
-            tb_logger.add_scalar(f'classifier_{save_name}/train_loss', loss.item(),
+            logger.add_scalar(f'classifier_{save_name}/train_loss', loss.item(),
                                  epoch * len(train_loader) + train_iteration)
 
         # Validation stage
@@ -117,18 +111,18 @@ def main(args, project_root, pretrained_im, pretrained_lid, save_name, pixel_wis
                 val_loop.set_postfix(val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)))
 
                 # Update the tensorboard logger.
-                tb_logger.add_scalar(f'classifier_{save_name}/val_loss', loss.item(),
+                logger.add_scalar(f'classifier_{save_name}/val_loss', loss.item(),
                                      epoch * len(val_loader) + val_iteration)
 
         scheduler.step()
 
         training_loss /= len(train_loader)
         validation_loss /= len(val_loader)
-        tb_logger.add_scalar('training_cls_loss_epoch', training_loss,
+        logger.add_scalar('training_cls_loss_epoch', training_loss,
                              epoch)
-        tb_logger.add_scalar('validation_cls_loss_epoch', validation_loss,
+        logger.add_scalar('validation_cls_loss_epoch', validation_loss,
                              epoch)
         # torch.cuda.empty_cache()
 
-    name_cls = save_name + 'cls'
+    name_cls = save_name + '_cls'
     save_model(model_cls, file_name=name_cls)

@@ -11,7 +11,7 @@ class ContrastiveLoss(nn.Module):
     def forward(self, output_im, output_lid, labels, model_im, H, W, pixel_wise, mask):
 
         # L2 Distances of feature embeddings
-        distance = torch.sqrt(torch.sum((output_im - output_lid), dim=1) ** 2)
+        distance = torch.sqrt(torch.sum((output_im - output_lid) ** 2, dim=1))
 
         # Map back each distance back into original size of image/lidar
         if pixel_wise:

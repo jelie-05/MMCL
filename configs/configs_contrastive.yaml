@@ -3,10 +3,19 @@ logging:
   tag: 'contrastive'
 data:
   batch_size: 64
-  perturbation_file: 'perturbation_neg.csv'
+  perturbation_file: 'perturbation_neg_master.csv'
   dataset_path: 'data/kitti'
 optimization:
-  epochs: 50
+  epochs: 6
+  lr: 1e-3
+  margin: 4
+  scheduler_step: 30
+  scheduler_gamma: 0.1
+logging_cls:
+  rel_path: 'outputs/logs'
+  tag: 'classifier'
+optimization_cls:
+  epochs: 6
   lr: 1e-3
   margin: 4
   scheduler_step: 30

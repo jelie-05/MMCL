@@ -13,3 +13,4 @@ tensorboard --logdir outputs/logs --port 6006
 ssh ge93jen@edmonda.cps.cit.tum.de
 /home/ge93jen/jeremialie/data/kitti/kitti
 ln -s /home/ubuntu/Rosbag2/ kitti
+scp -r /home/ubuntu/Documents/students/Jeremialie/MMSiamese/data/kitti ge93jen@edmonda.cps.cit.tum.de:/home/ge93jen/jeremialie/data/kitti
