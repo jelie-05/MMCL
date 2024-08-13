@@ -39,6 +39,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    print(f'project_root: {root}')
     configs_path = os.path.join(root, 'configs', args.config)
     kitti_path = os.path.join(root, 'data', 'kitti')
 
