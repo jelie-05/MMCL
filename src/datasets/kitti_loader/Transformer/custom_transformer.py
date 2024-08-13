@@ -12,10 +12,10 @@ class CustTransformer(BaseTransformer):
     """
     def __init__(self, phase):
         BaseTransformer.__init__(self, phase)
-        if not self.phase in ["train", "test", "val", "check", 'checkval']:
-            raise ValueError("Panic::Invalid phase parameter")
-        else:
-            pass
+        # if not self.phase in ["train", "test", "val", "check", 'checkval']:
+        #     raise ValueError("Panic::Invalid phase parameter")
+        # else:
+        #     pass
 
     def get_joint_transform(self):
         if self.phase == "train" or self.phase == "check":

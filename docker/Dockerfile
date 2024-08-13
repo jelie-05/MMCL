@@ -28,4 +28,6 @@ EXPOSE 8000
 # Run main.py when the container launches
 CMD ["sh", "-c", "python ./inference/train/main.py --name_im 240802_masking_1_image --name_lid 240802_masking_1_lid --name_cls 240802_masking_1_cls --masking --pixel_wise"]
 
+# CUDA_VISIBLE_DEVICES=0 for 2 cudas
+
 #&& python ./inference/eval/precision_recall/main.py --model_im image_240708_full_1 --model_lid lidar_240708_full_1 --name_cls cls_240708_full_1 

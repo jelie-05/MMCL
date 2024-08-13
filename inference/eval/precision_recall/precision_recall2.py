@@ -98,10 +98,10 @@ def evaluation(device, data_root, model_cls, perturb_file, mode='labeled'):
     model_cls.to(device)
     model_cls.eval()
 
-    eval_gen = DataGenerator(data_root, 'check', perturb_filenames=perturb_file, augmentation=False)
-    eval_dataloader = eval_gen.create_data(16)
+    eval_gen = DataGenerator(data_root, 'test_09_26', perturb_filenames=perturb_file, augmentation=False)
+    eval_dataloader = eval_gen.create_data(32)
 
-    num_run = '00_test'
+    num_run = '10_03'
     output_dir = os.path.join(os.path.dirname(__file__), 'outputs_test')
     os.makedirs(output_dir, exist_ok=True)
     fp_output_file = os.path.join(output_dir, f'output_{num_run}_fp.txt')
@@ -210,9 +210,9 @@ def evaluation(device, data_root, model_cls, perturb_file, mode='labeled'):
         f.write("TN(0.5): %i\n" % sum_TN)
         f.write("FP(0.5): %i\n" % sum_FP)
         f.write("FN(0.5): %i\n" % sum_FN)
-        f.write("accuracy(0.5): %i\n" % accuracy)
-        f.write("precision(0.5): %i\n" % precision)
-        f.write("recall(0.5): %i\n" % recall)
+        f.write("accuracy(0.5): %f\n" % accuracy)
+        f.write("precision(0.5): %f\n" % precision)
+        f.write("recall(0.5): %f\n" % recall)
         f.write("Precision:\n")
         f.write("%s\n" % results["Precision"])
         f.write("Recall:\n")
@@ -227,4 +227,4 @@ def evaluation(device, data_root, model_cls, perturb_file, mode='labeled'):
 
     print(f'results are saved in {output_dir}')
 
-    return results
+    return None

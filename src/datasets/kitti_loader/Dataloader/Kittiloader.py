@@ -25,6 +25,10 @@ class Kittiloader(object):
         # read filenames files
         currpath = os.path.dirname(os.path.realpath(__file__))
         filepath = currpath + '/filenames/eigen_{}_files.txt'.format(self.mode)
+        
+        if not os.path.exists(filepath):
+            raise FileNotFoundError(f"The file {filepath} does not exist. Please check the path and try again.")
+        
         with open(filepath, 'r') as f:
             data_list = f.read().split('\n')
             for data in data_list:

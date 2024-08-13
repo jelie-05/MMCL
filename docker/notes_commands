@@ -9,3 +9,7 @@ docker logs mmsiamese-container
 docker exec -t mmsiamese-container
 
 tensorboard --logdir outputs/logs --port 6006
+
+ssh ge93jen@edmonda.cps.cit.tum.de
+/home/ge93jen/jeremialie/data/kitti/kitti
+ln -s /home/ubuntu/Rosbag2/ kitti

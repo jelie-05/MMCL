@@ -46,15 +46,15 @@ class DataGenerator(object):
         self.perturb_filenames = perturb_filenames
         self.augmentation = augmentation
 
-        if not self.phase in ['train', 'test', 'val', 'check', 'checkval']:
-            raise ValueError("Panic::Invalid phase parameter")
-        else:
-            pass
+        # if not self.phase in ['train', 'test', 'val', 'check', 'checkval']:
+        #     raise ValueError("Panic::Invalid phase parameter")
+        # else:
+        #     pass
 
         transformer = CustTransformer(self.phase)
         self.dataset = KittiDataset(KittiDir,
-                                    phase,
-                                    perturb_filenames,
+                                    self.phase,
+                                    self.perturb_filenames,
                                     transformer.get_transform(),
                                     augmentation=self.augmentation)
 

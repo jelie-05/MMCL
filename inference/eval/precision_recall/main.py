@@ -25,7 +25,7 @@ parser.add_argument(
 parser.add_argument(
     '--perturbation', type=str,
     help='filename for perturbation',
-    default='perturbation_neg.csv')
+    default='perturbation_neg_all.csv')
 parser.add_argument(
     '--failure_mode', type=str,
     help='type of failure',
@@ -50,4 +50,4 @@ if __name__ == "__main__":
     PR = evaluation(device=device, data_root=kitti_path, model_cls=cls_pretrained, perturb_file=args.perturbation, mode=args.failure_mode)
     print(PR)
 
-# python3 inference/eval/precision_recall/main.py --name_lid 240725_full_1_lid --name_im 240725_full_1_im --name_cls 240725_full_1_cls
+# /home/ubuntu/Documents/students/Jeremialie/MMSiamese/.venv/bin/python /home/ubuntu/Documents/students/Jeremialie/MMSiamese/inference/eval/precision_recall/main.py
