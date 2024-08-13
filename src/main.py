@@ -2,7 +2,7 @@ import argparse
 import sys
 import os
 
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 from train_contrastive import main as train_contrastive
 from train_classifier import main as train_cls

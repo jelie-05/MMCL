@@ -50,6 +50,7 @@ class Kittiloader(object):
 
     def _check_path(self, filename, err_info):
         file_path = os.path.join(self.kitti_root, filename)
+        print(file_path)
         assert os.path.exists(file_path), err_info
         return file_path
 
