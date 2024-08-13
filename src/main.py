@@ -47,7 +47,7 @@ if __name__ == "__main__":
         params = yaml.load(y_file, Loader=yaml.FullLoader)
 
     # Train Model
-    # train_contrastive(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True', augmentation=args.augmentation)
+    train_contrastive(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True', augmentation=args.augmentation)
 
     # Load pretrained model
     name_im = args.save_name + '_im'
