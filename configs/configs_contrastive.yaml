@@ -6,7 +6,7 @@ data:
   perturbation_file: 'perturbation_neg_master.csv'
   dataset_path: 'data/kitti'
 optimization:
-  epochs: 6
+  epochs: 50
   lr: 1e-3
   margin: 4
   scheduler_step: 30
@@ -15,7 +15,7 @@ logging_cls:
   rel_path: 'outputs/logs'
   tag: 'classifier'
 optimization_cls:
-  epochs: 6
+  epochs: 50
   lr: 1e-3
   margin: 4
   scheduler_step: 30
