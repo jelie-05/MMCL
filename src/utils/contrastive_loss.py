@@ -30,11 +30,11 @@ class ContrastiveLoss(nn.Module):
                 negative_loss = torch.pow(torch.clamp(self.margin - distance_map, min=0.0), 2) * (1 - labels_broadcasted)
                 loss_map = positive_loss + negative_loss
 
-                sum_loss_map = loss_map.sum(dim=(1, 2))
+                # sum_loss_map = loss_map.sum(dim=(1, 2))
 
                 # Avoid division by zero
                 # non_zero_counts[non_zero_counts == 0] = 1
-                non_zero_counts = non_zero_counts.to(distance_map.device)
+                # non_zero_counts = non_zero_counts.to(distance_map.device)
 
                 # loss_contrastive = sum_loss_map / non_zero_counts
                 # loss_contrastive = loss_contrastive.mean()  # Mean over batch

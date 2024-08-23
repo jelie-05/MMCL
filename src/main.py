@@ -33,7 +33,7 @@ parser.add_argument(
 parser.add_argument(
     '--model', type=str,
     help='type of model',
-    default='mmsiamese')
+    default='contrastive')
 
 if __name__ == "__main__":
     args = parser.parse_args()
