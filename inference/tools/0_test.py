@@ -1,64 +1,28 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 
+def patch_wise_analysis(lidar_mask_downsampled, patch_size=4):
+    N, H_dist, W_dist = lidar_mask_downsampled.shape
+    
+    pad_h = (patch_size - H_dist % patch_size) % patch_size
+    pad_w = (patch_size - W_dist % patch_size) % patch_size
+    
+    lidar_mask_padded = F.pad(lidar_mask_downsampled, (0, pad_w, 0, pad_h), mode='constant', value=0)
+    
+    lidar_mask_reshaped = lidar_mask_padded.unfold(1, patch_size, patch_size).unfold(2, patch_size, patch_size)
+    print(lidar_mask_reshaped.shape)
+    
+    patch_has_nonzero = lidar_mask_reshaped.sum(dim=(-1, -2)) > 0
+    
+    patch_result = patch_has_nonzero.float().repeat_interleave(patch_size, dim=-1).repeat_interleave(patch_size, dim=-2)
+    
+    lidar_mask_analyzed_padded = patch_result[:, :H_dist + pad_h, :W_dist + pad_w]
+    
+    lidar_mask_analyzed = lidar_mask_analyzed_padded[:, :H_dist, :W_dist]
+    
+    return lidar_mask_analyzed
 
-class ContrastiveLoss(nn.Module):
-    def __init__(self, margin=1.0):
-        super(ContrastiveLoss, self).__init__()
-        self.margin = margin
+lidar_mask_downsampled = torch.rand(64, 22, 72)
+lidar_mask_analyzed = patch_wise_analysis(lidar_mask_downsampled, patch_size=4)
 
-    def forward(self, tensor1, tensor2, label):
-
-        # Ver 1
-        distances = F.pairwise_distance(tensor1.view(tensor1.size(0), -1), tensor2.view(tensor2.size(0), -1))
-        loss1 = 0.5 * (label * distances.pow(2) + (1 - label) * F.relu(self.margin - distances).pow(2))
-        print(loss1.mean())
-
-        # diff = tensor1 - tensor2  # Step 1: Element-wise difference
-        # squared_diff = diff ** 2  # Step 2: Square the differences
-        # sum_squared_diff = torch.sum(squared_diff, dim=1)
-        # sum_squared_diff = torch.sum(sum_squared_diff, dim=1)
-        # sum_squared_diff = torch.sum(sum_squared_diff, dim=1)
-        # distance = torch.sqrt(sum_squared_diff)
-
-        n,c,h,w = tensor1.shape
-        flattened1 = tensor1.view(n,-1)
-        flattened2 = tensor2.view(n, -1)
-        diff = (flattened1-flattened2) ** 2
-        distance = torch.sqrt(torch.sum(diff, dim=1))
-        print(distance.shape)
-
-        loss = 0.5 * (label * distance.pow(2) + (1 - label) * F.relu(self.margin - distance).pow(2))
-
-        distance2 = torch.sqrt(torch.sum((tensor1 - tensor2) ** 2, dim=1))
-        N, H_dist, W_dist = distance2.shape
-        labels_broadcasted = label.view(N, 1, 1).expand(N, H_dist, W_dist)
-
-        positive_loss = torch.pow(distance2, 2) * labels_broadcasted
-        negative_loss = torch.pow(torch.clamp(self.margin - distance2, min=0.0), 2) * (1 - labels_broadcasted)
-        loss2 = positive_loss + negative_loss
-
-        distance2 = torch.sqrt(torch.sum((tensor1 - tensor2) , dim=1) ** 2)
-        N, H_dist, W_dist = distance2.shape
-        labels_broadcasted = label.view(N, 1, 1).expand(N, H_dist, W_dist)
-
-        positive_loss = torch.pow(distance2, 2) * labels_broadcasted
-        negative_loss = torch.pow(torch.clamp(self.margin - distance2, min=0.0), 2) * (1 - labels_broadcasted)
-        loss3 = positive_loss + negative_loss
-
-        return loss.mean(), loss2.mean(), loss3.mean()
-
-
-# Example usage
-batch_size, channels, height, width = 3, 4, 5, 5
-tensor1 = torch.randn(batch_size, channels, height, width)
-tensor2 = torch.randn(batch_size, channels, height, width)
-labels = torch.randint(0, 2, (batch_size,)).float()  # 0 for dissimilar, 1 for similar pairs
-
-contrastive_loss = ContrastiveLoss(margin=1.0)
-loss, loss2, loss3 = contrastive_loss(tensor1, tensor2, labels)
-
-print("Contrastive Loss:", loss.item())
-print("Contrastive Loss:", loss2.item())
-print("Contrastive Loss:", loss3.item())
+print(lidar_mask_analyzed.shape)
