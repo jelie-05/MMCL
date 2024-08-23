@@ -5,3 +5,4 @@ data/kitti/2011_09_30
 data/kitti/2011_10_03
 outputs/models/done
 archieve/outputs/models
+outputs_gpu
