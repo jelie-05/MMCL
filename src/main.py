@@ -49,6 +49,11 @@ if __name__ == "__main__":
     with open(configs_path, 'r') as y_file:
         params = yaml.load(y_file, Loader=yaml.FullLoader)
 
+    if args.classifier:
+        print('Training the classifier')
+    else:
+        print('Not training the classifier')
+
     # Train Model
     train_contrastive(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True', 
                       augmentation=args.augmentation, train_classifier=args.classifier)
