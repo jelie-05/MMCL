@@ -5,7 +5,6 @@ from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.models.classifier_head import classifier_head
 from src.datasets.kitti_loader.dataset_2D import DataGenerator
 from src.utils.contrastive_loss import ContrastiveLoss as CL
-from src.utils.cosine_similarity import CosineSim as CS
 from src.utils.helper import gen_mixed_data
 from src.utils.logger import tb_logger
 from src.utils.save_load_model import save_model

@@ -1,4 +1,5 @@
 from torchvision.models import resnet18
+import torch.nn.functional as F
 import torch
 import sys
 import os
@@ -10,27 +11,10 @@ from src.datasets.kitti_loader.dataset_2D import DataGenerator
 import numpy as np
 import matplotlib.pyplot as plt
 from src.utils.save_load_model import load_model_lidar, load_model_img
+from src.utils.helper import load_checkpoint
+from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
+from src.models.classifier_head import classifier_head
 
-device = torch.device("cuda:0")
-root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-kitti_path = os.path.join(root, 'data', 'kitti')
-
-# Load pretrained model
-# im_pretrained_path = os.path.join(root, 'outputs/models', "image_240719_full_1")
-# lid_pretrained_path = os.path.join(root, 'outputs/models', "lidar_240719_full_1")
-im_pretrained_path = os.path.join(root, 'outputs/models', "240725_full_1_image")
-lid_pretrained_path = os.path.join(root, 'outputs/models', "240725_full_1_lid")
-im_pretrained = load_model_img(im_pretrained_path)
-lid_pretrained = load_model_lidar(lid_pretrained_path)
-
-model_im = im_pretrained.to(device)
-model_lid = lid_pretrained.to(device)
-
-eval_gen = DataGenerator(kitti_path, 'check', perturb_filenames="perturbation_neg.csv")
-eval_dataloader = eval_gen.create_data(8)
-
-masking = False
-pixel_wise = False
 
 def lidar_scatter(lidar):
     lidar = lidar.permute(1, 2, 0).cpu().numpy()
@@ -106,6 +90,56 @@ def loss_map(output_im, output_lid, model_im, H, W, pixel_wise, mask):
 
     return loss_contrastive, loss_contrastive_nomask, distance_map
 
+def patch_wise_analysis(image, mask, patch_size=4):
+    mask = mask.unsqueeze(0)
+    N, C, H, W = mask.shape
+    
+    # Reshape the mask into patches of size 4x4
+    mask_reshaped = mask.unfold(2, patch_size, patch_size).unfold(3, patch_size, patch_size)
+    
+    # Check if each patch has at least one non-zero value
+    patch_has_nonzero = mask_reshaped.sum(dim=(-1, -2)) > 0
+    
+    # Expand the result back to the original size
+    patch_result = patch_has_nonzero.float().repeat_interleave(patch_size, dim=-1).repeat_interleave(patch_size, dim=-2)
+    
+    # Reshape back to the original mask size
+    lidar_mask_analyzed = patch_result.view(N, C, H, W).squeeze(0)
+
+    values_store_mask = lidar_scatter(lidar_mask_analyzed)
+    img_np1 = image.permute(1, 2, 0).cpu().numpy()
+    plt.figure(figsize=(15, 4.8))
+    plt.imshow(img_np1, alpha=0.0)
+    plt.scatter(values_store_mask[:, 0], values_store_mask[:, 1], c=values_store_mask[:, 2], cmap='grey', alpha=0.5,
+                s=5)
+    plt.xticks([])
+    plt.yticks([])
+    plt.tight_layout()
+    plt.show()
+    
+    return lidar_mask_analyzed
+
+
+device = torch.device("cuda:0")
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+kitti_path = os.path.join(root, 'data', 'kitti')
+
+# Load pretrained model
+save_name = '240813'
+path = os.path.join(root, 'outputs_gpu', 'outputs/models', f'{save_name}_contrastive-latest.pth.tar')
+
+im_pretrained, lid_pretrained, cls_pretrained, epoch = load_checkpoint(r_path=path, model_im=resnet18_2B_im(), model_lid=resnet18_2B_lid(), 
+                                                            model_cls=classifier_head(model_im=resnet18_2B_im(), model_lid=resnet18_2B_lid()))
+
+model_im = im_pretrained.to(device)
+model_lid = lid_pretrained.to(device)
+
+eval_gen = DataGenerator(kitti_path, 'check', perturb_filenames="perturbation_neg_master.csv")
+eval_dataloader = eval_gen.create_data(8)
+
+masking = False
+pixel_wise = False
+
 model_im.eval()
 model_lid.eval()
 
@@ -124,7 +158,7 @@ with torch.no_grad():
         lid_pos_sample = depth_batch[i]
 
         # Normal Negative Sample (pertubated)
-        # lid_neg_sample = depth_neg[i]
+        lid_neg_sample = depth_neg[i]
 
         # Patched
         # lid_neg_sample = depth_batch[i].clone()
@@ -135,10 +169,14 @@ with torch.no_grad():
         # lid_neg_sample[:, 75:125,75:250] = 0.2 * lid_neg_sample[:, 75:125,75:250]
 
         # Random Assigned
-        lid_neg_sample = depth_batch[i+2]
+        # lid_neg_sample = depth_batch[i+2]
         # print(f"file name: {name[i]}")
 
         image_lidar_visualization(image=image_sample, lid_pos=lid_pos_sample, lid_neg=lid_neg_sample)
+        
+        mask = (depth_batch != 0.0).int()
+        mask_sample = mask[i]
+        patch_wise_analysis(image=image_sample, mask=mask_sample)
 
         # Prediction & Backpropagation
         pred_im = model_im.forward(image_sample.unsqueeze(0))
@@ -191,40 +229,40 @@ with torch.no_grad():
         # Analyzing the embedding layers accross channel
         channel_embeddings = pred_im.size()[1]
 
-        # for i in range(channel_embeddings):
-        #     torch.set_printoptions(profile="full")
-        #     feature_im1 = pred_im[0,i,:,:]
-        #     feature_lid1 = pred_lid[0,i,:,:]
-        #     feature_lid1_neg = pred_neg[0,i,:,:]
+        for i in range(channel_embeddings):
+            torch.set_printoptions(profile="full")
+            feature_im1 = pred_im[0,i,:,:]
+            feature_lid1 = pred_lid[0,i,:,:]
+            feature_lid1_neg = pred_neg[0,i,:,:]
             
-        #     feature_im1_np = feature_im1.cpu().numpy()
-        #     feature_lid1_np = feature_lid1.cpu().numpy()
-        #     feature_lid1_np_neg = feature_lid1_neg.cpu().numpy()
+            feature_im1_np = feature_im1.cpu().numpy()
+            feature_lid1_np = feature_lid1.cpu().numpy()
+            feature_lid1_np_neg = feature_lid1_neg.cpu().numpy()
 
             
-        #     print(f'image: {feature_im1}')
-        #     print(f'lidar pos: {feature_lid1}')
-        #     print(f'lidar neg: {feature_lid1_neg}')
+            print(f'image: {feature_im1}')
+            print(f'lidar pos: {feature_lid1}')
+            print(f'lidar neg: {feature_lid1_neg}')
 
-        #     max_value = (max(max(np.max(feature_lid1_np), np.max(feature_im1_np)), np.max(feature_lid1_np_neg)))
+            max_value = (max(max(np.max(feature_lid1_np), np.max(feature_im1_np)), np.max(feature_lid1_np_neg)))
 
-        #     plt.figure(figsize=(15, 6))  
-        #     plt.imshow(feature_im1_np, cmap='viridis', vmin=0, vmax=max_value)  
-        #     plt.axis('off') 
-        #     plt.text(0.5, -0.1, f'image, max:{max_value:.3f}, layer:{i+1}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=25)
-        #     plt.tight_layout()  
-        #     plt.show()
+            plt.figure(figsize=(15, 6))  
+            plt.imshow(feature_im1_np, cmap='viridis', vmin=0, vmax=max_value)  
+            plt.axis('off') 
+            plt.text(0.5, -0.1, f'image, max:{max_value:.3f}, layer:{i+1}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=25)
+            plt.tight_layout()  
+            plt.show()
             
-        #     plt.figure(figsize=(15, 6))  
-        #     plt.imshow(feature_lid1_np, cmap='viridis', vmin=0, vmax=max_value)  
-        #     plt.axis('off') 
-        #     plt.text(0.5, -0.1, f'lidar pos, max:{max_value:.3f}, layer:{i+1}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=25)
-        #     plt.tight_layout()  
-        #     plt.show()
+            plt.figure(figsize=(15, 6))  
+            plt.imshow(feature_lid1_np, cmap='viridis', vmin=0, vmax=max_value)  
+            plt.axis('off') 
+            plt.text(0.5, -0.1, f'lidar pos, max:{max_value:.3f}, layer:{i+1}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=25)
+            plt.tight_layout()  
+            plt.show()
 
-        #     plt.figure(figsize=(15, 6))  
-        #     plt.imshow(feature_lid1_np_neg, cmap='viridis', vmin=0, vmax=max_value)  
-        #     plt.axis('off') 
-        #     plt.text(0.5, -0.1, f'lidar neg, max:{max_value:.3f}, layer:{i+1}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=25)
-        #     plt.tight_layout()  
-        #     plt.show()
+            plt.figure(figsize=(15, 6))  
+            plt.imshow(feature_lid1_np_neg, cmap='viridis', vmin=0, vmax=max_value)  
+            plt.axis('off') 
+            plt.text(0.5, -0.1, f'lidar neg, max:{max_value:.3f}, layer:{i+1}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=25)
+            plt.tight_layout()  
+            plt.show()

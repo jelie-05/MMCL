@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 from train_contrastive import main as train_contrastive
-from train_classifier import main as train_cls
+
 from torch.utils.tensorboard import SummaryWriter
 import yaml
 from tensorboard import program
@@ -31,6 +31,8 @@ parser.add_argument(
 parser.add_argument(
     '--augmentation', action='store_true', help='enable augmentation for correct calibration')
 parser.add_argument(
+    '--classifier', action='store_true', help='training directly classifier')
+parser.add_argument(
     '--model', type=str,
     help='type of model',
     default='contrastive')
@@ -47,9 +49,14 @@ if __name__ == "__main__":
     with open(configs_path, 'r') as y_file:
         params = yaml.load(y_file, Loader=yaml.FullLoader)
 
+    if args.classifier:
+        print('Training the classifier')
+    else:
+        print('Not training the classifier')
+
     # Train Model
-    if args.model == 'contrastive':
-        train_contrastive(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True', augmentation=args.augmentation)
+    train_contrastive(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True', 
+                      augmentation=args.augmentation, train_classifier=args.classifier)
 
     # Load pretrained model
     name_im = args.save_name + '_im'
@@ -59,7 +66,7 @@ if __name__ == "__main__":
     im_pretrained = load_model_img(im_pretrained_path).eval()
     lid_pretrained = load_model_lidar(lid_pretrained_path).eval()
 
-    path = os.path.join(root, 'outputs/models', 'test_contrastive-latest.pth.tar')
+    path = os.path.join(root, 'outputs/models', f'{args.save_name}_contrastive-latest.pth.tar')
 
     model_im, model_lid, model_cls, epoch = load_checkpoint(r_path=path, model_im=resnet18_2B_im(), model_lid=resnet18_2B_lid(), 
                                                             model_cls=classifier_head(model_im=resnet18_2B_im(), model_lid=resnet18_2B_lid()))
