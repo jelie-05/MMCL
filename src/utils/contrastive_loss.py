@@ -39,7 +39,7 @@ class ContrastiveLoss(nn.Module):
             # Reshape back to the original mask size
             mask_analyzed = patch_result.view(N, 1, H, W)
             
-            lidar_mask_downsampled = F.interpolate(mask_analyzed, size=(H_dist, W_dist), mode='nearest').squeeze(1)
+            # lidar_mask_downsampled = F.interpolate(mask_analyzed, size=(H_dist, W_dist), mode='nearest').squeeze(1)
 
             # torch.set_printoptions(profile='full')
             # print(lidar_mask_downsampled[1,:,:])
