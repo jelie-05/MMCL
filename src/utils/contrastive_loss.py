@@ -5,36 +5,32 @@ import torch.nn.functional as F
 
 
 class ContrastiveLoss(nn.Module):
-    def __init__(self, margin=4.0):
+    def __init__(self, margin=4.0, patch_size=16):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
+        self.patch_size = patch_size
+
 
     def forward(self, output_im, output_lid, labels, model_im, H, W, pixel_wise, mask):
-
         # L2 Distances of feature embeddings
         distance = torch.sqrt(torch.sum((output_im - output_lid) ** 2, dim=1))
 
-        # Map back each distance back into original size of image/lidar
         if pixel_wise:
-           
-            distance = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance.unsqueeze(1),
-                                                input_image_size=(H, W))
+            distance = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance.unsqueeze(1), input_image_size=(H, W))
             distance = distance.assign_embedding_value().squeeze(1)
             N, H_dist, W_dist = distance.shape
             labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)
 
             mask = mask.float()
-
-            patch_size = 16
             
             # Reshape the mask into patches of size 4x4
-            mask_reshaped = mask.unfold(2, patch_size, patch_size).unfold(3, patch_size, patch_size)
+            mask_reshaped = mask.unfold(2, self.patch_size, self.patch_size).unfold(3, self.patch_size, self.patch_size)
             
             # Check if each patch has at least one non-zero value
             patch_has_nonzero = mask_reshaped.sum(dim=(-1, -2)) > 0
             
             # Expand the result back to the original size
-            patch_result = patch_has_nonzero.float().repeat_interleave(patch_size, dim=-1).repeat_interleave(patch_size, dim=-2)
+            patch_result = patch_has_nonzero.float().repeat_interleave(self.patch_size, dim=-1).repeat_interleave(self.patch_size, dim=-2)
             
             # Reshape back to the original mask size
             mask_analyzed = patch_result.view(N, 1, H, W)

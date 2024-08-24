@@ -45,7 +45,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     """ Optimization """
     learning_rate = float(args['optimization']['lr'])
     epochs = int(args['optimization']['epochs'])
-    loss_func = CL(margin=args['optimization']['margin'])
+    loss_func = CL(margin=args['optimization']['margin'], patch_size=args['optimization']['patch_size'])
     scheduler_step = args['optimization']['scheduler_step']
     scheduler_gamma = args['optimization']['scheduler_gamma']
 
