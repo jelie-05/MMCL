@@ -7,7 +7,7 @@ data:
   dataset_path: 'data/kitti'
 optimization:
   epochs: 70
-  lr: 1e-3
+  lr: 5e-4
   margin: 4
   scheduler_step: 30
   scheduler_gamma: 0.1
@@ -16,7 +16,7 @@ logging_cls:
   tag: 'classifier'
 optimization_cls:
   epochs: 70
-  lr: 1e-3
+  lr: 5e-4
   margin: 4
   scheduler_step: 30
   scheduler_gamma: 0.1
