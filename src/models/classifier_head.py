@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-from torchvision.models import resnet18
-from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
+
 
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
