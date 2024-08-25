@@ -16,8 +16,8 @@ class ContrastiveLoss(nn.Module):
         distance = torch.sqrt(torch.sum((output_im - output_lid) ** 2, dim=1))
 
         if pixel_wise:
-            distance = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance.unsqueeze(1), input_image_size=(H, W))
-            distance = distance.assign_embedding_value().squeeze(1)
+            # distance = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance.unsqueeze(1), input_image_size=(H, W))
+            # distance = distance.assign_embedding_value().squeeze(1)
             N, H_dist, W_dist = distance.shape
             labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)
 
@@ -35,12 +35,12 @@ class ContrastiveLoss(nn.Module):
             # Reshape back to the original mask size
             mask_analyzed = patch_result.view(N, 1, H, W)
             
-            # lidar_mask_downsampled = F.interpolate(mask_analyzed, size=(H_dist, W_dist), mode='nearest').squeeze(1)
+            mask_analyzed = F.interpolate(mask_analyzed, size=(H_dist, W_dist), mode='nearest').squeeze(1)
 
             # torch.set_printoptions(profile='full')
-            # print(lidar_mask_downsampled[1,:,:])
+            # print(mask_analyzed[1,:,:])
 
-            # M_norm = lidar_mask_downsampled.sum(dim=(1, 2), keepdim=True)  # Shape: (N, 1, 1)
+            # M_norm = mask_analyzed.sum(dim=(1, 2), keepdim=True)  # Shape: (N, 1, 1)
             # epsilon = 1e-8
             # M_norm = M_norm + epsilon
 
