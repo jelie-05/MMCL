@@ -37,8 +37,9 @@ class ContrastiveLoss(nn.Module):
             #
             # # mask_analyzed = F.interpolate(mask_analyzed, size=(H_dist, W_dist), mode='nearest').squeeze(1)
 
-            mask_analyzed = mask
-            distance_final = distance * mask_analyzed
+            # distance_final = distance * mask_analyzed
+
+            distance_final = distance
 
             positive_loss = torch.pow(distance_final, 2) * labels_broadcasted
             negative_loss = torch.pow(torch.clamp(self.margin - distance_final, min=0.0), 2) * (1 - labels_broadcasted)
