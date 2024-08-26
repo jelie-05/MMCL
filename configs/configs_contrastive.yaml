@@ -10,7 +10,7 @@ optimization:
   lr: 1e-3
   margin: 4
   patch_size: 16
-  scheduler_step: 10
+  scheduler_step: 30
   scheduler_gamma: 0.2
 logging_cls:
   rel_path: 'outputs/logs'
