@@ -207,9 +207,11 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
 
         scheduler_step_cls = args['optimization_cls']['scheduler_step']
         scheduler_gamma_cls = args['optimization_cls']['scheduler_gamma']
+        weight_decay_cls = args['optimization_cls']['weight_decay']
 
         model_cls = classifier_head(model_im=trained_enc_im, model_lid=trained_enc_lid, pixel_wise=pixel_wise).to(device)
-        optimizer = torch.optim.Adam(model_cls.parameters(), lr=learning_rate)
+        optimizer = torch.optim.AdamW(model_cls.parameters(), lr=learning_rate, weight_decay=weight_decay_cls)
+        # optimizer = torch.optim.Adam(model_cls.parameters(), lr=learning_rate)
         scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_step_cls, gamma=scheduler_gamma_cls)
         save_path_cls = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag_cls}' + '-ep{epoch}.pth.tar')
 
