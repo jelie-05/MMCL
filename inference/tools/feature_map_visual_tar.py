@@ -143,8 +143,8 @@ if __name__ == "__main__":
     save_name = '240813'
     path = os.path.join(root, 'outputs_gpu', 'outputs/models', f'{save_name}_contrastive-latest.pth.tar')
 
-    im_pretrained, lid_pretrained, cls_pretrained, epoch = load_checkpoint(r_path=path, model_im=resnet18_2B_im(), model_lid=resnet18_2B_lid(),
-                                                                model_cls=classifier_head(model_im=resnet18_2B_im(), model_lid=resnet18_2B_lid()))
+    im_pretrained, lid_pretrained, cls_pretrained, epoch = load_checkpoint(r_path=path, encoder_im=resnet18_2B_im(), encoder_lid=resnet18_2B_lid(),
+                                                                           model_cls=classifier_head(model_im=resnet18_2B_im(), model_lid=resnet18_2B_lid()))
 
     model_im = im_pretrained.to(device)
     model_lid = lid_pretrained.to(device)
