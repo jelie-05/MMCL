@@ -1,25 +1,27 @@
 import torch
+import src.models.resnet as resnet
+from src.models.classifier_head import classifier_head as classifier
 
 def load_checkpoint(
     r_path,
-    model_im,
-    model_lid,
-    model_cls,
+    encoder_im,
+    encoder_lid,
+    opt_im,
+    opt_lid
 ):
     checkpoint = torch.load(r_path, map_location=torch.device('cpu'))
     epoch = checkpoint['epoch']
 
-    pretrained_dict = checkpoint['model_im']
-    msg = model_im.load_state_dict(pretrained_dict)
+    pretrained_im = checkpoint['encoder_im']
+    msg = encoder_im.load_state_dict(pretrained_im)
     print(f'loaded pretrained encoder from epoch {epoch} with msg: {msg}')
 
-    pretrained_dict = checkpoint['model_lid']
-    msg = model_lid.load_state_dict(pretrained_dict)
+    pretrained_lid = checkpoint['encoder_lid']
+    msg = encoder_lid.load_state_dict(pretrained_lid)
     print(f'loaded pretrained encoder from epoch {epoch} with msg: {msg}')
 
-    pretrained_dict = checkpoint['model_cls']  # corrected this line
-    msg = model_cls.load_state_dict(pretrained_dict)
-    print(f'loaded pretrained encoder from epoch {epoch} with msg: {msg}')
+    opt_im.load_state_dict(checkpoint['optimizer_im'])
+    opt_lid.load_state_dict(checkpoint['optimizer_lid'])
 
     print(f'read-path: {r_path}')
     del checkpoint
@@ -28,7 +30,29 @@ def load_checkpoint(
     #     print(f'Encountered exception when loading checkpoint {e}')
     #     epoch = 0
 
-    return model_im, model_lid, model_cls, epoch
+    return encoder_im, encoder_lid, opt_im, opt_lid, epoch
+
+def load_checkpoint_cls(
+    r_path,
+    classifier
+):
+    checkpoint = torch.load(r_path, map_location=torch.device('cpu'))
+    epoch = checkpoint['epoch']
+
+    pretrained_dict = checkpoint['classifier']
+    msg = classifier.load_state_dict(pretrained_dict)
+    print(f'loaded pretrained encoder from epoch {epoch} with msg: {msg}')
+
+    # opt.load_state_dict(checkpoint['opt'])
+
+    print(f'read-path: {r_path}')
+    del checkpoint
+
+    # except Exception as e:
+    #     print(f'Encountered exception when loading checkpoint {e}')
+    #     epoch = 0
+
+    return classifier, epoch
 
 
 def gen_mixed_data(depth_batch, depth_batch_neg, device, masking):
@@ -52,3 +76,30 @@ def gen_mixed_data(depth_batch, depth_batch_neg, device, masking):
         stacked_mask = None
 
     return stacked_depth_batch, label_list, stacked_mask
+
+
+def init_model(
+        device,
+        mode='resnet',
+        model_name='resnet18_small',
+        patch_size=16,
+        crop_size=224,
+        pred_emb_dim=384
+):
+    if mode == 'resnet':
+        model_name_im = model_name+'_im'
+        model_name_lid = model_name + '_lid'
+        encoder_im = resnet.__dict__[model_name_im]().to(device)
+        encoder_lid = resnet.__dict__[model_name_lid]().to(device)
+    else:
+        model_name_im = model_name+'_im'
+        model_name_lid = model_name + '_lid'
+        encoder_im = resnet.__dict__[model_name_im]().to(device)
+        encoder_lid = resnet.__dict__[model_name_lid]().to(device)
+
+    return encoder_im, encoder_lid
+
+def init_opt(
+        encoder
+):
+    print('no')

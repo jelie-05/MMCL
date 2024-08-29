@@ -5,7 +5,7 @@ from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.models.classifier_head import classifier_head
 from src.datasets.kitti_loader.dataset_2D import DataGenerator
 from src.utils.contrastive_loss import ContrastiveLoss as CL
-from src.utils.helper import gen_mixed_data
+from src.utils.helper import gen_mixed_data, init_model, load_checkpoint
 from src.utils.logger import tb_logger
 from src.utils.save_load_model import save_model
 import torch.optim as optim
@@ -21,34 +21,31 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
 
     if not torch.cuda.is_available():
         device = torch.device('cpu')
+        print('cuda is not available')
     else:
         device = torch.device('cuda:0')
         torch.cuda.set_device(device)
 
+    # LOGGING
     logger = tb_logger(args['logging'], project_root, save_name)
-    
     if logger_launch:
         port = 6006
         tb = program.TensorBoard()
         tb.configure(argv=[None, '--logdir', args['logging']['rel_path'], '--port', str(port)])
         url = tb.launch()
         print(f"TensorBoard started at {url}")
-
     checkpoint_freq = 2
     tag = args['logging']['tag']
     tag_cls = args['logging_cls']['tag']
+    save_path = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag}' + '-ep{epoch}.pth.tar')
+    latest_path = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag}-latest.pth.tar')
+    # --
 
+    # DATA
     batch_size = args['data']['batch_size']
     dataset_path = args['data']['dataset_path']
     perturbation_file = args['data']['perturbation_file']
-
-    """ Optimization """
-    learning_rate = float(args['optimization']['lr'])
-    epochs = int(args['optimization']['epochs'])
-    loss_func = CL(margin=args['optimization']['margin'], patch_size=args['optimization']['patch_size'])
-    scheduler_step = args['optimization']['scheduler_step']
-    scheduler_gamma = args['optimization']['scheduler_gamma']
-
+    # --
     data_root = os.path.join(project_root, dataset_path)
     train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)
     val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file, augmentation=augmentation)
@@ -56,35 +53,40 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     # val_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
     train_loader = train_gen.create_data(batch_size, shuffle=True)
     val_loader = val_gen.create_data(batch_size, shuffle=False)
+    # --
 
-    model_im = resnet18_2B_im().to(device)
-    model_lid = resnet18_2B_lid().to(device)
-    model_cls = classifier_head(model_lid=model_lid, model_im=model_im, pixel_wise=pixel_wise).to(device)
+    # MODEL
+    backbone = args['meta']['backbone']
+    model_name = args['meta']['model_name']
+    encoder_im, encoder_lid = init_model(device=device, mode=backbone, model_name=model_name)
+    # print(encoder_im)
+    # --
 
-    optimizer_im = torch.optim.Adam(model_im.parameters(), learning_rate)
-    scheduler_im = optim.lr_scheduler.StepLR(optimizer_im, step_size=scheduler_step,
-                                             gamma=scheduler_gamma)
+    # Optimization
+    epochs = int(args['optimization']['epochs'])
+    learning_rate = float(args['optimization']['lr'])
+    weight_decay = float(args['optimization']['weight_decay'])
+    margin = args['optimization']['margin']
+    scheduler_step = args['optimization']['scheduler_step']
+    scheduler_gamma = args['optimization']['scheduler_gamma']
+    # --
+    loss_func = CL(margin=margin, patch_size=args['optimization']['patch_size'])
 
-    optimizer_lid = torch.optim.Adam(model_lid.parameters(), learning_rate)
-    scheduler_lid = optim.lr_scheduler.StepLR(optimizer_lid, step_size=scheduler_step,
-                                              gamma=scheduler_gamma)
-    
-    optimizer = torch.optim.Adam(model_cls.parameters(), lr=learning_rate)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args['optimization_cls']['scheduler_step'],
-                                        gamma=args['optimization_cls']['scheduler_gamma'])
+    # optimizer_im = torch.optim.Adam(encoder_im.parameters(), learning_rate)
+    # optimizer_lid = torch.optim.Adam(encoder_lid.parameters(), learning_rate)
+    optimizer_im = torch.optim.AdamW(encoder_im.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    optimizer_lid = torch.optim.AdamW(encoder_lid.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-    save_path = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag}' + '-ep{epoch}.pth.tar')
-    save_path_cls = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag_cls}' + '-ep{epoch}.pth.tar')
-    latest_path = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag}-latest.pth.tar')
+    scheduler_im = optim.lr_scheduler.StepLR(optimizer_im, step_size=scheduler_step, gamma=scheduler_gamma)
+    scheduler_lid = optim.lr_scheduler.StepLR(optimizer_lid, step_size=scheduler_step, gamma=scheduler_gamma)
+    # --
 
     def save_checkpoint(epoch, curr_loss, tag='contrastive'):
         save_dict = {
-            'model_im': model_im.state_dict(),
-            'model_lid': model_lid.state_dict(),
-            'model_cls': model_cls.state_dict(),
+            'encoder_im': encoder_im.state_dict(),
+            'encoder_lid': encoder_lid.state_dict(),
             'optimizer_im': optimizer_im.state_dict(),
             'optimizer_lid': optimizer_lid.state_dict(),
-            'optimizer_cls': optimizer.state_dict(),
             'epoch': epoch,
             'train_loss': curr_loss,
             'batch_size': batch_size,
@@ -103,8 +105,8 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
         validation_loss = 0
 
         # Training stage: set the model to training mode
-        model_im.train()
-        model_lid.train()
+        encoder_im.train()
+        encoder_lid.train()
 
         training_loop = create_tqdm_bar(train_loader, desc=f'Training Epoch [{epoch + 1}/{epochs}]')
 
@@ -119,14 +121,14 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
             stacked_depth_batch, label_list, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
 
             # Prediction & Backpropagation
-            pred_im = model_im.forward(left_img_batch)
-            pred_lid = model_lid.forward(stacked_depth_batch)
+            pred_im = encoder_im.forward(left_img_batch)
+            pred_lid = encoder_lid.forward(stacked_depth_batch)
 
             # For pixel-wise comparison
             N, C, H, W = left_img_batch.size()
 
             # Calculating the loss
-            loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=model_im, H=H, W=W,
+            loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=encoder_im, H=H, W=W,
                              pixel_wise=pixel_wise, mask=stacked_mask)
             loss.backward()
             optimizer_im.step()
@@ -148,8 +150,8 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
         save_checkpoint(epoch, training_loss)
 
         # Validation stage
-        model_im.eval()
-        model_lid.eval()
+        encoder_im.eval()
+        encoder_lid.eval()
         val_loop = create_tqdm_bar(val_loader, desc=f'Validation Epoch [{epoch + 1}/{epochs}]')
 
         with torch.no_grad():
@@ -161,11 +163,11 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
 
                 stacked_depth_val, label_val, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
 
-                pred_im = model_im.forward(left_img_batch)
-                pred_lid = model_lid.forward(stacked_depth_val)
+                pred_im = encoder_im.forward(left_img_batch)
+                pred_lid = encoder_lid.forward(stacked_depth_val)
 
                 N, C, H, W = left_img_batch.size()
-                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_val, model_im=model_im,
+                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_val, model_im=encoder_im,
                                      H=H, W=W, pixel_wise=pixel_wise, mask=stacked_mask)
                 validation_loss += loss_val.item()
 
@@ -184,15 +186,33 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
         scheduler_im.step()
         scheduler_lid.step()
         
-    save_name_im = save_name + '_im'
-    save_name_lid = save_name + '_lid'
-    save_model(model_im, file_name=save_name_im)
-    save_model(model_lid, file_name=save_name_lid)
+    # save_name_im = save_name + '_im'
+    # save_name_lid = save_name + '_lid'
+    # save_model(encoder_im, file_name=save_name_im)
+    # save_model(encoder_lid, file_name=save_name_lid)
 
 
     if train_classifier:
-        model_im.to(device).eval()
-        model_lid.to(device).eval()
+        trained_enc_im, trained_enc_lid = init_model(device=device,
+                                                     mode=backbone,
+                                                     model_name=model_name)
+        trained_enc_im, trained_enc_lid, opt_im, opt_lid, epoch = load_checkpoint(latest_path,
+                                                                                  encoder_im=trained_enc_im,
+                                                                                  encoder_lid=trained_enc_lid,
+                                                                                  opt_lid=optimizer_lid,
+                                                                                  opt_im=optimizer_im)
+
+        trained_enc_im.to(device).eval()
+        trained_enc_lid.to(device).eval()
+
+        scheduler_step_cls = args['optimization_cls']['scheduler_step']
+        scheduler_gamma_cls = args['optimization_cls']['scheduler_gamma']
+
+        model_cls = classifier_head(model_im=trained_enc_im, model_lid=trained_enc_lid, pixel_wise=pixel_wise).to(device)
+        optimizer = torch.optim.Adam(model_cls.parameters(), lr=learning_rate)
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_step_cls, gamma=scheduler_gamma_cls)
+        save_path_cls = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag_cls}' + '-ep{epoch}.pth.tar')
+
         logger = tb_logger(root=project_root, args=args['logging_cls'], name=save_name)
 
         """ Optimization """
@@ -200,6 +220,23 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
         epochs = int(args['optimization_cls']['epochs'])
 
         loss_func = nn.BCELoss()
+
+        def save_checkpoint_cls(epoch, curr_loss, tag='contrastive'):
+            save_dict = {
+                'classifier': model_cls.state_dict(),
+                'opt': optimizer.state_dict(),
+                'epoch': epoch,
+                'train_loss': curr_loss,
+                'batch_size': batch_size,
+                'lr': learning_rate,
+                'train_cls': train_classifier
+            }
+            torch.save(save_dict, latest_path)
+            if (epoch + 1) % checkpoint_freq == 0:
+                if tag == 'contrastive':
+                    torch.save(save_dict, save_path.format(epoch=f'{epoch + 1}'))
+                else:
+                    torch.save(save_dict, save_path_cls.format(epoch=f'{epoch + 1}'))
 
         for epoch in range(epochs):
             cls_training_loss = 0
@@ -242,7 +279,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
             cls_training_loss /= len(train_loader)
             logger.add_scalar('training_cls_loss_epoch', cls_training_loss,
                                 epoch)
-            save_checkpoint(epoch, cls_training_loss, tag=tag_cls)
+            save_checkpoint_cls(epoch, cls_training_loss, tag=tag_cls)
             # Validation stage
             model_cls.eval()
             val_loop = create_tqdm_bar(val_loader, desc=f'Validation Epoch [{epoch + 1}/{epochs}]')
@@ -276,7 +313,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                                 epoch)
             # torch.cuda.empty_cache()
 
-        name_cls = save_name + '_cls'
-        save_model(model_cls, file_name=name_cls)
+        # name_cls = save_name + '_cls'
+        # save_model(model_cls, file_name=name_cls)
 
         

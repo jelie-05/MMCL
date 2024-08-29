@@ -4,15 +4,13 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
-from train_contrastive import main as train_contrastive
-
-from torch.utils.tensorboard import SummaryWriter
+from train_resnet import main as train_resnet
 import yaml
-from tensorboard import program
+import torch
 from src.utils.save_load_model import load_model_lidar, load_model_img
 from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.models.classifier_head import classifier_head
-from src.utils.helper import load_checkpoint
+from src.utils.helper import load_checkpoint, load_checkpoint_cls, init_model
 
 
 parser = argparse.ArgumentParser()
@@ -55,22 +53,40 @@ if __name__ == "__main__":
         print('Not training the classifier')
 
     # Train Model
-    train_contrastive(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True', 
-                      augmentation=args.augmentation, train_classifier=args.classifier)
+    mode = params['meta']['backbone']
+
+    if mode=='resnet':
+        train_resnet(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True',
+                     augmentation=args.augmentation, train_classifier=args.classifier)
+    elif mode=='vit':
+        print('vit')
+    else:
+        assert mode in ['resnet', 'vit'], 'backbone is not covered'
+
 
     # Load pretrained model
-    name_im = args.save_name + '_im'
-    name_lid = args.save_name + '_lid'
-    im_pretrained_path = os.path.join(root, 'outputs/models', name_im)
-    lid_pretrained_path = os.path.join(root, 'outputs/models', name_lid)
-    im_pretrained = load_model_img(im_pretrained_path).eval()
-    lid_pretrained = load_model_lidar(lid_pretrained_path).eval()
+    # name_im = args.save_name + '_im'
+    # name_lid = args.save_name + '_lid'
+    # im_pretrained_path = os.path.join(root, 'outputs/models', name_im)
+    # lid_pretrained_path = os.path.join(root, 'outputs/models', name_lid)
+    # im_pretrained = load_model_img(im_pretrained_path).eval()
+    # lid_pretrained = load_model_lidar(lid_pretrained_path).eval()
 
     path = os.path.join(root, 'outputs/models', f'{args.save_name}_contrastive-latest.pth.tar')
 
-    model_im, model_lid, model_cls, epoch = load_checkpoint(r_path=path, model_im=resnet18_2B_im(), model_lid=resnet18_2B_lid(), 
-                                                            model_cls=classifier_head(model_im=resnet18_2B_im(), model_lid=resnet18_2B_lid()))
 
+    if not torch.cuda.is_available():
+        device = torch.device('cpu')
+        print('cuda is not available')
+    else:
+        device = torch.device('cuda:0')
+        torch.cuda.set_device(device)
+    encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
+
+    classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
+    classifier, epoch = load_checkpoint_cls(r_path=path, classifier= classifier)
+
+    #python ./src/main.py --save_name 240829_test --config configs_resnet18_small.yaml --classifier
     # train_cls(args=params, project_root=root, pretrained_im=im_pretrained, pretrained_lid=lid_pretrained, save_name=args.save_name, 
     #           pixel_wise=args.pixel_wise, masking=args.masking, augmentation=args.augmentation)
 
