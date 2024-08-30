@@ -72,10 +72,10 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     # --
     loss_func = CL(margin=margin, patch_size=args['optimization']['patch_size'])
 
-    optimizer_im = torch.optim.Adam(encoder_im.parameters(), learning_rate)
-    optimizer_lid = torch.optim.Adam(encoder_lid.parameters(), learning_rate)
-    # optimizer_im = torch.optim.AdamW(encoder_im.parameters(), lr=learning_rate, weight_decay=weight_decay)
-    # optimizer_lid = torch.optim.AdamW(encoder_lid.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    # optimizer_im = torch.optim.Adam(encoder_im.parameters(), learning_rate)
+    # optimizer_lid = torch.optim.Adam(encoder_lid.parameters(), learning_rate)
+    optimizer_im = torch.optim.AdamW(encoder_im.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    optimizer_lid = torch.optim.AdamW(encoder_lid.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     scheduler_im = optim.lr_scheduler.StepLR(optimizer_im, step_size=scheduler_step, gamma=scheduler_gamma)
     scheduler_lid = optim.lr_scheduler.StepLR(optimizer_lid, step_size=scheduler_step, gamma=scheduler_gamma)
@@ -210,8 +210,8 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
         weight_decay_cls = args['optimization_cls']['weight_decay']
 
         model_cls = classifier_head(model_im=trained_enc_im, model_lid=trained_enc_lid, pixel_wise=pixel_wise).to(device)
-        # optimizer = torch.optim.AdamW(model_cls.parameters(), lr=learning_rate, weight_decay=weight_decay_cls)
-        optimizer = torch.optim.Adam(model_cls.parameters(), lr=learning_rate)
+        optimizer = torch.optim.AdamW(model_cls.parameters(), lr=learning_rate, weight_decay=weight_decay_cls)
+        # optimizer = torch.optim.Adam(model_cls.parameters(), lr=learning_rate)
         scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_step_cls, gamma=scheduler_gamma_cls)
         save_path_cls = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag_cls}' + '-ep{epoch}.pth.tar')
 
