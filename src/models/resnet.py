@@ -28,7 +28,8 @@ class ResNet18_n(nn.Module):
                 padding=resnet18.conv1.padding,
                 bias=False
             )
-            # Initialize the weights of the new conv1 layer
+            # Initialize the weights of the new conv1 layer: USE DEFAULT: KAIMING HE
+            # CHECK WHY IT DOESNT WORK WITH THE BELOW INITIALIZATION
             # with torch.no_grad():
             #     conv1.weight = nn.Parameter(resnet18.conv1.weight.sum(dim=1, keepdim=True))
         else:
