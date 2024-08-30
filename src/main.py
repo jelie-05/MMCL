@@ -30,10 +30,7 @@ parser.add_argument(
     '--augmentation', action='store_true', help='enable augmentation for correct calibration')
 parser.add_argument(
     '--classifier', action='store_true', help='training directly classifier')
-parser.add_argument(
-    '--model', type=str,
-    help='type of model',
-    default='contrastive')
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -55,10 +52,10 @@ if __name__ == "__main__":
     # Train Model
     mode = params['meta']['backbone']
 
-    if mode=='resnet':
+    if mode == 'resnet':
         train_resnet(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True',
                      augmentation=args.augmentation, train_classifier=args.classifier)
-    elif mode=='vit':
+    elif mode == 'vit':
         print('vit')
     else:
         assert mode in ['resnet', 'vit'], 'backbone is not covered'
