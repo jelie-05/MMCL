@@ -2,13 +2,21 @@ import torch
 import torchvision.models as models
 import torch.nn as nn
 
-# Load the pretrained ResNet-18 model
-resnet18 = models.resnet18(pretrained=True)
+def set_parameter_requires_grad(model, feature_extracting):
+    if feature_extracting:
+        for param in model.parameters():
+            param.requires_grad = False # Freeze
+
 
 # Define a new model that changes the first conv1 layer based on the mode
 class ResNet18_n(nn.Module):
-    def __init__(self, n, mode="default"):
+    def __init__(self, n, mode="default", freeze=False):
         super(ResNet18_n, self).__init__()
+        self.freeze = freeze
+
+        # Load the pretrained ResNet-18 model
+        resnet18 = models.resnet18(pretrained=True)
+        set_parameter_requires_grad(resnet18, feature_extracting=self.freeze)  # True: freeze
 
         if mode == "lidar":
             # Create a new conv1 layer instead of modifying the original
@@ -21,8 +29,8 @@ class ResNet18_n(nn.Module):
                 bias=False
             )
             # Initialize the weights of the new conv1 layer
-            with torch.no_grad():
-                conv1.weight = nn.Parameter(resnet18.conv1.weight.sum(dim=1, keepdim=True))
+            # with torch.no_grad():
+            #     conv1.weight = nn.Parameter(resnet18.conv1.weight.sum(dim=1, keepdim=True))
         else:
             # Use the original conv1 layer
             conv1 = resnet18.conv1
