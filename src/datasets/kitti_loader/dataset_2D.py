@@ -62,6 +62,7 @@ class DataGenerator(object):
                                     augmentation=self.augmentation)
 
     def create_data(self, batch_size, nthreads=0, shuffle=False):
+        print(f'num_workers: {nthreads}')
         # use page locked gpu memory by default
         return DataLoader(self.dataset,
                           batch_size,
