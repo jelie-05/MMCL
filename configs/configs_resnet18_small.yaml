@@ -9,6 +9,7 @@ meta:
   backbone: 'resnet'
   model_name: 'resnet18_small'
 optimization:
+  optimizer: 'adamw'
   epochs: 50
   lr: 1e-3
   weight_decay: 0.05
