@@ -29,7 +29,7 @@ EXPOSE 8000
 
 # CMD ["sh", "-c", "python ./src/main.py --save_name 240813_augm --augmentation"]
 # CMD ["sh", "-c", "python ./src/main.py --save_name 240813"]
-CMD ["sh", "-c", "python ./src/main.py --save_name 240902 --config configs_resnet18_small.yaml --classifier --augmentation"]
+CMD ["sh", "-c", "python ./src/main.py --save_name 240902 --config configs_resnet18_small_240902_augm.yaml --classifier --augmentation"]
 
 # CMD ["sh", "-c", "python ./inference/train/main.py --name_im 240802_masking_1_image --name_lid 240802_masking_1_lid --name_cls 240802_masking_1_cls --masking --pixel_wise"]
 
