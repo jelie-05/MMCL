@@ -47,6 +47,9 @@ if __name__ == "__main__":
     else:
         print('Not training the classifier')
 
+    curr_model_name = params['meta']['model_name']
+    print(f'Training model with {curr_model_name}, model name: {args.save_name}')
+
     # Train Model
     mode = params['meta']['backbone']
 
