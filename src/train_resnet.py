@@ -11,6 +11,7 @@ from src.utils.save_load_model import save_model
 import torch.optim as optim
 import torch.nn as nn
 from tensorboard import program
+import multiprocessing
 
 
 def create_tqdm_bar(iterable, desc):
@@ -47,13 +48,15 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     perturbation_file = args['data']['perturbation_file']
     augmentation = args['data']['augmentation']
     # --
+    # Get the number of available CPU cores
+    num_cores = multiprocessing.cpu_count()
     data_root = os.path.join(project_root, dataset_path)
     train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)
     val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file, augmentation=augmentation)
     # train_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
     # val_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
-    train_loader = train_gen.create_data(batch_size, shuffle=True)
-    val_loader = val_gen.create_data(batch_size, shuffle=False)
+    train_loader = train_gen.create_data(batch_size=batch_size, shuffle=True, nthreads=num_cores)
+    val_loader = val_gen.create_data(batch_size=batch_size, shuffle=False, nthreads=num_cores)
     # --
 
     # MODEL
