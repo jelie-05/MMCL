@@ -5,7 +5,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from inference.train.mmsiamese.calc_receptive_field import PixelwiseFeatureMaps
+from src.utils.calc_receptive_field import PixelwiseFeatureMaps
 from src.datasets.kitti_loader.dataset_2D import DataGenerator
 import numpy as np
 import matplotlib.pyplot as plt
