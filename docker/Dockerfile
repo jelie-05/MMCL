@@ -27,8 +27,11 @@ EXPOSE 8000
 
 # Run main.py when the container launches
 
-CMD ["sh", "-c", "python ./src/main.py --save_name resnet_all_240902 --config configs_resnet18_all_240902_augm.yaml --classifier"]
-# CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_240902 --config configs_resnet18_small_240902_augm.yaml --classifier"]
+# done in Edna
+CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_240902 --config configs_resnet18_small_240902_augm.yaml --classifier"] 
+
+# wait
+# CMD ["sh", "-c", "python ./src/main.py --save_name resnet_all_240902 --config configs_resnet18_all_240902_augm.yaml --classifier"] # done in Edna
 
 # CMD ["sh", "-c", "python ./inference/train/main.py --name_im 240802_masking_1_image --name_lid 240802_masking_1_lid --name_cls 240802_masking_1_cls --masking --pixel_wise"]
 
