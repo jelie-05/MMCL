@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '--config', type=str,
     help='name of config file to load',
-    default='configs_contrastive.yaml')
+    default='configs_resnet18_small_base.yaml')
 parser.add_argument(
     '--save_name', type=str,
     help='name of model for saving',

@@ -94,15 +94,16 @@ def plot_distribution(label, prediction, dist_save):
     plt.show()
 
 
-def evaluation(device, data_root, model_cls, perturb_file, mode='labeled'):
+def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled'):
     model_cls.to(device)
     model_cls.eval()
 
-    eval_gen = DataGenerator(data_root, 'test_09_26', perturb_filenames=perturb_file, augmentation=False)
+    perturbation_file = args['data']['perturbation_file']
+
+    eval_gen = DataGenerator(data_root, 'test', perturb_filenames=perturbation_file, augmentation=False)
     eval_dataloader = eval_gen.create_data(32)
 
-    num_run = '10_03'
-    output_dir = os.path.join(os.path.dirname(__file__), 'outputs_test')
+    
     os.makedirs(output_dir, exist_ok=True)
     fp_output_file = os.path.join(output_dir, f'output_{num_run}_fp.txt')
     fn_output_file = os.path.join(output_dir, f'output_{num_run}_fn.txt')

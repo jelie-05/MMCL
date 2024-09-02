@@ -18,5 +18,11 @@ ssh ge93jen@edmonda.cps.cit.tum.de
 ln -s /home/ubuntu/Rosbag2/ kitti
 scp -r /home/ubuntu/Documents/students/Jeremialie/MMSiamese/data/kitti ge93jen@edmonda.cps.cit.tum.de:/home/ge93jen/jeremialie/data/kitti
 scp -r ge93jen@edmonda.cps.cit.tum.de:/home/ge93jen/jeremialie/MMsiamese/outputs_ /home/ubuntu/Documents/students/Jeremialie/MMSiamese/outputs_gpu
+
+
+# Edna
+scp -r ge93jen@edna.cps.cit.tum.de:/home/ge93jen/jeremialie/MMCL/outputs_ /home/ubuntu/Documents/students/Jeremialie/MMSiamese/outputs_gpu
+
+
 mv per* kitti
 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

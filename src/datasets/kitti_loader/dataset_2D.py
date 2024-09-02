@@ -21,6 +21,9 @@ class KittiDataset(Dataset):
         self.augmentation = augmentation
 
         # use left image by default
+        if self.augmentation:
+            print("Create augmentation for correct input")
+            
         self.kittiloader = Kittiloader(kittiDir, mode, perturb_filenames, cam=2, augmentation=self.augmentation)
 
     def __getitem__(self, idx):
