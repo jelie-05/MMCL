@@ -23,7 +23,7 @@ scp -r ge93jen@edmonda.cps.cit.tum.de:/home/ge93jen/jeremialie/MMsiamese/outputs
 # Edna
 scp -r ge93jen@edna.cps.cit.tum.de:/home/ge93jen/jeremialie/MMCL/outputs_ /home/ubuntu/Documents/students/Jeremialie/MMSiamese/outputs_gpu
 docker build -t mmcl:latest -f docker/Dockerfile .
-docker run --gpus all -v /home/jeremialie/MMCL/data/kitti:/app/data/kitti --name mmcl-container mmcl:latest
+docker run --gpus all -v /home/ge93jen/jeremialie/MMCL/data/kitti:/app/data/kitti --name mmcl-container mmcl:latest
 
 
 mv per* kitti

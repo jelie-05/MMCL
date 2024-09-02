@@ -65,7 +65,19 @@ if __name__ == "__main__":
 
     output_dir = os.path.join(os.path.dirname(__file__), f'outputs_{save_name}')
 
-    PR = evaluation(args=params, device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode, output_dir=output_dir)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        print(f"Directory {output_dir} created.")
+
+    if os.path.exists(output_dir) and not os.listdir(output_dir):
+        save_dir = os.path.join(output_dir, 'run_1')
+        print(f"Directory {save_dir} created.")
+    else:
+        num_folders = len([name for name in os.listdir(output_dir) if os.path.isdir(os.path.join(output_dir, name))])
+        save_dir = os.path.join(output_dir, f'run_{num_folders+1}')
+        print(f"Directory {save_dir} created.")
+
+    PR = evaluation(args=params, device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode, output_dir=save_dir)
     print(PR)
 
 # /home/ubuntu/Documents/students/Jeremialie/MMSiamese/.venv/bin/python /home/ubuntu/Documents/students/Jeremialie/MMSiamese/inference/eval/precision_recall/main.py

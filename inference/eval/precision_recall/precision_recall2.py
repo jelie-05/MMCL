@@ -101,15 +101,15 @@ def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled'):
     perturbation_file = args['data']['perturbation_file']
 
     eval_gen = DataGenerator(data_root, 'test', perturb_filenames=perturbation_file, augmentation=False)
-    eval_dataloader = eval_gen.create_data(32)
+    eval_dataloader = eval_gen.create_data(64)
 
     
     os.makedirs(output_dir, exist_ok=True)
-    fp_output_file = os.path.join(output_dir, f'output_{num_run}_fp.txt')
-    fn_output_file = os.path.join(output_dir, f'output_{num_run}_fn.txt')
-    results_file = os.path.join(output_dir, f'output_{num_run}_pr_auc.txt')
-    prauc_file = os.path.join(output_dir, f'output_{num_run}_prauc.png')
-    dist_file = os.path.join(output_dir, f'output_{num_run}_distribution.png')
+    fp_output_file = os.path.join(output_dir, f'output_fp.txt')
+    fn_output_file = os.path.join(output_dir, f'output_fn.txt')
+    results_file = os.path.join(output_dir, f'output_pr_auc.txt')
+    prauc_file = os.path.join(output_dir, f'output_prauc.png')
+    dist_file = os.path.join(output_dir, f'output_distribution.png')
 
     label = torch.empty(0, 1, device=device)
     prediction = torch.empty(0, 1, device=device)
@@ -188,8 +188,8 @@ def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled'):
     print(f'False Negatives: {sum_FN}')
 
     accuracy = (TP+TN)/(TP+TN+FP+FN)
-    precision = TP/(TP+FP)
-    recall = TP/(TP+FN)
+    precision = (TP)/(TP+FP)
+    recall = (TP)/(TP+FN)
 
     # Save FP list to a text file
     with open(fp_output_file, 'w') as f:
