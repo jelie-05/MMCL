@@ -5,23 +5,26 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 import torch
+import yaml
 from src.utils.save_load_model import load_model_lidar, load_model_img
 from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.models.classifier_head import classifier_head
 from src.utils.helper import load_checkpoint, load_checkpoint_cls, init_model
 
-# from precision_recall2 import evaluation
+from precision_recall2 import evaluation
 # from src.utils.save_load_model import load_model_lidar, load_model_img, load_model_cls
 # import torch
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
+    '--config', type=str,
+    help='name of config file to load',
+    default='configs_resnet18_small_base.yaml')
+parser.add_argument(
     '--save_name', type=str,
     help='name of lidar model to save',
     default='lidar_backbone')
-parser.add_argument(
-    '--lidar_3D', action='store_true', help='train with 3D data as input')
 parser.add_argument(
     '--pixel_wise', action='store_true', help='comparing pixel-wise distance')
 parser.add_argument(
@@ -38,8 +41,19 @@ if __name__ == "__main__":
 
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../'))
     kitti_path = os.path.join(root, 'data', 'kitti')
+    configs_path = os.path.join(root, 'configs', args.config)
+
+    with open(configs_path, 'r') as y_file:
+        params = yaml.load(y_file, Loader=yaml.FullLoader)
 
     save_name = args.save_name
+
+    if not torch.cuda.is_available():
+        device = torch.device('cpu')
+        print('cuda is not available')
+    else:
+        device = torch.device('cuda:0')
+        torch.cuda.set_device(device)
 
     encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
 
