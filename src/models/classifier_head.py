@@ -7,18 +7,34 @@ def set_parameter_requires_grad(model, feature_extracting):
         for param in model.parameters():
             param.requires_grad = False # Freeze
 
+def get_last_layer_channels(model):
+    # Get the last block in the model
+    last_block = list(model.blocks.children())[-1]
+
+    # Get the last BasicBlock in the last block
+    last_basic_block = list(last_block.children())[-1]
+
+    # The last BasicBlock should have a conv2 layer, which is the last convolutional layer
+    last_conv_layer = last_basic_block.conv2
+
+    # Return the number of output channels of the last convolutional layer
+    return last_conv_layer.out_channels
 
 class classifier_head(nn.Module):
     def __init__(self, model_im, model_lid, pixel_wise='False'):
         super().__init__()
         self.model_im = model_im
         self.model_lid = model_lid
+        input_channel = get_last_layer_channels(self.model_im) + get_last_layer_channels(self.model_lid)
+        first_channel = input_channel*2
+        print(first_channel)
+        
 
         self.classifier_layers = nn.Sequential(
-            nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 12, 39)
-            nn.BatchNorm2d(512),
+            nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 12, 39)
+            nn.BatchNorm2d(first_channel),
             nn.ReLU(),
-            nn.Conv2d(512, 1024, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 6, 20)
+            nn.Conv2d(first_channel, 1024, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 6, 20)
             nn.BatchNorm2d(1024),
             nn.ReLU(),
             nn.Conv2d(1024, 2048, kernel_size=3, stride=2, padding=1),  # output: (N, 1024, 3, 10)

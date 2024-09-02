@@ -17,7 +17,7 @@ def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
 
-def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True', augmentation='False', train_classifier='True'):
+def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True', train_classifier='True'):
 
     if not torch.cuda.is_available():
         device = torch.device('cpu')
@@ -45,6 +45,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     batch_size = args['data']['batch_size']
     dataset_path = args['data']['dataset_path']
     perturbation_file = args['data']['perturbation_file']
+    augmentation = args['data']['augmentation']
     # --
     data_root = os.path.join(project_root, dataset_path)
     train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)

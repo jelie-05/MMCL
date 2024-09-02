@@ -19,11 +19,4 @@ if __name__ == "__main__":
     torch.cuda.set_device(device)
     model = resnet.__dict__[model_name]().to(device)
 
-    model_old = resnet18_2B_lid()
-    weight = model_old.encoder_lid[0].weight
-    print(weight)
-
-    weight_new = model.initial_layers[0].weight
-    print(weight_new)
-    # print(f'model_new:\n{model}')
-    # print(f'model_old:\n{model_old}')
+    print(model)

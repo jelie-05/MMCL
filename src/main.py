@@ -27,8 +27,6 @@ parser.add_argument(
 parser.add_argument(
     '--masking', action='store_true', help='enable masking')
 parser.add_argument(
-    '--augmentation', action='store_true', help='enable augmentation for correct calibration')
-parser.add_argument(
     '--classifier', action='store_true', help='training directly classifier')
 
 
@@ -54,7 +52,7 @@ if __name__ == "__main__":
 
     if mode == 'resnet':
         train_resnet(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True',
-                     augmentation=args.augmentation, train_classifier=args.classifier)
+                     train_classifier=args.classifier)
     elif mode == 'vit':
         print('vit')
     else:
