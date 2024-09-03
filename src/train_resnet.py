@@ -49,7 +49,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     augmentation = args['data']['augmentation']
     # --
     # Get the number of available CPU cores
-    num_cores = min(multiprocessing.cpu_count(), 48)
+    num_cores = min(multiprocessing.cpu_count(), 64)
     data_root = os.path.join(project_root, dataset_path)
     train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)
     val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file, augmentation=augmentation)
@@ -63,7 +63,6 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     backbone = args['meta']['backbone']
     model_name = args['meta']['model_name']
     encoder_im, encoder_lid = init_model(device=device, mode=backbone, model_name=model_name)
-    # print(encoder_im)
     # --
 
     # Optimization
@@ -72,10 +71,8 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     learning_rate = float(args['optimization']['lr'])
     # --
     loss_func = CL(margin=margin, patch_size=args['optimization']['patch_size'])
-
     optimizer_im, scheduler_im = init_opt(model=encoder_im, args=args['optimization'])
     optimizer_lid, scheduler_lid = init_opt(model=encoder_lid, args=args['optimization'])
-
     # --
 
     def save_checkpoint(epoch, curr_loss, tag='contrastive'):
@@ -134,12 +131,11 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
             training_loss += loss.item()
 
             # Update the progress bar.
-            training_loop.set_postfix(curr_train_loss="{:.8f}".format(training_loss / (train_iteration + 1)),
-                                      val_loss="{:.8f}".format(validation_loss))
+            training_loop.set_postfix(acc_train_loss="{:.8f}".format(training_loss / (train_iteration + 1)),
+                                      curr_train_loss="{:.8f}".format(loss))
 
             # Update the tensorboard logger.
-            logger.add_scalar(f'siamese_{save_name}/train_loss', loss.item(),
-                                 epoch * len(train_loader) + train_iteration)
+            logger.add_scalar(f'siamese_{save_name}/train_loss', loss.item(), epoch * len(train_loader) + train_iteration)
             
         training_loss /= len(train_loader)
         logger.add_scalar('training_loss_epoch', training_loss, epoch)
@@ -168,7 +164,8 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                 validation_loss += loss_val.item()
 
                 # Update the progress bar.
-                val_loop.set_postfix(val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)))
+                val_loop.set_postfix(acc_val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)),
+                                     curr_val_loss="{:.8f}".format(loss_val))
 
                 # Update the tensorboard logger.
                 logger.add_scalar(f'siamese_{save_name}/val_loss', loss_val.item(), epoch * len(val_loader) + val_iteration)
@@ -179,11 +176,6 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
         # Step the scheduler after each epoch
         scheduler_im.step()
         scheduler_lid.step()
-        
-    # save_name_im = save_name + '_im'
-    # save_name_lid = save_name + '_lid'
-    # save_model(encoder_im, file_name=save_name_im)
-    # save_model(encoder_lid, file_name=save_name_lid)
 
     if train_classifier:
         # Load pretrained
@@ -258,8 +250,8 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                 cls_training_loss += loss.item()
 
                 # Update the progress bar.
-                training_loop.set_postfix(curr_train_loss="{:.8f}".format(cls_training_loss / (train_iteration + 1)),
-                                        val_loss="{:.8f}".format(cls_validation_loss))
+                training_loop.set_postfix(acc_train_loss="{:.8f}".format(cls_training_loss / (train_iteration + 1)),
+                                          curr_train_loss="{:.8f}".format(loss))
 
                 # Update the tensorboard logger.
                 logger.add_scalar(f'classifier_{save_name}/train_loss', loss.item(),
@@ -284,22 +276,20 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                     N, C, H, W = left_img_batch.size()
                     pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch, H=H, W=W).squeeze(dim=1)
 
-                    loss = loss_func(pred_cls, label_val)
-                    cls_validation_loss += loss.item()
+                    loss_val = loss_func(pred_cls, label_val)
+                    cls_validation_loss += loss_val.item()
 
                     # Update the progress bar.
-                    val_loop.set_postfix(val_loss="{:.8f}".format(cls_validation_loss / (val_iteration + 1)))
+                    val_loop.set_postfix(val_loss="{:.8f}".format(cls_validation_loss / (val_iteration + 1)),
+                                         curr_train_loss="{:.8f}".format(loss_val))
 
                     # Update the tensorboard logger.
-                    logger.add_scalar(f'classifier_{save_name}/val_loss', loss.item(), epoch * len(val_loader) + val_iteration)
+                    logger.add_scalar(f'classifier_{save_name}/val_loss', loss_val.item(), epoch * len(val_loader) + val_iteration)
 
             scheduler.step()
             cls_validation_loss /= len(val_loader)
             logger.add_scalar('validation_cls_loss_epoch', cls_validation_loss, epoch)
             # torch.cuda.empty_cache()
-
-        # name_cls = save_name + '_cls'
-        # save_model(model_cls, file_name=name_cls)
 
     else:
         print("Not training the classifier.")
