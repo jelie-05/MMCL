@@ -167,7 +167,8 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                                      H=H, W=W, pixel_wise=pixel_wise, mask=stacked_mask)
                 validation_loss += loss_val.item()
 
-                # Update the progress bar.                val_loop.set_postfix(val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)))
+                # Update the progress bar.
+                val_loop.set_postfix(val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)))
 
                 # Update the tensorboard logger.
                 logger.add_scalar(f'siamese_{save_name}/val_loss', loss_val.item(), epoch * len(val_loader) + val_iteration)
