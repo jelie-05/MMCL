@@ -68,4 +68,5 @@ class DataGenerator(object):
                           batch_size,
                           shuffle=shuffle,
                           num_workers=nthreads,
+                          drop_last=True,  # Ensures all batches are the same size
                           pin_memory=self.high_gpu)
