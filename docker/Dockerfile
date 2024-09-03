@@ -27,15 +27,21 @@ EXPOSE 8000
 
 # Run main.py when the container launches
 
-# done in Edna
-# CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_240902 --config configs_resnet18_small_240902_augm.yaml --classifier"]
-CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_noaug_240903 --config configs_resnet18_small_240903_noaug.yaml --classifier"]
+# 1: done in Edna
+CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_240902 --config configs_resnet18_small_240902_augm.yaml --classifier"]
 
-# wait
+# 2: compare to 1
+#CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_noaug_240903 --config configs_resnet18_small_240903_noaug.yaml --classifier"]
 
-# CMD ["sh", "-c", "python ./src/main.py --save_name resnet_all_240902 --config configs_resnet18_all_240902_augm.yaml --classifier"] # done in Edna
+# 3: check init
+# Try other initialization for small
+
+# 4: train larger model -> compare 1 & 2: which better
+# CMD ["sh", "-c", "python ./src/main.py --save_name resnet_all_240904 --config configs_resnet18_all_.yaml --classifier"]
+
+# 5: Train ViT
+
 # CMD ["sh", "-c", "python ./inference/train/main.py --name_im 240802_masking_1_image --name_lid 240802_masking_1_lid --name_cls 240802_masking_1_cls --masking --pixel_wise"]
-
 # CUDA_VISIBLE_DEVICES=0 for 2 cudas
 
 #&& python ./inference/eval/precision_recall/main.py --model_im image_240708_full_1 --model_lid lidar_240708_full_1 --name_cls cls_240708_full_1 
