@@ -10,7 +10,7 @@ import torch
 from src.utils.save_load_model import load_model_lidar, load_model_img
 from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.models.classifier_head import classifier_head
-from src.utils.helper import load_checkpoint, load_checkpoint_cls, init_model
+from src.utils.helper import load_checkpoint, load_checkpoint_cls, init_model, init_opt
 
 
 parser = argparse.ArgumentParser()
@@ -79,10 +79,17 @@ if __name__ == "__main__":
     else:
         device = torch.device('cuda:0')
         torch.cuda.set_device(device)
+
     encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
+    opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
+    opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])
+    encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path,
+                                                                      encoder_im=encoder_im,
+                                                                      encoder_lid=encoder_lid,
+                                                                      opt_im=opt_im, opt_lid=opt_lid)
 
     classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
-    classifier, epoch = load_checkpoint_cls(r_path=path, classifier= classifier)
+    classifier, epoch = load_checkpoint_cls(r_path=path, classifier=classifier)
 
     #python ./src/main.py --save_name 240829_test --config configs_resnet18_small.yaml --classifier
     # train_cls(args=params, project_root=root, pretrained_im=im_pretrained, pretrained_lid=lid_pretrained, save_name=args.save_name, 

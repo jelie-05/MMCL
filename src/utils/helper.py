@@ -1,5 +1,6 @@
 import torch
 import src.models.resnet as resnet
+import torch.optim as optim
 from src.models.classifier_head import classifier_head as classifier
 
 def load_checkpoint(
@@ -100,6 +101,23 @@ def init_model(
     return encoder_im, encoder_lid
 
 def init_opt(
-        encoder
+        model,
+        args
 ):
-    print('no')
+    opt_name = args['optimizer']
+    learning_rate = float(args['lr'])
+    weight_decay = float(args['weight_decay'])
+    scheduler_step = args['scheduler_step']
+    scheduler_gamma = args['scheduler_gamma']
+
+    if opt_name == 'adam':
+        optimizer = torch.optim.Adam(model.parameters(), learning_rate)
+    elif opt_name == 'adamw':
+        optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    else:
+        raise NotImplementedError(f"Optimizer '{opt_name}' not implemented yet")
+
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_step, gamma=scheduler_gamma)
+
+    return optimizer, scheduler
+

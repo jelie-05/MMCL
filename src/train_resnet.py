@@ -5,7 +5,7 @@ from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.models.classifier_head import classifier_head
 from src.datasets.kitti_loader.dataset_2D import DataGenerator
 from src.utils.contrastive_loss import ContrastiveLoss as CL
-from src.utils.helper import gen_mixed_data, init_model, load_checkpoint
+from src.utils.helper import gen_mixed_data, init_model, load_checkpoint, init_opt
 from src.utils.logger import tb_logger
 from src.utils.save_load_model import save_model
 import torch.optim as optim
@@ -68,21 +68,14 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
 
     # Optimization
     epochs = int(args['optimization']['epochs'])
-    learning_rate = float(args['optimization']['lr'])
-    weight_decay = float(args['optimization']['weight_decay'])
     margin = args['optimization']['margin']
-    scheduler_step = args['optimization']['scheduler_step']
-    scheduler_gamma = args['optimization']['scheduler_gamma']
+    learning_rate = float(args['optimization']['lr'])
     # --
     loss_func = CL(margin=margin, patch_size=args['optimization']['patch_size'])
 
-    # optimizer_im = torch.optim.Adam(encoder_im.parameters(), learning_rate)
-    # optimizer_lid = torch.optim.Adam(encoder_lid.parameters(), learning_rate)
-    optimizer_im = torch.optim.AdamW(encoder_im.parameters(), lr=learning_rate, weight_decay=weight_decay)
-    optimizer_lid = torch.optim.AdamW(encoder_lid.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    optimizer_im, scheduler_im = init_opt(model=encoder_im, args=args['optimization'])
+    optimizer_lid, scheduler_lid = init_opt(model=encoder_lid, args=args['optimization'])
 
-    scheduler_im = optim.lr_scheduler.StepLR(optimizer_im, step_size=scheduler_step, gamma=scheduler_gamma)
-    scheduler_lid = optim.lr_scheduler.StepLR(optimizer_lid, step_size=scheduler_step, gamma=scheduler_gamma)
     # --
 
     def save_checkpoint(epoch, curr_loss, tag='contrastive'):
@@ -149,8 +142,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                                  epoch * len(train_loader) + train_iteration)
             
         training_loss /= len(train_loader)
-        logger.add_scalar('training_loss_epoch', training_loss,
-                        epoch)
+        logger.add_scalar('training_loss_epoch', training_loss, epoch)
         save_checkpoint(epoch, training_loss)
 
         # Validation stage
@@ -179,13 +171,11 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                 val_loop.set_postfix(val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)))
 
                 # Update the tensorboard logger.
-                logger.add_scalar(f'siamese_{save_name}/val_loss', loss_val.item(),
-                                     epoch * len(val_loader) + val_iteration)
+                logger.add_scalar(f'siamese_{save_name}/val_loss', loss_val.item(), epoch * len(val_loader) + val_iteration)
 
         # Epoch-wise calculation
         validation_loss /= len(val_loader)
-        logger.add_scalar('validation_loss_epoch', validation_loss,
-                             epoch)
+        logger.add_scalar('validation_loss_epoch', validation_loss, epoch)
         # Step the scheduler after each epoch
         scheduler_im.step()
         scheduler_lid.step()
@@ -197,6 +187,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
 
 
     if train_classifier:
+        # Load pretrained
         trained_enc_im, trained_enc_lid = init_model(device=device,
                                                      mode=backbone,
                                                      model_name=model_name)
@@ -205,27 +196,20 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                                                                                   encoder_lid=trained_enc_lid,
                                                                                   opt_lid=optimizer_lid,
                                                                                   opt_im=optimizer_im)
-
         trained_enc_im.to(device).eval()
         trained_enc_lid.to(device).eval()
-
-        scheduler_step_cls = args['optimization_cls']['scheduler_step']
-        scheduler_gamma_cls = args['optimization_cls']['scheduler_gamma']
-        weight_decay_cls = args['optimization_cls']['weight_decay']
-
         model_cls = classifier_head(model_im=trained_enc_im, model_lid=trained_enc_lid, pixel_wise=pixel_wise).to(device)
-        optimizer = torch.optim.AdamW(model_cls.parameters(), lr=learning_rate, weight_decay=weight_decay_cls)
-        # optimizer = torch.optim.Adam(model_cls.parameters(), lr=learning_rate)
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_step_cls, gamma=scheduler_gamma_cls)
-        save_path_cls = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag_cls}' + '-ep{epoch}.pth.tar')
+        # -
 
-        logger = tb_logger(root=project_root, args=args['logging_cls'], name=save_name)
-
-        """ Optimization """
+        # Optimizer
         learning_rate = float(args['optimization_cls']['lr'])
         epochs = int(args['optimization_cls']['epochs'])
-
+        optimizer, scheduler = init_opt(model=model_cls, args=args['optimization_cls'])
         loss_func = nn.BCELoss()
+        #-
+
+        save_path_cls = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag_cls}' + '-ep{epoch}.pth.tar')
+        logger = tb_logger(root=project_root, args=args['logging_cls'], name=save_name)
 
         def save_checkpoint_cls(epoch, curr_loss, tag='contrastive'):
             save_dict = {
@@ -283,9 +267,9 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                                     epoch * len(train_loader) + train_iteration)
 
             cls_training_loss /= len(train_loader)
-            logger.add_scalar('training_cls_loss_epoch', cls_training_loss,
-                                epoch)
+            logger.add_scalar('training_cls_loss_epoch', cls_training_loss, epoch)
             save_checkpoint_cls(epoch, cls_training_loss, tag=tag_cls)
+
             # Validation stage
             model_cls.eval()
             val_loop = create_tqdm_bar(val_loader, desc=f'Validation Epoch [{epoch + 1}/{epochs}]')
@@ -308,18 +292,17 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                     val_loop.set_postfix(val_loss="{:.8f}".format(cls_validation_loss / (val_iteration + 1)))
 
                     # Update the tensorboard logger.
-                    logger.add_scalar(f'classifier_{save_name}/val_loss', loss.item(),
-                                        epoch * len(val_loader) + val_iteration)
+                    logger.add_scalar(f'classifier_{save_name}/val_loss', loss.item(), epoch * len(val_loader) + val_iteration)
 
             scheduler.step()
-
-            
             cls_validation_loss /= len(val_loader)
-            logger.add_scalar('validation_cls_loss_epoch', cls_validation_loss,
-                                epoch)
+            logger.add_scalar('validation_cls_loss_epoch', cls_validation_loss, epoch)
             # torch.cuda.empty_cache()
 
         # name_cls = save_name + '_cls'
         # save_model(model_cls, file_name=name_cls)
+
+    else:
+        print("Not training the classifier.")
 
         
