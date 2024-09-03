@@ -185,7 +185,6 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     # save_model(encoder_im, file_name=save_name_im)
     # save_model(encoder_lid, file_name=save_name_lid)
 
-
     if train_classifier:
         # Load pretrained
         trained_enc_im, trained_enc_lid = init_model(device=device,
@@ -206,7 +205,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
         epochs = int(args['optimization_cls']['epochs'])
         optimizer, scheduler = init_opt(model=model_cls, args=args['optimization_cls'])
         loss_func = nn.BCELoss()
-        #-
+        # -
 
         save_path_cls = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag_cls}' + '-ep{epoch}.pth.tar')
         logger = tb_logger(root=project_root, args=args['logging_cls'], name=save_name)

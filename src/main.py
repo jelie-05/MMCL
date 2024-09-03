@@ -62,17 +62,6 @@ if __name__ == "__main__":
         assert mode in ['resnet', 'vit'], 'backbone is not covered'
 
 
-    # Load pretrained model
-    # name_im = args.save_name + '_im'
-    # name_lid = args.save_name + '_lid'
-    # im_pretrained_path = os.path.join(root, 'outputs/models', name_im)
-    # lid_pretrained_path = os.path.join(root, 'outputs/models', name_lid)
-    # im_pretrained = load_model_img(im_pretrained_path).eval()
-    # lid_pretrained = load_model_lidar(lid_pretrained_path).eval()
-
-    path = os.path.join(root, 'outputs/models', f'{args.save_name}_contrastive-latest.pth.tar')
-
-
     if not torch.cuda.is_available():
         device = torch.device('cpu')
         print('cuda is not available')
@@ -80,6 +69,7 @@ if __name__ == "__main__":
         device = torch.device('cuda:0')
         torch.cuda.set_device(device)
 
+    path = os.path.join(root, 'outputs/models', f'{args.save_name}_contrastive-latest.pth.tar')
     encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
     opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
     opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])
@@ -90,9 +80,3 @@ if __name__ == "__main__":
 
     classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
     classifier, epoch = load_checkpoint_cls(r_path=path, classifier=classifier)
-
-    #python ./src/main.py --save_name 240829_test --config configs_resnet18_small.yaml --classifier
-    # train_cls(args=params, project_root=root, pretrained_im=im_pretrained, pretrained_lid=lid_pretrained, save_name=args.save_name, 
-    #           pixel_wise=args.pixel_wise, masking=args.masking, augmentation=args.augmentation)
-
-
