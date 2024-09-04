@@ -1,14 +1,11 @@
 import torch
 from tqdm import tqdm
 import os
-from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.models.classifier_head import classifier_head
 from src.datasets.kitti_loader.dataset_2D import DataGenerator
 from src.utils.contrastive_loss import ContrastiveLoss as CL
 from src.utils.helper import gen_mixed_data, init_model, load_checkpoint, init_opt
 from src.utils.logger import tb_logger
-from src.utils.save_load_model import save_model
-import torch.optim as optim
 import torch.nn as nn
 from tensorboard import program
 import multiprocessing
@@ -253,7 +250,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
 
             cls_training_loss /= len(train_loader)
             logger.add_scalar('training_cls_loss_epoch', cls_training_loss, epoch)
-            save_checkpoint_cls(epoch, cls_training_loss, tag=tag_cls)
+            save_checkpoint_cls(epoch, cls_training_loss)
 
             # Validation stage
             model_cls.eval()
