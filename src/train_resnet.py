@@ -75,7 +75,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     optimizer_lid, scheduler_lid = init_opt(model=encoder_lid, args=args['optimization'])
     # --
 
-    def save_checkpoint(epoch, curr_loss, tag='contrastive'):
+    def save_checkpoint(epoch, curr_loss):
         save_dict = {
             'encoder_im': encoder_im.state_dict(),
             'encoder_lid': encoder_lid.state_dict(),
@@ -89,10 +89,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
         }
         torch.save(save_dict, latest_path)
         if (epoch + 1) % checkpoint_freq == 0:
-            if tag == 'contrastive':
-                torch.save(save_dict, save_path.format(epoch=f'{epoch + 1}'))
-            else:
-                torch.save(save_dict, save_path_cls.format(epoch=f'{epoch + 1}'))
+            torch.save(save_dict, save_path.format(epoch=f'{epoch + 1}'))
 
     for epoch in range(epochs):
         training_loss = 0
@@ -198,11 +195,11 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
         optimizer, scheduler = init_opt(model=model_cls, args=args['optimization_cls'])
         loss_func = nn.BCELoss()
         # -
-
+        latest_path_cls = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag_cls}-latest.pth.tar')
         save_path_cls = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag_cls}' + '-ep{epoch}.pth.tar')
         logger = tb_logger(root=project_root, args=args['logging_cls'], name=save_name)
 
-        def save_checkpoint_cls(epoch, curr_loss, tag='contrastive'):
+        def save_checkpoint_cls(epoch, curr_loss):
             save_dict = {
                 'classifier': model_cls.state_dict(),
                 'opt': optimizer.state_dict(),
@@ -212,12 +209,9 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                 'lr': learning_rate,
                 'train_cls': train_classifier
             }
-            torch.save(save_dict, latest_path)
+            torch.save(save_dict, latest_path_cls)
             if (epoch + 1) % checkpoint_freq == 0:
-                if tag == 'contrastive':
-                    torch.save(save_dict, save_path.format(epoch=f'{epoch + 1}'))
-                else:
-                    torch.save(save_dict, save_path_cls.format(epoch=f'{epoch + 1}'))
+                torch.save(save_dict, save_path_cls.format(epoch=f'{epoch + 1}'))
 
         for epoch in range(epochs):
             cls_training_loss = 0
@@ -281,7 +275,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
 
                     # Update the progress bar.
                     val_loop.set_postfix(val_loss="{:.8f}".format(cls_validation_loss / (val_iteration + 1)),
-                                         curr_train_loss="{:.8f}".format(loss_val))
+                                         curr_val_loss="{:.8f}".format(loss_val))
 
                     # Update the tensorboard logger.
                     logger.add_scalar(f'classifier_{save_name}/val_loss', loss_val.item(), epoch * len(val_loader) + val_iteration)
