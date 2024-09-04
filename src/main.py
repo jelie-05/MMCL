@@ -32,36 +32,36 @@ parser.add_argument(
 
 if __name__ == "__main__":
     args = parser.parse_args()
+    save_name = args.save_name
 
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    print(f'project_root: {root}')
-    configs_path = os.path.join(root, 'configs', args.config)
+    config_name = 'configs_' + save_name + '.yaml'
+    configs_path = os.path.join(root, 'configs', config_name)
     kitti_path = os.path.join(root, 'data', 'kitti')
 
     # Load configs
     with open(configs_path, 'r') as y_file:
         params = yaml.load(y_file, Loader=yaml.FullLoader)
 
+    # Printing logs:
     if args.classifier:
         print('Training the classifier')
     else:
         print('Not training the classifier')
-
     curr_model_name = params['meta']['model_name']
     print(f'Training model with {curr_model_name}, model name: {args.save_name}')
 
     # Train Model
     mode = params['meta']['backbone']
-
     if mode == 'resnet':
-        train_resnet(args=params, project_root=root, save_name=args.save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True',
+        train_resnet(args=params, project_root=root, save_name=save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True',
                      train_classifier=args.classifier)
     elif mode == 'vit':
         print('vit')
     else:
         assert mode in ['resnet', 'vit'], 'backbone is not covered'
 
-
+    # Loading Model testing:
     if not torch.cuda.is_available():
         device = torch.device('cpu')
         print('cuda is not available')
