@@ -112,8 +112,10 @@ def init_opt(
 
     if opt_name == 'adam':
         optimizer = torch.optim.Adam(model.parameters(), learning_rate)
+        print("adam initialized")
     elif opt_name == 'adamw':
         optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        print("adamw initialized")
     else:
         raise NotImplementedError(f"Optimizer '{opt_name}' not implemented yet")
 

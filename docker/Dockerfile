@@ -27,11 +27,11 @@ EXPOSE 8000
 
 # Run main.py when the container launches
 
-# 1: done in Edna
-CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_240902 --config configs_resnet18_small_240902_augm.yaml --classifier"]
+# 1: done in Edna; 03/09 18:30
+# CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_240902 --config configs_resnet18_small_240902_augm.yaml --classifier"]
 
-# 2: compare to 1
-#CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_noaug_240903 --config configs_resnet18_small_240903_noaug.yaml --classifier"]
+# 2: compare to 1.
+CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_noaug_240903 --config configs_resnet18_small_240903_noaug.yaml --classifier"]
 
 # 3: check init
 # Try other initialization for small

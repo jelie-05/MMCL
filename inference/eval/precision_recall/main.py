@@ -6,14 +6,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../.
 
 import torch
 import yaml
-from src.utils.save_load_model import load_model_lidar, load_model_img
-from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.models.classifier_head import classifier_head
 from src.utils.helper import load_checkpoint, load_checkpoint_cls, init_model, init_opt
-
 from precision_recall2 import evaluation
-# from src.utils.save_load_model import load_model_lidar, load_model_img, load_model_cls
-# import torch
+
 
 parser = argparse.ArgumentParser()
 
@@ -55,18 +51,21 @@ if __name__ == "__main__":
         device = torch.device('cuda:0')
         torch.cuda.set_device(device)
 
-    path = os.path.join(root, 'outputs/models/working', f'{args.save_name}_contrastive-latest.pth.tar')
+    tag_encoders = params['logging']['tag']
+    tag_cls = params['logging_cls']['tag']
+    path_encoders = os.path.join(root, 'outputs/models/working', f'{args.save_name}_{tag_encoders}-latest.pth.tar')
+    path_cls = os.path.join(root, 'outputs/models/working', f'{args.save_name}_{tag_cls}-latest.pth.tar')
 
     encoder_im, encoder_lid = init_model(device=device,
                                          mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
     opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
     opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])
-    encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path,
+    encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
                                                                       encoder_im=encoder_im,
                                                                       encoder_lid=encoder_lid,
                                                                       opt_im=opt_im, opt_lid=opt_lid)
     classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
-    classifier, epoch = load_checkpoint_cls(r_path=path, classifier=classifier)
+    classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
 
     device = torch.device("cuda:0")
 
