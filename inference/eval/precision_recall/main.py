@@ -13,10 +13,10 @@ from precision_recall2 import evaluation
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument(
-    '--config', type=str,
-    help='name of config file to load',
-    default='configs_resnet18_small_base.yaml')
+# parser.add_argument(
+#     '--config', type=str,
+#     help='name of config file to load',
+#     default='configs_resnet18_small_base.yaml')
 parser.add_argument(
     '--save_name', type=str,
     help='name of lidar model to save',
@@ -34,15 +34,15 @@ parser.add_argument(
 
 if __name__ == "__main__":
     args = parser.parse_args()
+    save_name = args.save_name
 
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../'))
     kitti_path = os.path.join(root, 'data', 'kitti')
-    configs_path = os.path.join(root, 'configs', args.config)
+    config_name = 'configs_' + save_name + '.yaml'
+    configs_path = os.path.join(root, 'configs', config_name)
 
     with open(configs_path, 'r') as y_file:
         params = yaml.load(y_file, Loader=yaml.FullLoader)
-
-    save_name = args.save_name
 
     if not torch.cuda.is_available():
         device = torch.device('cpu')
@@ -53,6 +53,7 @@ if __name__ == "__main__":
 
     tag_encoders = params['logging']['tag']
     tag_cls = params['logging_cls']['tag']
+
     path_encoders = os.path.join(root, 'outputs/models/working', f'{args.save_name}_{tag_encoders}-latest.pth.tar')
     path_cls = os.path.join(root, 'outputs/models/working', f'{args.save_name}_{tag_cls}-latest.pth.tar')
 

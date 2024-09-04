@@ -11,7 +11,7 @@ meta:
   model_name: 'resnet18_small'
 optimization:
   optimizer: 'adamw'
-  epochs: 50
+  epochs: 2
   lr: 1e-3
   weight_decay: 0.05
   margin: 4
@@ -23,7 +23,7 @@ logging_cls:
   tag: 'classifier'
 optimization_cls:
   optimizer: 'adamw'
-  epochs: 50
+  epochs: 2
   lr: 1e-3
   weight_decay: 0.05
   margin: 4

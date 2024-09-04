@@ -22,16 +22,20 @@ COPY . .
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port 8000
 EXPOSE 8000
 
-# Run main.py when the container launches
+# Naming Format:
+# saving_name: (model)_(augmentation)_(dates)
+# (model): resnet_small, resnet_all, ....; (augmentation): "aug", "noaug"; (dates):yymmdd
+# used in:
+# 1. configs: configs_(saving_name).yaml
+# 2. saving: (saving_name)_(cls/contrastive)_(epoch).pth.tar
 
 # 1: done in Edna; 03/09 18:30
-# CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_240902 --config configs_resnet18_small_240902_augm.yaml --classifier"]
+CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_aug_240902 --classifier"]
 
 # 2: compare to 1.
-CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_noaug_240903 --config configs_resnet18_small_240903_noaug.yaml --classifier"]
+#CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_noaug_240903 --classifier"]
 
 # 3: check init
 # Try other initialization for small
