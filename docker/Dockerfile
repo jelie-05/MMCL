@@ -32,10 +32,10 @@ EXPOSE 8000
 # 2. saving: (saving_name)_(cls/contrastive)_(epoch).pth.tar
 
 # 1: done in Edna; 03/09 18:30
-CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_aug_240902 --classifier"]
+CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_aug_240902 --classifier"]
 
 # 2: compare to 1.
-#CMD ["sh", "-c", "python ./src/main.py --save_name resnet_small_noaug_240903 --classifier"]
+#CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_noaug_240903 --classifier"]
 
 # 3: check init
 # Try other initialization for small
