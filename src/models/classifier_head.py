@@ -27,8 +27,6 @@ class classifier_head(nn.Module):
         self.model_lid = model_lid
         input_channel = get_last_layer_channels(self.model_im) + get_last_layer_channels(self.model_lid)
         first_channel = input_channel*2
-        print(first_channel)
-        
 
         self.classifier_layers = nn.Sequential(
             nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 12, 39)
