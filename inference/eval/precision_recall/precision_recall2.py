@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 from src.datasets.kitti_loader.dataset_2D import DataGenerator
 from sklearn.metrics import precision_recall_curve
+import multiprocessing
 
 
 def pr_auc(label, prediction):
@@ -99,9 +100,11 @@ def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled', s
     model_cls.eval()
 
     perturbation_file = args['data']['perturbation_file']
+    batch_size = args['data']['batch_size']
+    num_cores = min(multiprocessing.cpu_count(), 64)
 
     eval_gen = DataGenerator(data_root, 'test', perturb_filenames=perturbation_file, augmentation=False)
-    eval_dataloader = eval_gen.create_data(64)
+    eval_dataloader = eval_gen.create_data(batch_size=batch_size, shuffle=False, nthreads=num_cores)
     
     os.makedirs(output_dir, exist_ok=True)
     fp_output_file = os.path.join(output_dir, f'output_fp.txt')
