@@ -20,9 +20,6 @@ class KittiDataset(Dataset):
         self.transform = transform
         self.augmentation = augmentation
 
-        print(f"Type of self.augmentation: {type(self.augmentation)}")
-        print(f"Value of self.augmentation: {self.augmentation}")
-
         # use left image by default
         if self.augmentation:
             print(f"Create augmentation for correct input. {self.augmentation}")
