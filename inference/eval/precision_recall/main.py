@@ -51,7 +51,7 @@ if __name__ == "__main__":
     tag_cls = params['logging_cls']['tag']
     tag_encoders = params['logging']['tag']
     path_encoders = os.path.join(root, 'outputs_gpu', args.outputs_folder, 'models', f'{args.save_name}_{tag_encoders}-latest.pth.tar')
-    path_cls = os.path.join(root, 'outputs/models/working', args.outputs_folder, 'models', f'{args.save_name}_{tag_cls}-latest.pth.tar')
+    path_cls = os.path.join(root, 'outputs_gpu', args.outputs_folder, 'models', f'{args.save_name}_{tag_cls}-latest.pth.tar')
 
     encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
     opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
