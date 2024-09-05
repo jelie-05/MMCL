@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from src.datasets.kitti_loader.dataset_2D import DataGenerator
 from sklearn.metrics import precision_recall_curve
 import multiprocessing
+from sklearn.metrics import f1_score
 
 
 def pr_auc(label, prediction):
@@ -95,6 +96,34 @@ def plot_distribution(label, prediction, dist_save):
     # plt.show()
 
 
+def find_optimal_threshold(label, prediction):
+    """
+    Function to find the optimal threshold for maximizing the F1 score.
+
+    Returns:
+    max_f1_score (float): The highest F1 score achieved.
+    opt_threshold (float): The threshold corresponding to the highest F1 score.
+    """
+    label_np = label.cpu().numpy()
+    prediction_np = prediction.cpu().numpy()
+
+    thresholds = np.arange(0.0, 1.0, 0.01)  # Thresholds from 0 to 1 in steps of 0.01
+    f1_scores = []
+    prediction_np = np.array(prediction_np)
+
+    for threshold in thresholds:
+        # Apply threshold to get predicted labels, ensuring it is a NumPy array
+        y_pred = (prediction_np >= threshold).astype(int)
+        f1 = f1_score(label_np, y_pred)
+        f1_scores.append(f1)
+
+    # Find the threshold with the maximum F1 score
+    max_f1_score = max(f1_scores)
+    opt_threshold = thresholds[np.argmax(f1_scores)]
+
+    return max_f1_score, float(opt_threshold)
+
+
 def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled', show_plot=False):
     model_cls.to(device)
     model_cls.eval()
@@ -109,6 +138,8 @@ def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled', s
     os.makedirs(output_dir, exist_ok=True)
     fp_output_file = os.path.join(output_dir, f'output_fp.txt')
     fn_output_file = os.path.join(output_dir, f'output_fn.txt')
+    fp_opt = os.path.join(output_dir, f'fp_opt.txt')
+    fn_opt = os.path.join(output_dir, f'fn_opt.txt')
     results_file = os.path.join(output_dir, f'output_pr_auc.txt')
     prauc_file = os.path.join(output_dir, f'output_prauc.png')
     dist_file = os.path.join(output_dir, f'output_distribution.png')
@@ -189,9 +220,9 @@ def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled', s
     print(f'False Positives: {sum_FP}')
     print(f'False Negatives: {sum_FN}')
 
-    accuracy = (TP+TN)/(TP+TN+FP+FN)
-    precision = (TP)/(TP+FP)
-    recall = (TP)/(TP+FN)
+    accuracy = (sum_TP+sum_TN)/(sum_TP+sum_TN+sum_FP+sum_FN)
+    precision = sum_TP / (sum_TP + sum_FP)
+    recall = sum_TP / (sum_TP + sum_FN)
 
     # Save FP list to a text file
     with open(fp_output_file, 'w') as f:
@@ -207,6 +238,26 @@ def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled', s
 
     np.set_printoptions(threshold=np.inf)
     results = pr_auc(label=label, prediction=prediction)
+    max_f1, opt_threshold = find_optimal_threshold(label=label, prediction=prediction)
+    TP, TN, FP, FN, fp_names_opt, fn_names_opt = confusion_matrix(label=label_val, prediction=pred_cls,
+                                                                  name_list=(depth_name + depth_name),
+                                                                  threshold=opt_threshold)
+
+    accuracy_opt = (TP+TN)/(TP+TN+FP+FN)
+    precision_opt = TP / (TP + FP)
+    recall_opt = TP / (TP + FN)
+
+    # Save FP list to a text file
+    with open(fp_opt, 'w') as f:
+        f.write("False Positives (FP):\n")
+        for item in fp_list:
+            f.write("%s\n" % item)
+
+    # Save FN list to a text file
+    with open(fn_opt, 'w') as f:
+        f.write("False Negatives (FN):\n")
+        for item in fn_list:
+            f.write("%s\n" % item)
 
     with open(results_file, 'w') as f:
         f.write("TP(0.5): %i\n" % sum_TP)
@@ -216,6 +267,16 @@ def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled', s
         f.write("accuracy(0.5): %f\n" % accuracy)
         f.write("precision(0.5): %f\n" % precision)
         f.write("recall(0.5): %f\n" % recall)
+        f.write("============================================\n")
+        f.write("Optimal Threshold:\n")
+        f.write("TP(%f): %i\n" % (opt_threshold, TP))
+        f.write("TN(%f): %i\n" % (opt_threshold, TN))
+        f.write("FP(%f): %i\n" % (opt_threshold, FP))
+        f.write("FN(%f): %i\n" % (opt_threshold, FN))
+        f.write("accuracy(%f): %f\n" % (opt_threshold,accuracy_opt))
+        f.write("precision(%f): %f\n" % (opt_threshold,precision_opt))
+        f.write("recall(%f): %f\n" % (opt_threshold,recall_opt))
+        f.write("============================================\n")
         f.write("Precision:\n")
         f.write("%s\n" % results["Precision"])
         f.write("Recall:\n")
