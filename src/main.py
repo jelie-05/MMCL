@@ -75,6 +75,8 @@ if __name__ == "__main__":
     path_cls = os.path.join(root, 'outputs/models', f'{args.save_name}_{tag_cls}-latest.pth.tar')
 
     encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
+    encoder_im.eval()
+    encoder_lid.eval()
     opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
     opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])
     encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
@@ -83,4 +85,4 @@ if __name__ == "__main__":
                                                                       opt_im=opt_im, opt_lid=opt_lid)
 
     classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
-    classifier, epoch = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
+    classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)

@@ -38,7 +38,7 @@ def plot_pr_curve(pr_data, plot_file):
     plt.legend()
     plt.grid(True)
     plt.savefig(plot_file)
-    plt.show()
+    # plt.show()
 
 
 def confusion_matrix(label, prediction, threshold=0.5, name_list=None):
@@ -91,10 +91,10 @@ def plot_distribution(label, prediction, dist_save):
     plt.legend()
     plt.savefig(dist_save)
     # Show the plot
-    plt.show()
+    # plt.show()
 
 
-def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled'):
+def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled', show_plot=False):
     model_cls.to(device)
     model_cls.eval()
 
@@ -102,7 +102,6 @@ def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled'):
 
     eval_gen = DataGenerator(data_root, 'test', perturb_filenames=perturbation_file, augmentation=False)
     eval_dataloader = eval_gen.create_data(64)
-
     
     os.makedirs(output_dir, exist_ok=True)
     fp_output_file = os.path.join(output_dir, f'output_fp.txt')

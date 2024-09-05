@@ -12,11 +12,6 @@ from precision_recall2 import evaluation
 
 
 parser = argparse.ArgumentParser()
-
-# parser.add_argument(
-#     '--config', type=str,
-#     help='name of config file to load',
-#     default='configs_resnet18_small_base.yaml')
 parser.add_argument(
     '--save_name', type=str,
     help='name of lidar model to save',
@@ -24,13 +19,11 @@ parser.add_argument(
 parser.add_argument(
     '--pixel_wise', action='store_true', help='comparing pixel-wise distance')
 parser.add_argument(
-    '--perturbation', type=str,
-    help='filename for perturbation',
-    default='perturbation_neg_all.csv')
-parser.add_argument(
     '--failure_mode', type=str,
     help='type of failure',
     default='labeled')
+parser.add_argument(
+    '--show_plot', action='store_true', help='enable printing or showing plots')
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -51,24 +44,22 @@ if __name__ == "__main__":
         device = torch.device('cuda:0')
         torch.cuda.set_device(device)
 
-    tag_encoders = params['logging']['tag']
     tag_cls = params['logging_cls']['tag']
-
+    tag_encoders = params['logging']['tag']
     path_encoders = os.path.join(root, 'outputs/models/working', f'{args.save_name}_{tag_encoders}-latest.pth.tar')
     path_cls = os.path.join(root, 'outputs/models/working', f'{args.save_name}_{tag_cls}-latest.pth.tar')
 
-    encoder_im, encoder_lid = init_model(device=device,
-                                         mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
+    encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
     opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
     opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])
     encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
                                                                       encoder_im=encoder_im,
                                                                       encoder_lid=encoder_lid,
                                                                       opt_im=opt_im, opt_lid=opt_lid)
+    encoder_im.eval()
+    encoder_lid.eval()
     classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
     classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
-
-    device = torch.device("cuda:0")
 
     output_dir = os.path.join(os.path.dirname(__file__), f'outputs_{save_name}')
 
@@ -84,7 +75,8 @@ if __name__ == "__main__":
         save_dir = os.path.join(output_dir, f'run_{num_folders+1}')
         print(f"Directory {save_dir} created.")
 
-    PR = evaluation(args=params, device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode, output_dir=save_dir)
+    PR = evaluation(args=params, device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
+                    output_dir=save_dir, show_plot=args.show_plot)
     print(PR)
 
 # /home/ubuntu/Documents/students/Jeremialie/MMSiamese/.venv/bin/python /home/ubuntu/Documents/students/Jeremialie/MMSiamese/inference/eval/precision_recall/main.py
