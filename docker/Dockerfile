@@ -32,10 +32,10 @@ EXPOSE 8000
 # 2. saving: (saving_name)_(cls/contrastive)_(epoch).pth.tar
 
 # 1: done in Edna; 03/09 18:30; saved in outputs_0905 (old ver: 0904)
-CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_aug_240902 --classifier"]
+#CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_aug_240902 --classifier"]
 
 # 2: compare to 1.
-#CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_noaug_240903 --classifier"]
+CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_noaug_240906 --classifier"]
 
 # 3: check init
 # Try other initialization for small
@@ -45,7 +45,7 @@ CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_aug_240902 --c
 
 # 5: Train ViT
 
-# CMD ["sh", "-c", "python ./inference/train/main.py --name_im 240802_masking_1_image --name_lid 240802_masking_1_lid --name_cls 240802_masking_1_cls --masking --pixel_wise"]
+
 # CUDA_VISIBLE_DEVICES=0 for 2 cudas
 
 #&& python ./inference/eval/precision_recall/main.py --model_im image_240708_full_1 --model_lid lidar_240708_full_1 --name_cls cls_240708_full_1 

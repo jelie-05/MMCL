@@ -32,7 +32,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
         tb.configure(argv=[None, '--logdir', args['logging']['rel_path'], '--port', str(port)])
         url = tb.launch()
         print(f"TensorBoard started at {url}")
-    checkpoint_freq = 2
+    checkpoint_freq = 4
     tag = args['logging']['tag']
     tag_cls = args['logging_cls']['tag']
     save_path = os.path.join(project_root, 'outputs/models', f'{save_name}_{tag}' + '-ep{epoch}.pth.tar')
@@ -111,6 +111,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
             # Prediction & Backpropagation
             pred_im = encoder_im.forward(left_img_batch)
             pred_lid = encoder_lid.forward(stacked_depth_batch)
+            torch.cuda.synchronize()
 
             # For pixel-wise comparison
             N, C, H, W = left_img_batch.size()
@@ -151,6 +152,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
 
                 pred_im = encoder_im.forward(left_img_batch)
                 pred_lid = encoder_lid.forward(stacked_depth_val)
+                torch.cuda.synchronize()
 
                 N, C, H, W = left_img_batch.size()
                 loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_val, model_im=encoder_im,
