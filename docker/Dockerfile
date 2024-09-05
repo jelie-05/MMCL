@@ -31,7 +31,7 @@ EXPOSE 8000
 # 1. configs: configs_(saving_name).yaml
 # 2. saving: (saving_name)_(cls/contrastive)_(epoch).pth.tar
 
-# 1: done in Edna; 03/09 18:30
+# 1: done in Edna; 03/09 18:30; saved in outputs_0905 (old ver: 0904)
 CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_aug_240902 --classifier"]
 
 # 2: compare to 1.

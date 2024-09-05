@@ -25,6 +25,8 @@ scp -r ge93jen@edna.cps.cit.tum.de:/home/ge93jen/jeremialie/MMCL/outputs_ /home/
 docker build -t mmcl:latest -f docker/Dockerfile .
 docker run --gpus all --shm-size=1.5g -v /home/ge93jen/jeremialie/MMCL/data/kitti:/app/data/kitti --name mmcl-container mmcl:latest
 
+# On Windows
+scp -r ge93jen@edna.cps.cit.tum.de:/home/ge93jen/jeremialie/MMCL/outputs C:\Me
 
 mv per* kitti
 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
