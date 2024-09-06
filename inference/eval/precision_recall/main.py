@@ -23,6 +23,10 @@ parser.add_argument(
     help='type of failure',
     default='labeled')
 parser.add_argument(
+    '--perturbation', type=str,
+    help='type of evaluation',
+    default='neg_master')
+parser.add_argument(
     '--outputs_folder', type=str,
     help='the output folders after copying from docker',
     default='outputs_')
@@ -37,6 +41,8 @@ if __name__ == "__main__":
     kitti_path = os.path.join(root, 'data', 'kitti')
     config_name = 'configs_' + save_name + '.yaml'
     configs_path = os.path.join(root, 'configs', config_name)
+
+    perturbation_file = 'perturbation'+args.perturbation+'.csv'
 
     with open(configs_path, 'r') as y_file:
         params = yaml.load(y_file, Loader=yaml.FullLoader)
@@ -65,7 +71,7 @@ if __name__ == "__main__":
     classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
     classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
 
-    output_dir = os.path.join(os.path.dirname(__file__), f'outputs_{save_name}')
+    output_dir = os.path.join(os.path.dirname(__file__), '../', '00_eval_outputs', f'outputs_{save_name}_{args.perturbation}')
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -80,7 +86,7 @@ if __name__ == "__main__":
         print(f"Directory {save_dir} created.")
 
     PR = evaluation(args=params, device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
-                    output_dir=save_dir, show_plot=args.show_plot)
+                    perturbation_eval=perturbation_file, output_dir=save_dir, show_plot=args.show_plot)
     print(PR)
 
 # /home/ubuntu/Documents/students/Jeremialie/MMSiamese/.venv/bin/python /home/ubuntu/Documents/students/Jeremialie/MMSiamese/inference/eval/precision_recall/main.py

@@ -1,0 +1,7 @@
+data:
+  batch_size: 64
+  perturbation_file: 'perturbation_neg_master.csv'
+  dataset_path: 'data/kitti'
+  augmentation: false
+model:
+  tag: 'resnet18_small_noaug_240906'

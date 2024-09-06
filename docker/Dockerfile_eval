@@ -25,4 +25,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8000
 
 # 1:
-CMD ["sh", "-c", "python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240902 --outputs_folder outputs_0906"]
+#CMD ["sh", "-c", "python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation neg_master --outputs_folder outputs_0906_noaug"]
+
+CMD ["sh", "-c", "python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation neg_master --outputs_folder outputs_0906_noaug && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation rot_easy --outputs_folder outputs_0906_noaug && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation rot_hard --outputs_folder outputs_0906_noaug && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation trans_easy --outputs_folder outputs_0906_noaug && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation trans_hard --outputs_folder outputs_0906_noaug"]
