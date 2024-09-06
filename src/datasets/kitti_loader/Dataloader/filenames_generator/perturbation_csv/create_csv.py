@@ -13,7 +13,23 @@ def choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out):
     for index in zero_out_indices:
         errors[index] = 0
 
-    errors.append(num_zero_out)
+    num_errors = len(errors) - num_zero_out
+    errors.append(num_errors)
+    return errors
+
+def choose_num_errors_3(a, b, c, max_out):
+    # Collect all errors in a list
+    errors = [a, b, c]
+    num_zero_out = np.random.choice(range(0, max_out + 1))
+    # Randomly choose which errors to zero out
+    zero_out_indices = np.random.choice(range(len(errors)), num_zero_out, replace=False)
+
+    for index in zero_out_indices:
+        errors[index] = 0
+
+    num_errors = len(errors)-num_zero_out
+    errors.append(num_errors)
+
     return errors
 
 def generate_random_value(value_range):
@@ -31,20 +47,60 @@ def generate_random_value(value_range):
 # tag = 'neg_master'
 
 # Perturbation positive (labeled as correct)
-x_range = (0, 0.02)
-y_range = (0, 0.02)
-z_range = (0, 0.02)
-range_rad1 = (0, 0.5)
-range_rad2 = (0, 0.5)
-range_rad3 = (0, 0.5)
-max_out = 6
-tag = 'pos_master'
+# x_range = (0, 0.02)
+# y_range = (0, 0.02)
+# z_range = (0, 0.02)
+# range_rad1 = (0, 0.5)
+# range_rad2 = (0, 0.5)
+# range_rad3 = (0, 0.5)
+# max_out = 6
+# tag = 'pos_master'
+
+# Translation error - easy
+# x_range = (0.05, 0.1)
+# y_range = (0.05, 0.1)
+# z_range = (0.05, 0.1)
+# range_rad1 = (0, 0)
+# range_rad2 = (0, 0)
+# range_rad3 = (0, 0)
+# max_out = 2
+# tag = 'trans_easy'
+
+# Translation error - hard
+# x_range = (0.02, 0.05)
+# y_range = (0.02, 0.05)
+# z_range = (0.02, 0.05)
+# range_rad1 = (0, 0)
+# range_rad2 = (0, 0)
+# range_rad3 = (0, 0)
+# max_out = 2
+# tag = 'trans_hard'
+
+# # Rotational error - hard
+# x_range = (0, 0)
+# y_range = (0, 0)
+# z_range = (0, 0)
+# range_rad1 = (0.5, 2)
+# range_rad2 = (0.5, 2)
+# range_rad3 = (0.5, 2)
+# max_out = 2
+# tag = 'rot_hard'
+
+# Rotational error - easy
+x_range = (0, 0)
+y_range = (0, 0)
+z_range = (0, 0)
+range_rad1 = (2, 5)
+range_rad2 = (2, 5)
+range_rad3 = (2, 5)
+max_out = 2
+tag = 'rot_easy'
 
 # Define file paths
 current_file_path = os.path.abspath(__file__)
 root = os.path.abspath(os.path.join(current_file_path, '../../../../../../..'))
 
-input_file_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/filenames/eigen_all_files.txt')
+input_file_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/filenames/eigen_test_files.txt')
 output_csv_file_path = os.path.join(root, f'src/datasets/kitti_loader/Dataloader/filenames_generator/perturbation_csv/perturbation_{tag}.csv')
 
 # Create the name list from the text file
@@ -61,7 +117,7 @@ with open(input_file_path, 'r') as file:
 with (open(output_csv_file_path, mode='w', newline='') as file):
     writer = csv.writer(file)
     # Write the header
-    writer.writerow(['name', 'x', 'y', 'z', 'theta_rad1', 'theta_rad2', 'theta_rad3'])
+    writer.writerow(['name', 'x', 'y', 'z', 'theta_rad1', 'theta_rad2', 'theta_rad3', 'n'])
 
     # Write the data
     for name in name_list:
@@ -72,9 +128,12 @@ with (open(output_csv_file_path, mode='w', newline='') as file):
         theta_rad2 = generate_random_value(range_rad2)
         theta_rad3 = generate_random_value(range_rad3)
 
-        theta_rad1, theta_rad2, theta_rad3, x, y, z, n = choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out=max_out)
+        # theta_rad1, theta_rad2, theta_rad3, x, y, z, n = choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out=max_out)
+
+        x, y, z, n = choose_num_errors_3(x, y, z, max_out=max_out)
+
         row = [
-            name, x, y, z, theta_rad1, theta_rad2, theta_rad3
+            name, x, y, z, theta_rad1, theta_rad2, theta_rad3, n
         ]
         writer.writerow(row)
 

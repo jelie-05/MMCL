@@ -1,10 +1,4 @@
-data/kitti/2011_09_26
-data/kitti/2011_09_28
-data/kitti/2011_09_29
-data/kitti/2011_09_30
-data/kitti/2011_10_03
-outputs/models/done
-outputs/models/working
+data/kitti/*/
+outputs/models/
 outputs/gpu
 archieve/outputs/models
-outputs_gpu

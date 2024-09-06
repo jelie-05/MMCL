@@ -124,11 +124,11 @@ def find_optimal_threshold(label, prediction):
     return max_f1_score, float(opt_threshold)
 
 
-def evaluation(args, device, data_root, output_dir, model_cls, mode='labeled', show_plot=False):
+def evaluation(args, device, data_root, output_dir, model_cls, perturbation_eval, mode='labeled', show_plot=False):
     model_cls.to(device)
     model_cls.eval()
 
-    perturbation_file = args['data']['perturbation_file']
+    perturbation_file = perturbation_eval
     batch_size = args['data']['batch_size']
     num_cores = min(multiprocessing.cpu_count(), 64)
     augmentation = args['data']['augmentation']
