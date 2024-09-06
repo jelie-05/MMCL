@@ -106,9 +106,6 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
             depth_batch = batch['depth'].to(device)
             depth_neg = batch['depth_neg'].to(device)
 
-            print(left_img_batch.shape)
-            print(depth_batch.shape)
-
             stacked_depth_batch, label_list, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
 
             # Prediction & Backpropagation
