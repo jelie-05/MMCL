@@ -1,4 +1,4 @@
 data/kitti/*/
-outputs/models/
-outputs/gpu
+outputs/models/*/
 archieve/outputs/models
+outputs_gpu
