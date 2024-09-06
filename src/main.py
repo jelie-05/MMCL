@@ -3,7 +3,7 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-
+import torch.multiprocessing as mp
 from train_resnet import main as train_resnet
 import yaml
 import torch
@@ -31,6 +31,8 @@ parser.add_argument(
 
 
 if __name__ == "__main__":
+    mp.set_start_method('spawn', force=True)
+
     args = parser.parse_args()
     save_name = args.save_name
 
