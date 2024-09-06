@@ -48,10 +48,10 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
     # Get the number of available CPU cores
     num_cores = min(multiprocessing.cpu_count(), 64)
     data_root = os.path.join(project_root, dataset_path)
-    # train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)
-    # val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file, augmentation=augmentation)
-    train_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
-    val_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
+    train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)
+    val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file, augmentation=augmentation)
+    # train_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
+    # val_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
     train_loader = train_gen.create_data(batch_size=batch_size, shuffle=True, nthreads=num_cores)
     val_loader = val_gen.create_data(batch_size=batch_size, shuffle=False, nthreads=num_cores)
     # --
@@ -105,6 +105,9 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
             left_img_batch = batch['left_img'].to(device)
             depth_batch = batch['depth'].to(device)
             depth_neg = batch['depth_neg'].to(device)
+
+            print(left_img_batch.shape)
+            print(depth_batch.shape)
 
             stacked_depth_batch, label_list, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
 
