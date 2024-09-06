@@ -56,6 +56,16 @@ def generate_random_value(value_range):
 # max_out = 6
 # tag = 'pos_master'
 
+# Perturbation positive (labeled as correct)
+x_range = (0, 0.01)
+y_range = (0, 0.01)
+z_range = (0, 0.01)
+range_rad1 = (0, 0.45)
+range_rad2 = (0, 0.45)
+range_rad3 = (0, 0.45)
+max_out = 6
+tag = 'pos_master'
+
 # Translation error - easy
 # x_range = (0.05, 0.1)
 # y_range = (0.05, 0.1)
@@ -86,15 +96,15 @@ def generate_random_value(value_range):
 # max_out = 2
 # tag = 'rot_hard'
 
-# Rotational error - easy
-x_range = (0, 0)
-y_range = (0, 0)
-z_range = (0, 0)
-range_rad1 = (2, 5)
-range_rad2 = (2, 5)
-range_rad3 = (2, 5)
-max_out = 2
-tag = 'rot_easy'
+# # Rotational error - easy
+# x_range = (0, 0)
+# y_range = (0, 0)
+# z_range = (0, 0)
+# range_rad1 = (2, 5)
+# range_rad2 = (2, 5)
+# range_rad3 = (2, 5)
+# max_out = 2
+# tag = 'rot_easy'
 
 # Define file paths
 current_file_path = os.path.abspath(__file__)
@@ -128,9 +138,9 @@ with (open(output_csv_file_path, mode='w', newline='') as file):
         theta_rad2 = generate_random_value(range_rad2)
         theta_rad3 = generate_random_value(range_rad3)
 
-        # theta_rad1, theta_rad2, theta_rad3, x, y, z, n = choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out=max_out)
+        theta_rad1, theta_rad2, theta_rad3, x, y, z, n = choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out=max_out)
 
-        x, y, z, n = choose_num_errors_3(x, y, z, max_out=max_out)
+        # x, y, z, n = choose_num_errors_3(x, y, z, max_out=max_out)
 
         row = [
             name, x, y, z, theta_rad1, theta_rad2, theta_rad3, n
