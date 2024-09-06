@@ -57,7 +57,9 @@ if __name__ == "__main__":
     tag_cls = 'classifier'
     tag_encoders = 'contrastive'
     path_encoders = os.path.join(root, 'outputs_gpu', args.save_name, 'models', f'{args.save_name}_{tag_encoders}-latest.pth.tar')
-    path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models', f'{args.save_name}_{tag_cls}-latest.pth.tar')
+    # path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models', f'{args.save_name}_{tag_cls}-latest.pth.tar')
+    epoch = 40
+    path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models', f'{args.save_name}_{tag_cls}-ep{epoch}.pth.tar')
 
     encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
     opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
