@@ -5,3 +5,7 @@ data:
   augmentation: false
 model:
   tag: 'resnet18_small_noaug_240906'
+  intermediate_1: true
+  intermediate_2: false
+  epoch_1: 26
+  epoch_2: 32
