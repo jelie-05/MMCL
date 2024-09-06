@@ -131,7 +131,6 @@ def evaluation(args, device, data_root, output_dir, model_cls, perturbation_eval
     perturbation_file = perturbation_eval
     batch_size = args['data']['batch_size']
     num_cores = min(multiprocessing.cpu_count(), 64)
-    augmentation = args['data']['augmentation']
 
     eval_gen = DataGenerator(data_root, 'test', perturb_filenames=perturbation_file, augmentation=False)
     eval_dataloader = eval_gen.create_data(batch_size=batch_size, shuffle=False, nthreads=num_cores)
