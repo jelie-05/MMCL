@@ -337,8 +337,8 @@ class RandCropGPU(BaseMethod):
         combined = torch.cat((img, depth, depth_neg), dim=0)
         cropped = F.center_crop(combined, (176, 576))
         img_cropped = cropped[:3, :, :]
-        lid_cropped = cropped[3, :, :]
-        neg_cropped = cropped[4, :, :]
+        lid_cropped = cropped[3, :, :].unsqueeze(0)
+        neg_cropped = cropped[4, :, :].unsqueeze(0)
         return img_cropped, lid_cropped, neg_cropped
 
     def __call__(self, data_item):
