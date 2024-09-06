@@ -42,7 +42,7 @@ if __name__ == "__main__":
     config_name = 'configs_' + save_name + '.yaml'
     configs_path = os.path.join(root, 'configs', config_name)
 
-    perturbation_file = 'perturbation'+args.perturbation+'.csv'
+    perturbation_file = 'perturbation' + args.perturbation + '.csv'
 
     with open(configs_path, 'r') as y_file:
         params = yaml.load(y_file, Loader=yaml.FullLoader)
@@ -54,10 +54,10 @@ if __name__ == "__main__":
         device = torch.device('cuda:0')
         torch.cuda.set_device(device)
 
-    tag_cls = params['logging_cls']['tag']
-    tag_encoders = params['logging']['tag']
-    path_encoders = os.path.join(root, 'outputs_gpu', args.outputs_folder, 'models', f'{args.save_name}_{tag_encoders}-latest.pth.tar')
-    path_cls = os.path.join(root, 'outputs_gpu', args.outputs_folder, 'models', f'{args.save_name}_{tag_cls}-latest.pth.tar')
+    tag_cls = 'classifier'
+    tag_encoders = 'contrastive'
+    path_encoders = os.path.join(root, 'outputs_gpu', args.save_name, 'models', f'{args.save_name}_{tag_encoders}-latest.pth.tar')
+    path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models', f'{args.save_name}_{tag_cls}-latest.pth.tar')
 
     encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
     opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         save_dir = os.path.join(output_dir, f'run_{num_folders+1}')
         print(f"Directory {save_dir} created.")
 
-    PR = evaluation(args=params, device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
+    PR = evaluation(device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
                     perturbation_eval=perturbation_file, output_dir=save_dir, show_plot=args.show_plot)
     print(PR)
 
