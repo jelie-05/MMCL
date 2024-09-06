@@ -71,7 +71,7 @@ if __name__ == "__main__":
     classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
     classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
 
-    output_dir = os.path.join(os.path.dirname(__file__), '../', '00_eval_outputs', f'outputs_{save_name}_{args.perturbation}')
+    output_dir = path_encoders = os.path.join(root, 'outputs_gpu', args.save_name, 'eval', f'outputs_{save_name}_{args.perturbation}')
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
