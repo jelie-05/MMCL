@@ -221,8 +221,7 @@ class RandCrop(BaseMethod):
 
 class TransToTensor(BaseMethod):
     """
-    Transform method to convert images as torch Tensors directly to GPU.
-    Converts PIL Image to tensor and moves it to GPU.
+    Convert data items to torch tensors and move them to GPU.
     """
     def __call__(self, data_item):
         self.set_data(data_item)
@@ -231,13 +230,16 @@ class TransToTensor(BaseMethod):
         if isinstance(self.left_img, Image.Image):
             data_item['left_img'] = TF.to_tensor(self.left_img).cuda(non_blocking=True)
         elif isinstance(self.left_img, np.ndarray):
-            data_item['left_img'] = torch.from_numpy(self.left_img).cuda(non_blocking=True)
+            data_item['left_img'] = torch.from_numpy(self.left_img).permute(2, 0, 1).cuda(non_blocking=True)
 
-        # Convert 'depth' and 'depth_neg' to tensor and move to GPU
+        # Convert 'depth' to tensor and move to GPU
         if isinstance(self.depth, np.ndarray):
-            data_item['depth'] = torch.from_numpy(self.depth).cuda(non_blocking=True)
+            data_item['depth'] = torch.from_numpy(self.depth).unsqueeze(0).cuda(non_blocking=True)
+            a = torch.from_numpy(self.depth).unsqueeze(0).cuda(non_blocking=True)
+
+        # Convert 'depth_neg' to tensor and move to GPU
         if isinstance(self.depth_neg, np.ndarray):
-            data_item['depth_neg'] = torch.from_numpy(self.depth_neg).cuda(non_blocking=True)
+            data_item['depth_neg'] = torch.from_numpy(self.depth_neg).unsqueeze(0).cuda(non_blocking=True)
 
         return data_item
 
@@ -245,30 +247,45 @@ class TransToTensor(BaseMethod):
 class ScaleGPU(BaseMethod):
     def __init__(self, size):
         BaseMethod.__init__(self)
-        self.size = size
+        self.size = size  # Target size as (new_height, new_width)
 
     def _downscale_lidar_tensor(self, lidar_tensor):
+        """
+        Downscale the LiDAR tensor, ensuring it has 4 dimensions (N, C, H, W) for interpolation.
+        """
+        # If lidar_tensor is 2D, add channel and batch dimensions
+
+        # New target height and width
         new_height, new_width = self.size
+
+        # Create mask for non-zero values
         mask = lidar_tensor != 0
 
+        # Interpolate the non-zero values
         non_zero_values = lidar_tensor.float() * mask.float()
-        non_zero_interpolated = Fun.interpolate(non_zero_values.unsqueeze(1), size=(new_height, new_width),
-                                                mode='bilinear', align_corners=False)
-        mask_interpolated = Fun.interpolate(mask.float().unsqueeze(1), size=(new_height, new_width), mode='bilinear',
-                                            align_corners=False)
+        non_zero_interpolated = Fun.interpolate(non_zero_values.unsqueeze(0), size=(new_height, new_width), mode='bilinear', align_corners=False)
+        mask_interpolated = Fun.interpolate(mask.float().unsqueeze(0), size=(new_height, new_width), mode='bilinear', align_corners=False)
 
+        # Avoid division by zero
         mask_interpolated[mask_interpolated == 0] = 1
-        lidar_tensor_downscaled = (non_zero_interpolated / mask_interpolated).squeeze(1)
-        lidar_tensor_downscaled[mask_interpolated.squeeze(1) == 0] = 0
 
+        # Combine interpolated values with the original zero values
+        lidar_tensor_downscaled = (non_zero_interpolated / mask_interpolated)
+
+        # Remove batch and channel dimensions
+        lidar_tensor_downscaled = lidar_tensor_downscaled.squeeze(0)
+
+        # Restore zero values in the tensor
+        lidar_tensor_downscaled[mask_interpolated.squeeze(0) == 0] = 0
         return lidar_tensor_downscaled
 
     def __call__(self, data_item):
         self.set_data(data_item)
-        data_item['left_img'] = Fun.interpolate(data_item['left_img'].unsqueeze(0), size=self.size, mode='bilinear',
-                                                align_corners=False).squeeze(0)
+
+        data_item['left_img'] = Fun.interpolate(data_item['left_img'].unsqueeze(0), size=self.size, mode='bilinear', align_corners=False).squeeze(0)
         data_item['depth'] = self._downscale_lidar_tensor(data_item['depth'])
         data_item['depth_neg'] = self._downscale_lidar_tensor(data_item['depth_neg'])
+
         return data_item
 
 
