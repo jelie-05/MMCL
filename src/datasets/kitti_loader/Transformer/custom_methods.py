@@ -228,18 +228,17 @@ class TransToTensor(BaseMethod):
 
         # Convert 'left_img' to tensor and move to GPU
         if isinstance(self.left_img, Image.Image):
-            data_item['left_img'] = TF.to_tensor(self.left_img).cuda(non_blocking=True)
+            data_item['left_img'] = TF.to_tensor(self.left_img)
         elif isinstance(self.left_img, np.ndarray):
-            data_item['left_img'] = torch.from_numpy(self.left_img).permute(2, 0, 1).cuda(non_blocking=True)
+            data_item['left_img'] = torch.from_numpy(self.left_img).permute(2, 0, 1)
 
         # Convert 'depth' to tensor and move to GPU
         if isinstance(self.depth, np.ndarray):
-            data_item['depth'] = torch.from_numpy(self.depth).unsqueeze(0).cuda(non_blocking=True)
-            a = torch.from_numpy(self.depth).unsqueeze(0).cuda(non_blocking=True)
+            data_item['depth'] = torch.from_numpy(self.depth).unsqueeze(0)
 
         # Convert 'depth_neg' to tensor and move to GPU
         if isinstance(self.depth_neg, np.ndarray):
-            data_item['depth_neg'] = torch.from_numpy(self.depth_neg).unsqueeze(0).cuda(non_blocking=True)
+            data_item['depth_neg'] = torch.from_numpy(self.depth_neg).unsqueeze(0)
 
         return data_item
 
