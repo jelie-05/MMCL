@@ -6,6 +6,7 @@ import torchvision.transforms.functional as F
 import torch.nn.functional as Fun
 from PIL import Image
 from .base_methods import BaseMethod
+import torchvision.transforms.functional as TF
 
 
 """
@@ -221,13 +222,23 @@ class RandCrop(BaseMethod):
 class TransToTensor(BaseMethod):
     """
     Transform method to convert images as torch Tensors directly to GPU.
+    Converts PIL Image to tensor and moves it to GPU.
     """
-
     def __call__(self, data_item):
         self.set_data(data_item)
-        data_item['left_img'] = torch.from_numpy(self.left_img).cuda(non_blocking=True)
-        data_item['depth'] = torch.from_numpy(self.depth).cuda(non_blocking=True)
-        data_item['depth_neg'] = torch.from_numpy(self.depth_neg).cuda(non_blocking=True)
+
+        # Convert 'left_img' to tensor and move to GPU
+        if isinstance(self.left_img, Image.Image):
+            data_item['left_img'] = TF.to_tensor(self.left_img).cuda(non_blocking=True)
+        elif isinstance(self.left_img, np.ndarray):
+            data_item['left_img'] = torch.from_numpy(self.left_img).cuda(non_blocking=True)
+
+        # Convert 'depth' and 'depth_neg' to tensor and move to GPU
+        if isinstance(self.depth, np.ndarray):
+            data_item['depth'] = torch.from_numpy(self.depth).cuda(non_blocking=True)
+        if isinstance(self.depth_neg, np.ndarray):
+            data_item['depth_neg'] = torch.from_numpy(self.depth_neg).cuda(non_blocking=True)
+
         return data_item
 
 
