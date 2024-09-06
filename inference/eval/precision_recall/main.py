@@ -42,7 +42,7 @@ if __name__ == "__main__":
     config_name = 'configs_' + save_name + '.yaml'
     configs_path = os.path.join(root, 'configs', config_name)
 
-    perturbation_file = 'perturbation' + args.perturbation + '.csv'
+    perturbation_file = 'perturbation_' + args.perturbation + '.csv'
 
     with open(configs_path, 'r') as y_file:
         params = yaml.load(y_file, Loader=yaml.FullLoader)
