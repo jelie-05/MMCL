@@ -110,7 +110,7 @@ tag = 'pos_master'
 current_file_path = os.path.abspath(__file__)
 root = os.path.abspath(os.path.join(current_file_path, '../../../../../../..'))
 
-input_file_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/filenames/eigen_test_files.txt')
+input_file_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/filenames/eigen_all_files.txt')
 output_csv_file_path = os.path.join(root, f'src/datasets/kitti_loader/Dataloader/filenames_generator/perturbation_csv/perturbation_{tag}.csv')
 
 # Create the name list from the text file
