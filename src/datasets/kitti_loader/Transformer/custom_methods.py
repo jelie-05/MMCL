@@ -216,3 +216,108 @@ class RandCrop(BaseMethod):
         data_item['left_img'], data_item['depth'], data_item['depth_neg'] = self._random_crop(self.left_img, self.depth, self.depth_neg)
 
         return data_item
+
+
+class TransToTensor(BaseMethod):
+    """
+    Transform method to convert images as torch Tensors directly to GPU.
+    """
+
+    def __call__(self, data_item):
+        self.set_data(data_item)
+        data_item['left_img'] = torch.from_numpy(self.left_img).cuda(non_blocking=True)
+        data_item['depth'] = torch.from_numpy(self.depth).cuda(non_blocking=True)
+        data_item['depth_neg'] = torch.from_numpy(self.depth_neg).cuda(non_blocking=True)
+        return data_item
+
+
+class ScaleGPU(BaseMethod):
+    def __init__(self, size):
+        BaseMethod.__init__(self)
+        self.size = size
+
+    def _downscale_lidar_tensor(self, lidar_tensor):
+        new_height, new_width = self.size
+        mask = lidar_tensor != 0
+
+        non_zero_values = lidar_tensor.float() * mask.float()
+        non_zero_interpolated = Fun.interpolate(non_zero_values.unsqueeze(1), size=(new_height, new_width),
+                                                mode='bilinear', align_corners=False)
+        mask_interpolated = Fun.interpolate(mask.float().unsqueeze(1), size=(new_height, new_width), mode='bilinear',
+                                            align_corners=False)
+
+        mask_interpolated[mask_interpolated == 0] = 1
+        lidar_tensor_downscaled = (non_zero_interpolated / mask_interpolated).squeeze(1)
+        lidar_tensor_downscaled[mask_interpolated.squeeze(1) == 0] = 0
+
+        return lidar_tensor_downscaled
+
+    def __call__(self, data_item):
+        self.set_data(data_item)
+        data_item['left_img'] = Fun.interpolate(data_item['left_img'].unsqueeze(0), size=self.size, mode='bilinear',
+                                                align_corners=False).squeeze(0)
+        data_item['depth'] = self._downscale_lidar_tensor(data_item['depth'])
+        data_item['depth_neg'] = self._downscale_lidar_tensor(data_item['depth_neg'])
+        return data_item
+
+
+class RandomHorizontalFlipGPU(BaseMethod):
+    def __init__(self):
+        BaseMethod.__init__(self)
+
+    def __call__(self, data_item):
+        self.set_data(data_item)
+        if random.random() < 0.5:
+            data_item['left_img'] = torch.flip(data_item['left_img'], [-1])  # Flip horizontally
+            data_item['depth'] = torch.flip(data_item['depth'], [-1])
+            data_item['depth_neg'] = torch.flip(data_item['depth_neg'], [-1])
+        return data_item
+
+
+class RandomRotateGPU(BaseMethod):
+    def __init__(self):
+        BaseMethod.__init__(self)
+
+    def __call__(self, data_item):
+        self.set_data(data_item)
+        degree = random.uniform(-30, 30)
+        data_item['left_img'] = F.rotate(data_item['left_img'], degree)
+        data_item['depth'] = F.rotate(data_item['depth'], degree)
+        data_item['depth_neg'] = F.rotate(data_item['depth_neg'], degree)
+        return data_item
+
+
+class ImgAugGPU(BaseMethod):
+    def __init__(self):
+        BaseMethod.__init__(self)
+
+    def __call__(self, data_item):
+        self.set_data(data_item)
+        brightness = random.uniform(0.8, 1.2)
+        contrast = random.uniform(0.8, 1.2)
+        saturation = random.uniform(0.8, 1.2)
+        data_item['left_img'] = F.adjust_brightness(data_item['left_img'], brightness)
+        data_item['left_img'] = F.adjust_contrast(data_item['left_img'], contrast)
+        data_item['left_img'] = F.adjust_saturation(data_item['left_img'], saturation)
+        return data_item
+
+
+class RandCropGPU(BaseMethod):
+    def __init__(self):
+        BaseMethod.__init__(self)
+
+    def _random_crop(self, img, depth, depth_neg):
+        combined = torch.cat((img, depth, depth_neg), dim=0)
+        cropped = F.center_crop(combined, (176, 576))
+        img_cropped = cropped[:3, :, :]
+        lid_cropped = cropped[3, :, :]
+        neg_cropped = cropped[4, :, :]
+        return img_cropped, lid_cropped, neg_cropped
+
+    def __call__(self, data_item):
+        self.set_data(data_item)
+        data_item['left_img'], data_item['depth'], data_item['depth_neg'] = self._random_crop(data_item['left_img'],
+                                                                                              data_item['depth'],
+                                                                                              data_item['depth_neg'])
+        return data_item
+
