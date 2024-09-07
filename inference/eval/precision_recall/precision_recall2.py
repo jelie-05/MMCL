@@ -43,6 +43,9 @@ def plot_pr_curve(pr_data, plot_file):
     # plt.show()
 
 
+import numpy as np
+from collections import Counter
+
 def confusion_matrix(label, prediction, threshold=0.5, name_list=None):
     # Convert tensors to numpy arrays
     label = np.concatenate([tensor.cpu().numpy() for tensor in label])
@@ -67,7 +70,15 @@ def confusion_matrix(label, prediction, threshold=0.5, name_list=None):
         fp_names = [name_list[i] for i in fp_indices]
         fn_names = [name_list[i] for i in fn_indices]
 
-        return TP, TN, FP, FN, fp_names, fn_names
+        # Count occurrences of specific dates in FP and FN names
+        date_list = ['2011_09_26', '2011_09_28', '2011_09_29', '2011_09_30', '2011_10_03']
+        fp_dates = [name.split('_sync_')[0] for name in fp_names]  # Extract date parts from names
+        fn_dates = [name.split('_sync_')[0] for name in fn_names]
+
+        fp_date_counts = {date: fp_dates.count(date) for date in date_list}
+        fn_date_counts = {date: fn_dates.count(date) for date in date_list}
+
+        return TP, TN, FP, FN, fp_names, fn_names, fp_date_counts, fn_date_counts
 
     return TP, TN, FP, FN
 
@@ -134,7 +145,7 @@ def evaluation(device, data_root, output_dir, model_cls, perturbation_eval, mode
 
     eval_gen = DataGenerator(data_root, 'test', perturb_filenames=perturbation_file, augmentation=False)
     eval_dataloader = eval_gen.create_data(batch_size=batch_size, shuffle=False, nthreads=num_cores)
-    
+
     os.makedirs(output_dir, exist_ok=True)
     fp_output_file = os.path.join(output_dir, f'output_fp.txt')
     fn_output_file = os.path.join(output_dir, f'output_fn.txt')
@@ -148,11 +159,16 @@ def evaluation(device, data_root, output_dir, model_cls, perturbation_eval, mode
     prediction = torch.empty(0, 1, device=device)
     fp_list = []
     fn_list = []
+    all_depth_names = []
     sum_TP = 0
     sum_TN = 0
     sum_FP = 0
     sum_FN = 0
     iter = 0
+
+    # Initialize counters for date occurrences
+    fp_date_total_counts = Counter()
+    fn_date_total_counts = Counter()
 
     with torch.no_grad():
         print("Evaluation is started")
@@ -188,7 +204,7 @@ def evaluation(device, data_root, output_dir, model_cls, perturbation_eval, mode
 
                 # Generate random values in the range [overall_min, overall_max] with the same shape as non-zero elements
                 random_values = torch.rand_like(non_zero_values, device=device) * (
-                            overall_max - overall_min) + overall_min
+                        overall_max - overall_min) + overall_min
 
                 # Replace the non-zero elements in the batch with the generated random values
                 scaled_depth_batch[non_zero_mask] = random_values
@@ -202,15 +218,22 @@ def evaluation(device, data_root, output_dir, model_cls, perturbation_eval, mode
             # Concatenate the batch results to the full tensors
             label = torch.cat((label, label_val), dim=0)
             prediction = torch.cat((prediction, pred_cls), dim=0)
+            all_depth_names.extend(depth_name + depth_name)
 
-            TP, TN, FP, FN, fp_names, fn_names = confusion_matrix(label=label_val, prediction=pred_cls,
-                                                                  name_list=(depth_name+depth_name), threshold=0.5)
+            TP, TN, FP, FN, fp_names, fn_names, fp_date_counts, fn_date_counts = confusion_matrix(label=label_val,
+                                                                                                  prediction=pred_cls,
+                                                                                                  name_list=(depth_name + depth_name),
+                                                                                                  threshold=0.5)
             fp_list.extend(fp_names)
             fn_list.extend(fn_names)
             sum_TP += TP
             sum_TN += TN
             sum_FP += FP
             sum_FN += FN
+
+            # Update date counts
+            fp_date_total_counts.update(fp_date_counts)
+            fn_date_total_counts.update(fn_date_counts)
 
             iter += 1
             print(f'Iteration {iter} finished')
@@ -239,8 +262,8 @@ def evaluation(device, data_root, output_dir, model_cls, perturbation_eval, mode
     np.set_printoptions(threshold=np.inf)
     results = pr_auc(label=label, prediction=prediction)
     max_f1, opt_threshold = find_optimal_threshold(label=label, prediction=prediction)
-    TP, TN, FP, FN, fp_names_opt, fn_names_opt = confusion_matrix(label=label_val, prediction=pred_cls,
-                                                                  name_list=(depth_name + depth_name),
+    TP, TN, FP, FN, fp_names_opt, fn_names_opt = confusion_matrix(label=label, prediction=prediction,
+                                                                  name_list=all_depth_names,
                                                                   threshold=opt_threshold)
 
     accuracy_opt = (TP+TN)/(TP+TN+FP+FN)
@@ -267,6 +290,13 @@ def evaluation(device, data_root, output_dir, model_cls, perturbation_eval, mode
         f.write("accuracy(0.5): %f\n" % accuracy)
         f.write("precision(0.5): %f\n" % precision)
         f.write("recall(0.5): %f\n" % recall)
+        f.write("False Positive Date Counts:\n")
+        for date, count in fp_date_total_counts.items():
+            f.write(f"{date}: {count}\n")
+        f.write("\n")
+        f.write("False Negative Date Counts:\n")
+        for date, count in fn_date_total_counts.items():
+            f.write(f"{date}: {count}\n")
         f.write("============================================\n")
         f.write("Optimal Threshold:\n")
         f.write("TP(%f): %i\n" % (opt_threshold, TP))
