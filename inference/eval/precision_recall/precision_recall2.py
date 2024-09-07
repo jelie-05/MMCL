@@ -85,24 +85,32 @@ def confusion_matrix(label, prediction, threshold=0.5, name_list=None):
 
 def plot_distribution(label, prediction, dist_save):
     pred_label_1 = prediction[label == 1].cpu()
-    print(pred_label_1)
     pred_label_0 = prediction[label == 0].cpu()
 
     # Plot the distributions
     plt.figure(figsize=(10, 6))
 
-    # Plot for label == 1
-    plt.hist(pred_label_1.numpy(), bins=30, alpha=0.3, label='Label == 1', color='blue', density=True)
+    # Check if there are any label == 1 predictions to plot
+    if len(pred_label_1) > 0:
+        plt.hist(pred_label_1.numpy(), bins=30, alpha=0.3, label='Label == 1', color='blue', density=True)
+    else:
+        print("No instances of label == 1")
 
-    # Plot for label == 0
-    plt.hist(pred_label_0.numpy(), bins=30, alpha=0.7, label='Label == 0', color='red', density=True)
+    # Check if there are any label == 0 predictions to plot
+    if len(pred_label_0) > 0:
+        plt.hist(pred_label_0.numpy(), bins=30, alpha=0.7, label='Label == 0', color='red', density=True)
+    else:
+        print("No instances of label == 0")
 
     # Adding titles and labels
     plt.title('Distribution of Predictions')
     plt.xlabel('Prediction Values')
     plt.ylabel('Density')
     plt.legend()
+
+    # Save the plot
     plt.savefig(dist_save)
+    plt.close()
     # Show the plot
     # plt.show()
 
