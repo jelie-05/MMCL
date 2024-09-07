@@ -7,8 +7,6 @@ import torch.multiprocessing as mp
 from train_resnet import main as train_resnet
 import yaml
 import torch
-from src.utils.save_load_model import load_model_lidar, load_model_img
-from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 from src.models.classifier_head import classifier_head
 from src.utils.helper import load_checkpoint, load_checkpoint_cls, init_model, init_opt
 
