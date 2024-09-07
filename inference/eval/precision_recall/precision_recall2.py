@@ -270,9 +270,9 @@ def evaluation(device, data_root, output_dir, model_cls, perturbation_eval, mode
     np.set_printoptions(threshold=np.inf)
     results = pr_auc(label=label, prediction=prediction)
     max_f1, opt_threshold = find_optimal_threshold(label=label, prediction=prediction)
-    TP, TN, FP, FN, fp_names_opt, fn_names_opt = confusion_matrix(label=label, prediction=prediction,
-                                                                  name_list=all_depth_names,
-                                                                  threshold=opt_threshold)
+    TP, TN, FP, FN, fp_names_opt, fn_names_opt, fp_date_counts_opt, fn_date_counts_opt = confusion_matrix(label=label, prediction=prediction,
+                                                                                                          name_list=all_depth_names,
+                                                                                                          threshold=opt_threshold)
 
     accuracy_opt = (TP+TN)/(TP+TN+FP+FN)
     precision_opt = TP / (TP + FP)
