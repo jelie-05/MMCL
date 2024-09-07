@@ -60,9 +60,9 @@ def generate_random_value(value_range):
 x_range = (0, 0.01)
 y_range = (0, 0.01)
 z_range = (0, 0.01)
-range_rad1 = (0, 0.45)
-range_rad2 = (0, 0.45)
-range_rad3 = (0, 0.45)
+range_rad1 = (0, 0.5)
+range_rad2 = (0, 0.5)
+range_rad3 = (0, 0.5)
 max_out = 6
 tag = 'pos_master'
 
