@@ -57,9 +57,9 @@ def generate_random_value(value_range):
 # tag = 'pos_master'
 
 # Perturbation positive (labeled as correct)
-x_range = (0, 0.01)
-y_range = (0, 0.01)
-z_range = (0, 0.01)
+x_range = (0, 0.0)
+y_range = (0, 0.0)
+z_range = (0, 0.0)
 range_rad1 = (0, 0.5)
 range_rad2 = (0, 0.5)
 range_rad3 = (0, 0.5)
