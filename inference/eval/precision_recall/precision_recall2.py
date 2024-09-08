@@ -72,8 +72,8 @@ def confusion_matrix(label, prediction, threshold=0.5, name_list=None):
 
         # Count occurrences of specific dates in FP and FN names
         date_list = ['2011_09_26', '2011_09_28', '2011_09_29', '2011_09_30', '2011_10_03']
-        fp_dates = [name.split('_sync_')[0] for name in fp_names]  # Extract date parts from names
-        fn_dates = [name.split('_sync_')[0] for name in fn_names]
+        fp_dates = [name.split('_drive_')[0] for name in fp_names]  # Extract date parts from names
+        fn_dates = [name.split('_drive_')[0] for name in fn_names]
 
         fp_date_counts = {date: fp_dates.count(date) for date in date_list}
         fn_date_counts = {date: fn_dates.count(date) for date in date_list}
