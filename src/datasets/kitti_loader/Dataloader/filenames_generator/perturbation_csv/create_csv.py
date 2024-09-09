@@ -66,7 +66,7 @@ range_rad3 = (0, 0.5)
 max_out = 6
 tag = 'pos_master'
 
-# Translation error - easy
+# # Translation error - easy
 # x_range = (0.05, 0.1)
 # y_range = (0.05, 0.1)
 # z_range = (0.05, 0.1)
@@ -75,8 +75,8 @@ tag = 'pos_master'
 # range_rad3 = (0, 0)
 # max_out = 2
 # tag = 'trans_easy'
-
-# Translation error - hard
+#
+# # Translation error - hard
 # x_range = (0.02, 0.05)
 # y_range = (0.02, 0.05)
 # z_range = (0.02, 0.05)
@@ -85,7 +85,7 @@ tag = 'pos_master'
 # range_rad3 = (0, 0)
 # max_out = 2
 # tag = 'trans_hard'
-
+#
 # # Rotational error - hard
 # x_range = (0, 0)
 # y_range = (0, 0)
@@ -95,7 +95,7 @@ tag = 'pos_master'
 # range_rad3 = (0.5, 2)
 # max_out = 2
 # tag = 'rot_hard'
-
+#
 # # Rotational error - easy
 # x_range = (0, 0)
 # y_range = (0, 0)
