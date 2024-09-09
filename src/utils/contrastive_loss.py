@@ -8,44 +8,24 @@ class ContrastiveLoss(nn.Module):
     def __init__(self, margin=4.0, patch_size=16):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
-        self.patch_size = patch_size
 
 
-    def forward(self, output_im, output_lid, labels, model_im, H, W, pixel_wise, mask):
+    def forward(self, output_im, output_lid, labels, model_im, H, W, vit, mask):
         # L2 Distances of feature embeddings
-        distance = torch.sqrt(torch.sum((output_im - output_lid) ** 2, dim=1))
 
-        if pixel_wise:
-            distance = PixelwiseFeatureMaps(model=model_im, embeddings_value=distance.unsqueeze(1), input_image_size=(H, W))
-            distance = distance.assign_embedding_value().squeeze(1)
-            N, H_dist, W_dist = distance.shape
-            labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)
+        if vit:
+            # Input (B, N, D). Comparing each embedding (1, D)-vectors
+            distances = F.pairwise_distance(output_im, output_lid, p=2)  # Shape (B, N)
+            distances_mean = distances.mean(dim=1)  # Shape (B,)
 
-            # mask = mask.float()
-            #
-            # # Reshape the mask into patches
-            # mask_reshaped = mask.unfold(2, self.patch_size, self.patch_size).unfold(3, self.patch_size, self.patch_size)
-            #
-            # # Check if each patch has at least one non-zero value
-            # patch_has_nonzero = mask_reshaped.sum(dim=(-1, -2)) > 0
-            #
-            # # Expand the result back to the original size
-            # patch_result = patch_has_nonzero.float().repeat_interleave(self.patch_size, dim=-1).repeat_interleave(self.patch_size, dim=-2)
-            #
-            # # Reshape back to the original mask size
-            # mask_analyzed = patch_result.view(N, 1, H, W)
-            #
-            # # mask_analyzed = F.interpolate(mask_analyzed, size=(H_dist, W_dist), mode='nearest').squeeze(1)
+            positive_loss = torch.pow(distances_mean, 2) * labels
+            negative_loss = torch.pow(torch.clamp(self.margin - distances_mean, min=0.0), 2) * (1 - labels)
 
-            # distance_final = distance * mask_analyzed
-
-            distance_final = distance
-
-            positive_loss = torch.pow(distance_final, 2) * labels_broadcasted
-            negative_loss = torch.pow(torch.clamp(self.margin - distance_final, min=0.0), 2) * (1 - labels_broadcasted)
             loss_contrastive = (positive_loss + negative_loss).mean()
 
         else:
+            # Input (B, C, H, W). Comparing each pixel (across C)
+            distance = torch.sqrt(torch.sum((output_im - output_lid) ** 2, dim=1))
             N, H_dist, W_dist = distance.shape
             labels_broadcasted = labels.view(N, 1, 1).expand(N, H_dist, W_dist)
 

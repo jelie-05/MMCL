@@ -1,6 +1,8 @@
 import torch
 import src.models.resnet as resnet
+import src.models.vision_transformer as vit
 import torch.optim as optim
+from src.utils.tensors import trunc_normal_
 from src.models.classifier_head import classifier_head as classifier
 
 def load_checkpoint(
@@ -84,8 +86,6 @@ def init_model(
         mode='resnet',
         model_name='resnet18_small',
         patch_size=16,
-        crop_size=224,
-        pred_emb_dim=384
 ):
     if mode == 'resnet':
         model_name_im = model_name+'_im'
@@ -95,8 +95,23 @@ def init_model(
     else:
         model_name_im = model_name+'_im'
         model_name_lid = model_name + '_lid'
-        encoder_im = resnet.__dict__[model_name_im]().to(device)
-        encoder_lid = resnet.__dict__[model_name_lid]().to(device)
+        encoder_im = vit.__dict__[model_name_im](patch_size=patch_size).to(device)
+        encoder_lid = vit.__dict__[model_name_lid](patch_size=patch_size).to(device)
+
+        def init_weights(m):
+            if isinstance(m, torch.nn.Linear):
+                trunc_normal_(m.weight, std=0.02)
+                if m.bias is not None:
+                    torch.nn.init.constant_(m.bias, 0)
+            elif isinstance(m, torch.nn.LayerNorm):
+                torch.nn.init.constant_(m.bias, 0)
+                torch.nn.init.constant_(m.weight, 1.0)
+
+        for m in encoder_im.modules():
+            init_weights(m)
+
+        for m in encoder_lid.modules():
+            init_weights(m)
 
     return encoder_im, encoder_lid
 
