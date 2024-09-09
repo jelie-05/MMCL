@@ -29,16 +29,16 @@ EXPOSE 8000
 
 #CMD ["sh", "-c", "python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation neg_master"]
 
-#CMD ["sh", "-c", "python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation neg_master && \
-#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation rot_easy && \
-#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation rot_hard && \
-#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation trans_easy && \
-#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation trans_hard && \
-#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240902 --perturbation neg_master && \
-#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240902 --perturbation rot_easy && \
-#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240902 --perturbation rot_hard && \
-#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240902 --perturbation trans_easy && \
-#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240902 --perturbation trans_hard"]
+CMD ["sh", "-c", "python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation neg_master && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation rot_easy && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation rot_hard && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation trans_easy && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_noaug_240906 --perturbation trans_hard && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240906 --perturbation neg_master && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240906 --perturbation rot_easy && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240906 --perturbation rot_hard && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240906 --perturbation trans_easy && \
+python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240906 --perturbation trans_hard"]
 
 #CMD ["sh", "-c", "python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240902 --perturbation neg_master && \
 #python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240902 --perturbation rot_easy && \
@@ -46,9 +46,9 @@ EXPOSE 8000
 #python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240902 --perturbation trans_easy && \
 #python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240902 --perturbation trans_hard"]
 
-CMD ["sh", "-c", "python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240908 --perturbation neg_master && \
-python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240908 --perturbation rot_easy && \
-python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240908 --perturbation rot_hard && \
-python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240908 --perturbation trans_easy && \
-python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240908 --perturbation trans_hard"]
+#CMD ["sh", "-c", "python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240908 --perturbation neg_master && \
+#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240908 --perturbation rot_easy && \
+#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240908 --perturbation rot_hard && \
+#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240908 --perturbation trans_easy && \
+#python ./inference/eval/precision_recall/main.py --save_name resnet18_small_aug_240908 --perturbation trans_hard"]
 
