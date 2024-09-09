@@ -71,7 +71,7 @@ def main(args, resume_preempt=False):
     # ----------------------------------------------------------------------- #
 
     # -- META
-    use_bfloat16 = args['meta']['use_bfloat16']
+    # use_bfloat16 = args['meta']['use_bfloat16']
     model_name = args['meta']['model_name']
     load_model = args['meta']['load_checkpoint'] or resume_preempt
     r_file = args['meta']['read_checkpoint']
@@ -159,7 +159,7 @@ def main(args, resume_preempt=False):
                            ('%d', 'time (ms)'))
 
     # -- init model
-    encoder, predictor = init_model(
+    encoder = init_model(
         device=device,
         patch_size=patch_size,
         crop_size=crop_size,
@@ -167,26 +167,6 @@ def main(args, resume_preempt=False):
         pred_emb_dim=pred_emb_dim,
         model_name=model_name)
     target_encoder = copy.deepcopy(encoder)
-
-    # -- make data transforms
-    mask_collator = MBMaskCollator(
-        input_size=crop_size,
-        patch_size=patch_size,
-        pred_mask_scale=pred_mask_scale,
-        enc_mask_scale=enc_mask_scale,
-        aspect_ratio=aspect_ratio,
-        nenc=num_enc_masks,
-        npred=num_pred_masks,
-        allow_overlap=allow_overlap,
-        min_keep=min_keep)
-
-    transform = make_transforms(
-        crop_size=crop_size,
-        crop_scale=crop_scale,
-        gaussian_blur=use_gaussian_blur,
-        horizontal_flip=use_horizontal_flip,
-        color_distortion=use_color_distortion,
-        color_jitter=color_jitter)
 
     # -- init data-loaders/samplers
     _, unsupervised_loader, unsupervised_sampler = make_imagenet1k(
