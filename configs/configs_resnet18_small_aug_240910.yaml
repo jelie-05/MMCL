@@ -6,7 +6,7 @@ data:
   perturbation_file: 'perturbation_neg_master.csv'
   dataset_path: 'data/kitti'
   augmentation: true
-  tag: 'notrans'
+  tag: 'trans_002'
 meta:
   backbone: 'resnet'
   model_name: 'resnet18_small'
