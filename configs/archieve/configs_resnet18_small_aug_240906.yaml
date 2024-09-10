@@ -29,3 +29,4 @@ optimization_cls:
   margin: 4
   scheduler_step: 30
   scheduler_gamma: 0.1
+# Trans

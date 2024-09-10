@@ -46,7 +46,7 @@ def generate_random_value(value_range):
 # max_out = 5
 # tag = 'neg_master'
 
-# Perturbation positive (labeled as correct)
+# # Perturbation positive: trans_002
 # x_range = (0, 0.02)
 # y_range = (0, 0.02)
 # z_range = (0, 0.02)
@@ -54,17 +54,27 @@ def generate_random_value(value_range):
 # range_rad2 = (0, 0.5)
 # range_rad3 = (0, 0.5)
 # max_out = 6
-# tag = 'pos_master'
+# tag = 'pos_master_trans_002'
 
-# Perturbation positive (labeled as correct)
-x_range = (0, 0.0)
-y_range = (0, 0.0)
-z_range = (0, 0.0)
+# Perturbation positive: trans_002
+x_range = (0, 0.01)
+y_range = (0, 0.01)
+z_range = (0, 0.01)
 range_rad1 = (0, 0.5)
 range_rad2 = (0, 0.5)
 range_rad3 = (0, 0.5)
 max_out = 6
-tag = 'pos_master'
+tag = 'pos_master_trans_001'
+
+# Perturbation positive: notrans
+# x_range = (0, 0.0)
+# y_range = (0, 0.0)
+# z_range = (0, 0.0)
+# range_rad1 = (0, 0.5)
+# range_rad2 = (0, 0.5)
+# range_rad3 = (0, 0.5)
+# max_out = 6
+# tag = 'pos_master_notrans'
 
 # # Translation error - easy
 # x_range = (0.05, 0.1)
