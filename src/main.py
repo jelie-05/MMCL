@@ -54,7 +54,7 @@ if __name__ == "__main__":
     # Train Model
     mode = params['meta']['backbone']
     if mode == 'resnet':
-        train_resnet(args=params, project_root=root, save_name=save_name, vit=args.pixel_wise, masking=args.masking, logger_launch='True',
+        train_resnet(args=params, project_root=root, save_name=save_name, vit=args.vit, masking=args.masking, logger_launch='True',
                      train_classifier=args.classifier)
     elif mode == 'vit':
         print('vit')
