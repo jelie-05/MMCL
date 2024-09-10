@@ -29,4 +29,3 @@ docker run --gpus all --shm-size=1.5g -v /home/ge93jen/jeremialie/MMCL/data/kitt
 scp -r ge93jen@edna.cps.cit.tum.de:/home/ge93jen/jeremialie/MMCL/outputs C:\Me
 
 mv per* kitti
-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
