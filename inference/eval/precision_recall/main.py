@@ -17,7 +17,7 @@ parser.add_argument(
     help='name of lidar model to save',
     default='lidar_backbone')
 parser.add_argument(
-    '--pixel_wise', action='store_true', help='comparing pixel-wise distance')
+    '--vit', action='store_true', help='comparing pixel-wise distance')
 parser.add_argument(
     '--failure_mode', type=str,
     help='type of failure',

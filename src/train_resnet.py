@@ -15,7 +15,7 @@ def create_tqdm_bar(iterable, desc):
     return tqdm(enumerate(iterable), total=len(iterable), ncols=150, desc=desc)
 
 
-def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True', train_classifier='True'):
+def main(args, project_root, save_name, vit, masking, logger_launch='True', train_classifier='True'):
 
     if not torch.cuda.is_available():
         device = torch.device('cpu')
@@ -118,7 +118,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
 
             # Calculating the loss
             loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=encoder_im, H=H, W=W,
-                             pixel_wise=pixel_wise, mask=stacked_mask)
+                             vit=vit, mask=stacked_mask)
             loss.backward()
             optimizer_im.step()
             optimizer_lid.step()
@@ -156,7 +156,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
 
                 N, C, H, W = left_img_batch.size()
                 loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_val, model_im=encoder_im,
-                                     H=H, W=W, pixel_wise=pixel_wise, mask=stacked_mask)
+                                     H=H, W=W, vit=vit, mask=stacked_mask)
                 validation_loss += loss_val.item()
 
                 # Update the progress bar.
@@ -185,7 +185,7 @@ def main(args, project_root, save_name, pixel_wise, masking, logger_launch='True
                                                                                   opt_im=optimizer_im)
         trained_enc_im.to(device).eval()
         trained_enc_lid.to(device).eval()
-        model_cls = classifier_head(model_im=trained_enc_im, model_lid=trained_enc_lid, pixel_wise=pixel_wise).to(device)
+        model_cls = classifier_head(model_im=trained_enc_im, model_lid=trained_enc_lid, pixel_wise=vit).to(device)
         # -
 
         # Optimizer

@@ -21,7 +21,7 @@ parser.add_argument(
     help='name of model for saving',
     default='dates')
 parser.add_argument(
-    '--pixel_wise', action='store_true', help='comparing pixel-wise distance')
+    '--vit', action='store_true', help='comparing pixel-wise distance')
 parser.add_argument(
     '--masking', action='store_true', help='enable masking')
 parser.add_argument(
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     # Train Model
     mode = params['meta']['backbone']
     if mode == 'resnet':
-        train_resnet(args=params, project_root=root, save_name=save_name, pixel_wise=args.pixel_wise, masking=args.masking, logger_launch='True',
+        train_resnet(args=params, project_root=root, save_name=save_name, vit=args.pixel_wise, masking=args.masking, logger_launch='True',
                      train_classifier=args.classifier)
     elif mode == 'vit':
         print('vit')

@@ -28,7 +28,7 @@ parser.add_argument(
     help='name of clasfifier model file to save',
     default='classifier')
 parser.add_argument(
-    '--pixel_wise', action='store_true', help='comparing pixel-wise distance')
+    '--vit', action='store_true', help='comparing pixel-wise distance')
 parser.add_argument(
     '--masking', action='store_true', help='enable masking')
 parser.add_argument(
