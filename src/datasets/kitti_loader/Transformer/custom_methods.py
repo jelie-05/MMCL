@@ -204,11 +204,14 @@ class RandCrop(BaseMethod):
 
         transform = transforms.RandomCrop((176, 576))
         cropped = transform(combined)
+
         img_cropped = cropped[:3, :, :]
         lid_cropped = cropped[3, :, :]
         neg_cropped = cropped[4,:,:]
+
         lid_cropped = lid_cropped.unsqueeze(0)
         neg_cropped = neg_cropped.unsqueeze(0)
+
         return img_cropped, lid_cropped, neg_cropped
 
     def __call__(self, data_item):
