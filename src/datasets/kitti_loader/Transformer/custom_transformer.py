@@ -3,6 +3,8 @@ import numpy as np
 import torchvision.transforms as transforms
 import src.datasets.kitti_loader.Transformer.custom_methods as augmethods
 from .base_transformer import BaseTransformer
+import random
+
 
 
 class CustTransformer(BaseTransformer):
@@ -12,10 +14,16 @@ class CustTransformer(BaseTransformer):
     """
     def __init__(self, phase):
         BaseTransformer.__init__(self, phase)
-        # if not self.phase in ["train", "test", "val", "check", 'checkval']:
-        #     raise ValueError("Panic::Invalid phase parameter")
-        # else:
-        #     pass
+        self.deterministic = phase == "test"
+
+        if self.deterministic:
+            self.set_random_seed(42)
+
+    def set_random_seed(self, seed):
+        random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
 
     def get_joint_transform(self):
         if self.phase == "train" or self.phase == "check":
@@ -37,13 +45,6 @@ class CustTransformer(BaseTransformer):
                                        augmethods.Scale("Img", [188, 621])])
 
     def get_depth_transform(self):
-        # if self.phase == "train" or self.phase == "check":
-        #     return transforms.Compose([augmethods.ToTensor("depth"),
-        #                            augmethods.Scale("depth", [188, 621]),
-        #                            augmethods.RandCrop()])
-        # else:
-        #     return transforms.Compose([augmethods.ToTensor("depth"),
-        #                            augmethods.Scale("depth", [188, 621])])
         return transforms.Compose([augmethods.ToTensor("depth"),
                                    augmethods.Scale("depth", [188, 621]),
                                    augmethods.RandCrop()])
