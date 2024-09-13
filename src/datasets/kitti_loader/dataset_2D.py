@@ -105,12 +105,12 @@ def create_dataloaders(root, perturb_filenames, mode, batch_size, num_cores):
     left_img_dataset = KittiLeftImageDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform,
                                              augmentation=False)
     dataloader_img = DataLoader(left_img_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
-                                pin_memory=True)
+                                drop_last=True, pin_memory=True)
 
     # Dataset for depth with the transform
     depth_dataset = KittiDepthDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform,
                                       augmentation=False)
     dataloader_lid = DataLoader(depth_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
-                                pin_memory=True)
+                                drop_last=True, pin_memory=True)
     print("data is loaded")
     return dataloader_img, dataloader_lid
