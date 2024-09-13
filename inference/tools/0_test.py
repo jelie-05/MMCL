@@ -1,22 +1,17 @@
-import torch
-import sys
+from src.datasets.kitti_loader.dataset_2D import DataGenerator
 import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
-import src.models.resnet as resnet
-
+import multiprocessing
 import torch
-import torchvision.models as models
-import torch.nn as nn
-from src.models.mm_siamese import resnet18_2B_lid, resnet18_2B_im
 
 
+num_cores = min(multiprocessing.cpu_count(), 64)
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+eval_gen = DataGenerator(root, 'check', perturb_filenames='perturbation_neg_master.csv', augmentation=False)
+eval_dataloader = eval_gen.create_data(batch_size=64, shuffle=False, nthreads=num_cores)
+device = torch.device('cuda:0')
 
-if __name__ == "__main__":
-    model_name = 'resnet18_small_lid'
-    device = torch.device('cuda:0')
-    torch.cuda.set_device(device)
-    model = resnet.__dict__[model_name]().to(device)
-
-    print(model)
+for batch in eval_dataloader:
+    left_img_batch = batch['left_img'].to(device)  # batch of left image, id 02
+    depth_batch = batch['depth'].to(device)  # the corresponding depth ground truth of given id
+    depth_neg = batch['depth_neg'].to(device)
+    depth_name = batch['name']

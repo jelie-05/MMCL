@@ -110,8 +110,16 @@ class ResNet18_n(nn.Module):
         self.blocks = nn.Sequential(*blocks)
 
     def forward(self, x):
+        flag = False
+        if len(x.shape) == 3:
+            x = x.unsqueeze(0)
+            flag = True
+
         x = self.initial_layers(x)
         x = self.blocks(x)
+        if flag:
+            x = x.squeeze(0)
+            flag = False
         return x
 
 def resnet18_all_im(mode="default"):
