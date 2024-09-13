@@ -1,3 +1,5 @@
+import os.path
+
 import torch
 from torch.utils.data import DataLoader, Subset
 from torchvision import datasets, transforms, models
@@ -58,5 +60,6 @@ def cka_analysis(data_root, output_dir, model_im, model_lid, perturbation_eval, 
     for name, module in model_lid.named_modules():
         module.register_forward_hook(check_for_nan)
 
+    save_path = os.path.join(output_dir, 'cka_analysis.png')
     # Call the function to compute and save the CKA heatmap between two models
-    compute_and_save_cka_heatmap(model_im, model_lid, dataloader_im, dataloader_lid, save_path=output_dir, show_plot=show_plot)
+    compute_and_save_cka_heatmap(model_im, model_lid, dataloader_im, dataloader_lid, save_path=save_path, show_plot=show_plot)
