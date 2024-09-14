@@ -97,3 +97,35 @@ if __name__ == "__main__":
 
     cka_analysis(data_root=kitti_path, output_dir=save_dir, model_im=encoder_im, model_lid=encoder_lid,
                  perturbation_eval=perturbation_file, show_plot=args.show_plot)
+
+
+    check_epoch = True
+    num_epoch = 40
+
+    if check_epoch:
+        save_dir_epoch = output_dir = path_encoders = os.path.join(root, 'inference/eval', args.save_name, f'model_ep_{num_epoch}')
+        path_encoders = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
+                                     f'{args.save_name}_contrastive-ep{num_epoch}.pth.tar')
+        path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
+                                f'{args.save_name}_classifier-ep{num_epoch}.pth.tar')
+
+        encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'],
+                                             model_name=params['meta']['model_name'])
+        opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
+        opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])
+        encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
+                                                                          encoder_im=encoder_im,
+                                                                          encoder_lid=encoder_lid,
+                                                                          opt_im=opt_im, opt_lid=opt_lid)
+        encoder_im.eval()
+        encoder_lid.eval()
+        classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
+        classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
+        classifier.to(device)
+        classifier.eval()
+
+        PR_epoch = pr_evaluation(device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
+                           perturbation_eval=perturbation_file, output_dir=save_dir_epoch, show_plot=args.show_plot)
+
+        cka_analysis(data_root=kitti_path, output_dir=save_dir_epoch, model_im=encoder_im, model_lid=encoder_lid,
+                     perturbation_eval=perturbation_file, show_plot=args.show_plot)
