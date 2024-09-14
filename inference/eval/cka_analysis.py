@@ -47,7 +47,7 @@ def cka_analysis(data_root, output_dir, model_im, model_lid, perturbation_eval, 
 
     batch_size = 64
     num_cores = min(multiprocessing.cpu_count(), 64)
-    dataloader_im, dataloader_lid = create_dataloaders(root=data_root, perturb_filenames=perturbation_eval, mode='test_09_26',
+    dataloader_im, dataloader_lid = create_dataloaders(root=data_root, perturb_filenames=perturbation_eval, mode='test',
                                                        batch_size=batch_size, num_cores=num_cores)
 
     # Check for NaNs in layer outputs
