@@ -1,12 +1,13 @@
 import os.path
-
 import torch
 from torch.utils.data import DataLoader, Subset
 from torchvision import datasets, transforms, models
 from src.datasets.kitti_loader.dataset_2D import create_dataloaders
 import multiprocessing
 # from torch_cka import CKA
-from cka_mod import CKA
+from cka_modified import CKA
+
+
 def compute_and_save_cka_heatmap(model1, model2, dataloader1, dataloader2, save_path='cka_heatmap.png', show_plot=False):
     # Function to extract layer names from the model
     def get_layer_names(model):
