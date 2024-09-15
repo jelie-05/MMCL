@@ -1,1 +1,0 @@
-2011_09_28/2011_09_28_drive_0001_sync/image_02/data/0000000105.png 2011_09_28/2011_09_28_drive_0001_sync/image_03/data/0000000105.png 2011_09_28 2011_09_28/2011_09_28_drive_0001_sync/velodyne_points/data/0000000105.bin
