@@ -15,7 +15,7 @@ meta:
   retrain: false
 optimization:
   optimizer: 'adamw'
-  epochs: 2
+  epochs: 50
   lr: 1e-3
   weight_decay: 0.05
   margin: 4
@@ -27,7 +27,7 @@ logging_cls:
   tag: 'classifier'
 optimization_cls:
   optimizer: 'adamw'
-  epochs: 2
+  epochs: 50
   lr: 1e-3
   weight_decay: 0.05
   margin: 4
