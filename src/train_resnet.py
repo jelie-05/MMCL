@@ -48,10 +48,10 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
     # Get the number of available CPU cores
     num_cores = min(multiprocessing.cpu_count(), 64)
     data_root = os.path.join(project_root, dataset_path)
-    train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)
-    val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file, augmentation=augmentation)
-    # train_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
-    # val_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
+    # train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)
+    # val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file, augmentation=augmentation)
+    train_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
+    val_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
     train_loader = train_gen.create_data(batch_size=batch_size, shuffle=True, nthreads=num_cores)
     val_loader = val_gen.create_data(batch_size=batch_size, shuffle=False, nthreads=num_cores)
     # --
@@ -117,15 +117,15 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
                 depth_batch = batch['depth'].to(device)
                 depth_neg = batch['depth_neg'].to(device)
 
-                stacked_depth_batch, label_list, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
+                stacked_depth_batch, img_batch, label_list, stacked_mask = gen_mixed_data(left_img_batch, depth_batch, depth_neg, device, masking)
 
                 # Prediction & Backpropagation
-                pred_im = encoder_im.forward(left_img_batch)
+                pred_im = encoder_im.forward(img_batch)
                 pred_lid = encoder_lid.forward(stacked_depth_batch)
                 torch.cuda.synchronize()
 
                 # For pixel-wise comparison
-                N, C, H, W = left_img_batch.size()
+                N, C, H, W = img_batch.size()
 
                 # Calculating the loss
                 loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=encoder_im, H=H, W=W,
@@ -159,13 +159,13 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
                     depth_batch = val_batch['depth'].to(device)
                     depth_neg = val_batch['depth_neg'].to(device)
 
-                    stacked_depth_val, label_val, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
+                    stacked_depth_val, img_batch, label_val, stacked_mask = gen_mixed_data(left_img_batch, depth_batch, depth_neg, device, masking)
 
-                    pred_im = encoder_im.forward(left_img_batch)
+                    pred_im = encoder_im.forward(img_batch)
                     pred_lid = encoder_lid.forward(stacked_depth_val)
                     torch.cuda.synchronize()
 
-                    N, C, H, W = left_img_batch.size()
+                    N, C, H, W = img_batch.size()
                     loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_val, model_im=encoder_im,
                                          H=H, W=W, vit=vit, mask=stacked_mask)
                     validation_loss += loss_val.item()
@@ -240,11 +240,11 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
                 depth_batch = batch['depth'].to(device)
                 depth_neg = batch['depth_neg'].to(device)
                 
-                stacked_depth_batch, label_list, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
+                stacked_depth_batch, img_batch, label_list, stacked_mask = gen_mixed_data(left_img_batch, depth_batch, depth_neg, device, masking)
 
-                N, C, H, W = left_img_batch.size()
+                N, C, H, W = img_batch.size()
 
-                pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch, H=H, W=W)
+                pred_cls = model_cls.forward(image=img_batch, lidar=stacked_depth_batch, H=H, W=W)
                 pred_cls = pred_cls.squeeze(dim=1)
 
                 loss = loss_func(pred_cls, label_list)
@@ -275,10 +275,10 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
                     depth_batch = val_batch['depth'].to(device)
                     depth_neg = val_batch['depth_neg'].to(device)
                     
-                    stacked_depth_batch, label_val, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
+                    stacked_depth_batch, img_batch, label_val, stacked_mask = gen_mixed_data(left_img_batch, depth_batch, depth_neg, device, masking)
 
-                    N, C, H, W = left_img_batch.size()
-                    pred_cls = model_cls.forward(image=left_img_batch, lidar=stacked_depth_batch, H=H, W=W).squeeze(dim=1)
+                    N, C, H, W = img_batch.size()
+                    pred_cls = model_cls.forward(image=img_batch, lidar=stacked_depth_batch, H=H, W=W).squeeze(dim=1)
 
                     loss_val = loss_func(pred_cls, label_val)
                     cls_validation_loss += loss_val.item()
