@@ -57,6 +57,9 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
     # --
 
     # MODEL
+    pretrained_encoder = args['meta']['pretrained_encoder']
+    load_num_ep = args['meta']['load_num_ep']
+    retrain = args['meta']['retrain']
     backbone = args['meta']['backbone']
     model_name = args['meta']['model_name']
     encoder_im, encoder_lid = init_model(device=device, mode=backbone, model_name=model_name)
@@ -71,6 +74,13 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
     optimizer_im, scheduler_im = init_opt(model=encoder_im, args=args['optimization'])
     optimizer_lid, scheduler_lid = init_opt(model=encoder_lid, args=args['optimization'])
     # --
+
+    if pretrained_encoder:
+        path_encoders = os.path.join(project_root, 'outputs/models', f'{args.save_name}_contrastive-ep{load_num_ep}.pth.tar')
+        encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
+                                                                          encoder_im=encoder_im,
+                                                                          encoder_lid=encoder_lid,
+                                                                          opt_im=optimizer_im, opt_lid=optimizer_lid)
 
     def save_checkpoint(epoch, curr_loss):
         save_dict = {
@@ -88,93 +98,94 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
         if (epoch + 1) % checkpoint_freq == 0:
             torch.save(save_dict, save_path.format(epoch=f'{epoch + 1}'))
 
-    for epoch in range(epochs):
-        training_loss = 0
-        validation_loss = 0
+    if not pretrained_encoder or retrain:
+        for epoch in range(epochs):
+            training_loss = 0
+            validation_loss = 0
 
-        # Training stage: set the model to training mode
-        encoder_im.train()
-        encoder_lid.train()
+            # Training stage: set the model to training mode
+            encoder_im.train()
+            encoder_lid.train()
 
-        training_loop = create_tqdm_bar(train_loader, desc=f'Training Epoch [{epoch + 1}/{epochs}]')
+            training_loop = create_tqdm_bar(train_loader, desc=f'Training Epoch [{epoch + 1}/{epochs}]')
 
-        for train_iteration, batch in training_loop:
-            optimizer_im.zero_grad()
-            optimizer_lid.zero_grad()
+            for train_iteration, batch in training_loop:
+                optimizer_im.zero_grad()
+                optimizer_lid.zero_grad()
 
-            left_img_batch = batch['left_img'].to(device)
-            depth_batch = batch['depth'].to(device)
-            depth_neg = batch['depth_neg'].to(device)
+                left_img_batch = batch['left_img'].to(device)
+                depth_batch = batch['depth'].to(device)
+                depth_neg = batch['depth_neg'].to(device)
 
-            stacked_depth_batch, label_list, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
+                stacked_depth_batch, label_list, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
 
-            # Prediction & Backpropagation
-            pred_im = encoder_im.forward(left_img_batch)
-            pred_lid = encoder_lid.forward(stacked_depth_batch)
-            torch.cuda.synchronize()
-
-            # For pixel-wise comparison
-            N, C, H, W = left_img_batch.size()
-
-            # Calculating the loss
-            loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=encoder_im, H=H, W=W,
-                             vit=vit, mask=stacked_mask)
-            loss.backward()
-            optimizer_im.step()
-            optimizer_lid.step()
-
-            training_loss += loss.item()
-
-            # Update the progress bar.
-            training_loop.set_postfix(acc_train_loss="{:.8f}".format(training_loss / (train_iteration + 1)),
-                                      curr_train_loss="{:.8f}".format(loss))
-
-            # Update the tensorboard logger.
-            logger.add_scalar(f'siamese_{save_name}/train_loss', loss.item(), epoch * len(train_loader) + train_iteration)
-            
-        training_loss /= len(train_loader)
-        logger.add_scalar('training_loss_epoch', training_loss, epoch)
-        save_checkpoint(epoch, training_loss)
-
-        # Validation stage
-        encoder_im.eval()
-        encoder_lid.eval()
-        val_loop = create_tqdm_bar(val_loader, desc=f'Validation Epoch [{epoch + 1}/{epochs}]')
-
-        with torch.no_grad():
-            for val_iteration, val_batch in val_loop:
-
-                left_img_batch = val_batch['left_img'].to(device)
-                depth_batch = val_batch['depth'].to(device)
-                depth_neg = val_batch['depth_neg'].to(device)
-
-                stacked_depth_val, label_val, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
-
+                # Prediction & Backpropagation
                 pred_im = encoder_im.forward(left_img_batch)
-                pred_lid = encoder_lid.forward(stacked_depth_val)
+                pred_lid = encoder_lid.forward(stacked_depth_batch)
                 torch.cuda.synchronize()
 
+                # For pixel-wise comparison
                 N, C, H, W = left_img_batch.size()
-                loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_val, model_im=encoder_im,
-                                     H=H, W=W, vit=vit, mask=stacked_mask)
-                validation_loss += loss_val.item()
+
+                # Calculating the loss
+                loss = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_list, model_im=encoder_im, H=H, W=W,
+                                 vit=vit, mask=stacked_mask)
+                loss.backward()
+                optimizer_im.step()
+                optimizer_lid.step()
+
+                training_loss += loss.item()
 
                 # Update the progress bar.
-                val_loop.set_postfix(acc_val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)),
-                                     curr_val_loss="{:.8f}".format(loss_val))
+                training_loop.set_postfix(acc_train_loss="{:.8f}".format(training_loss / (train_iteration + 1)),
+                                          curr_train_loss="{:.8f}".format(loss))
 
                 # Update the tensorboard logger.
-                logger.add_scalar(f'siamese_{save_name}/val_loss', loss_val.item(), epoch * len(val_loader) + val_iteration)
+                logger.add_scalar(f'siamese_{save_name}/train_loss', loss.item(), epoch * len(train_loader) + train_iteration)
 
-        # Epoch-wise calculation
-        validation_loss /= len(val_loader)
-        logger.add_scalar('validation_loss_epoch', validation_loss, epoch)
-        # Step the scheduler after each epoch
-        scheduler_im.step()
-        scheduler_lid.step()
+            training_loss /= len(train_loader)
+            logger.add_scalar('training_loss_epoch', training_loss, epoch)
+            save_checkpoint(epoch, training_loss)
+
+            # Validation stage
+            encoder_im.eval()
+            encoder_lid.eval()
+            val_loop = create_tqdm_bar(val_loader, desc=f'Validation Epoch [{epoch + 1}/{epochs}]')
+
+            with torch.no_grad():
+                for val_iteration, val_batch in val_loop:
+
+                    left_img_batch = val_batch['left_img'].to(device)
+                    depth_batch = val_batch['depth'].to(device)
+                    depth_neg = val_batch['depth_neg'].to(device)
+
+                    stacked_depth_val, label_val, stacked_mask = gen_mixed_data(depth_batch, depth_neg, device, masking)
+
+                    pred_im = encoder_im.forward(left_img_batch)
+                    pred_lid = encoder_lid.forward(stacked_depth_val)
+                    torch.cuda.synchronize()
+
+                    N, C, H, W = left_img_batch.size()
+                    loss_val = loss_func(output_im=pred_im, output_lid=pred_lid, labels=label_val, model_im=encoder_im,
+                                         H=H, W=W, vit=vit, mask=stacked_mask)
+                    validation_loss += loss_val.item()
+
+                    # Update the progress bar.
+                    val_loop.set_postfix(acc_val_loss="{:.8f}".format(validation_loss / (val_iteration + 1)),
+                                         curr_val_loss="{:.8f}".format(loss_val))
+
+                    # Update the tensorboard logger.
+                    logger.add_scalar(f'siamese_{save_name}/val_loss', loss_val.item(), epoch * len(val_loader) + val_iteration)
+
+            # Epoch-wise calculation
+            validation_loss /= len(val_loader)
+            logger.add_scalar('validation_loss_epoch', validation_loss, epoch)
+            # Step the scheduler after each epoch
+            scheduler_im.step()
+            scheduler_lid.step()
 
     if train_classifier:
-        # Load pretrained
+        # Load pretrained_encoder
         trained_enc_im, trained_enc_lid = init_model(device=device,
                                                      mode=backbone,
                                                      model_name=model_name)
