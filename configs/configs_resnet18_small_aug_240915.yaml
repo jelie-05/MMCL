@@ -2,7 +2,7 @@ logging:
   rel_path: 'outputs/logs'
   tag: 'contrastive'
 data:
-  batch_size: 64
+  batch_size: 32
   perturbation_file: 'perturbation_neg_master.csv'
   dataset_path: 'data/kitti'
   augmentation: true
