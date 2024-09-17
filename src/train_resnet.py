@@ -79,9 +79,10 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
         starting_epoch = args['meta']['starting_epoch']
 
         if starting_epoch == 'latest':
-            path_encoders = os.path.join(project_root, 'outputs/models', f'{pretrained_name}_contrastive-latest.pth.tar')
+            path_encoders = os.path.join(project_root, f'outputs_gpu/{pretrained_name}/models',
+                                         f'{pretrained_name}_contrastive-latest.pth.tar')
         else:
-            path_encoders = os.path.join(project_root, 'outputs/models',
+            path_encoders = os.path.join(project_root, f'outputs_gpu/{pretrained_name}/models',
                                          f'{pretrained_name}_contrastive-ep{starting_epoch}.pth.tar')
 
         encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
