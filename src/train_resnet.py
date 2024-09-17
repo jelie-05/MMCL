@@ -59,7 +59,7 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
     # MODEL
     pretrained_encoder = args['meta']['pretrained_encoder']
     retrain = args['meta']['retrain']
-    backbone = args['meta']['model_name']
+    backbone = args['meta']['backbone']
     model_name = args['meta']['model_name']
     encoder_im, encoder_lid = init_model(device=device, mode=backbone, model_name=model_name)
     # --

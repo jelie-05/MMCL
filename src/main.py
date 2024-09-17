@@ -52,14 +52,14 @@ if __name__ == "__main__":
     print(f'Training model with {curr_model_name}, model name: {args.save_name}')
 
     # Train Model
-    mode = params['meta']['model_name']
+    mode = params['meta']['backbone']
     if mode == 'resnet':
         train_resnet(args=params, project_root=root, save_name=save_name, vit=args.vit, masking=args.masking, logger_launch='True',
                      train_classifier=args.classifier)
     elif mode == 'vit':
         print('vit')
     else:
-        assert mode in ['resnet', 'vit'], 'model_name is not covered'
+        assert mode in ['resnet', 'vit'], 'backbone is not covered'
 
     # Loading Model testing:
     if not torch.cuda.is_available():
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     path_encoders = os.path.join(root, 'outputs/models', f'{args.save_name}_{tag_encoders}-latest.pth.tar')
     path_cls = os.path.join(root, 'outputs/models', f'{args.save_name}_{tag_cls}-latest.pth.tar')
 
-    encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['model_name'], model_name=params['meta']['model_name'])
+    encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'], model_name=params['meta']['model_name'])
     encoder_im.eval()
     encoder_lid.eval()
     opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
