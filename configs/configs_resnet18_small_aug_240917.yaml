@@ -10,12 +10,13 @@ data:
 meta:
   backbone: 'resnet'
   model_name: 'resnet18_small'
-  pretrained_encoder: false
-  pretrained_name: None
-  retrain: false
+  pretrained_encoder: true
+  pretrained_name: 'resnet18_small_aug_240915'
+  starting_epoch: 'latest'
+  retrain: true
 optimization:
   optimizer: 'adamw'
-  epochs: 50
+  epochs: 2
   lr: 1e-3
   weight_decay: 0.05
   margin: 4

@@ -58,9 +58,8 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
 
     # MODEL
     pretrained_encoder = args['meta']['pretrained_encoder']
-    load_num_ep = args['meta']['load_num_ep']
     retrain = args['meta']['retrain']
-    backbone = args['meta']['backbone']
+    backbone = args['meta']['model_name']
     model_name = args['meta']['model_name']
     encoder_im, encoder_lid = init_model(device=device, mode=backbone, model_name=model_name)
     # --
@@ -76,7 +75,16 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
     # --
 
     if pretrained_encoder:
-        path_encoders = os.path.join(project_root, 'outputs/models', f'{args.save_name}_contrastive-ep{load_num_ep}.pth.tar')
+        load_num_ep = args['meta']['load_num_ep']
+        pretrained_name = args['meta']['pretrained_name']
+        starting_epoch = args['meta']['starting_epoch']
+
+        if starting_epoch == 'latest':
+            path_encoders = os.path.join(project_root, 'outputs/models', f'{pretrained_name}_contrastive-latest.pth.tar')
+        else:
+            path_encoders = os.path.join(project_root, 'outputs/models',
+                                         f'{pretrained_name}_contrastive-ep{load_num_ep}.pth.tar')
+
         encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
                                                                           encoder_im=encoder_im,
                                                                           encoder_lid=encoder_lid,
@@ -189,14 +197,20 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
         trained_enc_im, trained_enc_lid = init_model(device=device,
                                                      mode=backbone,
                                                      model_name=model_name)
-        trained_enc_im, trained_enc_lid, opt_im, opt_lid, epoch = load_checkpoint(latest_path,
-                                                                                  encoder_im=trained_enc_im,
-                                                                                  encoder_lid=trained_enc_lid,
-                                                                                  opt_lid=optimizer_lid,
-                                                                                  opt_im=optimizer_im)
+
+        if retrain or not pretrained_encoder:
+            print(f"Used latest path")
+            trained_enc_im, trained_enc_lid, opt_im, opt_lid, epoch = load_checkpoint(latest_path,
+                                                                                      encoder_im=trained_enc_im,
+                                                                                      encoder_lid=trained_enc_lid,
+                                                                                      opt_lid=optimizer_lid,
+                                                                                      opt_im=optimizer_im)
+        else:
+            print(f"Used pretrained encoder in classifier:{path_encoders}")
+
         trained_enc_im.to(device).eval()
         trained_enc_lid.to(device).eval()
-        model_cls = classifier_head(model_im=trained_enc_im, model_lid=trained_enc_lid, pixel_wise=vit).to(device)
+        model_cls = classifier_head(model_im=trained_enc_im, model_lid=trained_enc_lid, model_name=model_name).to(device)
         # -
 
         # Optimizer

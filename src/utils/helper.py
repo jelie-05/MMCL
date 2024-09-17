@@ -3,6 +3,7 @@ import src.models.resnet as resnet
 import src.models.vision_transformer as vit
 import torch.optim as optim
 from src.utils.tensors import trunc_normal_
+import os
 from src.models.classifier_head import classifier_head as classifier
 
 def load_checkpoint(
@@ -12,28 +13,34 @@ def load_checkpoint(
     opt_im,
     opt_lid
 ):
-    checkpoint = torch.load(r_path, map_location=torch.device('cpu'))
-    epoch = checkpoint['epoch']
+    # Check if the checkpoint file exists
+    if not os.path.exists(r_path):
+        raise FileNotFoundError(f"Checkpoint file not found at: {r_path}")
 
-    pretrained_im = checkpoint['encoder_im']
-    msg = encoder_im.load_state_dict(pretrained_im)
-    print(f'loaded pretrained encoder from epoch {epoch} with msg: {msg}')
+    try:
+        checkpoint = torch.load(r_path, map_location=torch.device('cpu'))
+        epoch = checkpoint['epoch']
 
-    pretrained_lid = checkpoint['encoder_lid']
-    msg = encoder_lid.load_state_dict(pretrained_lid)
-    print(f'loaded pretrained encoder from epoch {epoch} with msg: {msg}')
+        pretrained_im = checkpoint['encoder_im']
+        msg_im = encoder_im.load_state_dict(pretrained_im)
+        print(f'Loaded pretrained image encoder from epoch {epoch} with msg: {msg_im}')
 
-    opt_im.load_state_dict(checkpoint['optimizer_im'])
-    opt_lid.load_state_dict(checkpoint['optimizer_lid'])
+        pretrained_lid = checkpoint['encoder_lid']
+        msg_lid = encoder_lid.load_state_dict(pretrained_lid)
+        print(f'Loaded pretrained lidar encoder from epoch {epoch} with msg: {msg_lid}')
 
-    print(f'read-path: {r_path}')
-    del checkpoint
+        opt_im.load_state_dict(checkpoint['optimizer_im'])
+        opt_lid.load_state_dict(checkpoint['optimizer_lid'])
 
-    # except Exception as e:
-    #     print(f'Encountered exception when loading checkpoint {e}')
-    #     epoch = 0
+        print(f'Read path: {r_path}')
+        del checkpoint
+
+    except Exception as e:
+        print(f"Encountered exception when loading checkpoint: {e}")
+        epoch = 0
 
     return encoder_im, encoder_lid, opt_im, opt_lid, epoch
+
 
 def load_checkpoint_cls(
     r_path,

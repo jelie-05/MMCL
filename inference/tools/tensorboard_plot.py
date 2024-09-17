@@ -48,7 +48,12 @@ def plot_tensorboard_logs(log_files, training_tag, validation_tag, plot_tag, ena
         event_acc.Reload()
 
         folder_name = os.path.basename(os.path.dirname(log_file))
-        folder_name_cleaned = folder_name.replace('run', '').replace('contrastive', '').strip('_')
+        # folder_name_cleaned = folder_name.replace('run', '').replace('contrastive', '').strip('_')
+
+        if '_aug_' in folder_name:
+            folder_name_cleaned = "Dataset (II)"
+        else:
+            folder_name_cleaned = "Dataset (I)"
 
         # Handle training loss
         if training_tag in event_acc.Tags()['scalars']:
@@ -89,15 +94,15 @@ def plot_tensorboard_logs(log_files, training_tag, validation_tag, plot_tag, ena
     # Set y-axis limits to clip outliers based on IQR
     plt.ylim(lower_bound, upper_bound)
 
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title(f'{plot_tag}')
+    plt.xlabel('Epoch', fontsize=16)
+    plt.ylabel('Loss', fontsize=16)
+    plt.title(f'{plot_tag}', fontsize=18)
 
     # Add grid to the plot
     plt.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
 
     # Set legend with smaller font size
-    plt.legend(loc='best', fontsize='small')
+    plt.legend(loc='best', fontsize=14)
 
     plt.show()
 
@@ -129,8 +134,8 @@ def get_contrastive_log_files(root_dir, tag):
 
 if __name__ == "__main__":
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
-    root_dir = os.path.join(root, 'outputs/logs/small')
-    tag = "contrastive"
+    root_dir = os.path.join(root, 'outputs/logs/active')
+    tag = "classifier"
 
     # Get all log files from '_contrastive' or '_classifier' folders
     log_files = get_contrastive_log_files(root_dir, tag)
@@ -144,7 +149,7 @@ if __name__ == "__main__":
     else:
         training_tag = 'training_loss_epoch'
         validation_tag = 'validation_loss_epoch'
-        plot_tag = 'contrastive loss'
+        plot_tag = 'Contrastive Loss'
 
     # Call the plot function with the validation plot disabled (set to False to disable)
     enable_validation = False  # Change this to False to disable validation plot

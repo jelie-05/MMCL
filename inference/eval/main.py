@@ -75,7 +75,7 @@ if __name__ == "__main__":
     path_encoders = os.path.join(root, 'outputs_gpu', args.save_name, 'models', f'{args.save_name}_contrastive-latest.pth.tar')
     path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models', f'{args.save_name}_classifier-latest.pth.tar')
 
-    encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'],
+    encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['model_name'],
                                          model_name=params['meta']['model_name'])
     opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
     opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])
@@ -99,7 +99,7 @@ if __name__ == "__main__":
                  perturbation_eval=perturbation_file, show_plot=args.show_plot)
 
 
-    check_epoch = True
+    check_epoch = False
     num_epoch = 40
 
     if check_epoch:
@@ -109,7 +109,7 @@ if __name__ == "__main__":
         path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
                                 f'{args.save_name}_classifier-ep{num_epoch}.pth.tar')
 
-        encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'],
+        encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['model_name'],
                                              model_name=params['meta']['model_name'])
         opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
         opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])

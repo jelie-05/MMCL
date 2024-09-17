@@ -39,7 +39,14 @@ def compute_and_save_cka_heatmap(model1, model2, dataloader1, dataloader2, save_
     # Perform CKA comparison on the dataloader
     cka.compare(dataloader1=dataloader1, dataloader2=dataloader2)
 
-    cka.plot_results(save_path=save_path, show_plot=show_plot, title='ResNet18-small (Calibrated II)')
+    if '_aug' in save_path:
+        title = 'ResNet18-small (Calibrated II)'
+    elif '_noaug' in save_path:
+        title = 'ResNet18-small (Calibrated I)'
+    else:
+        assert False, "Error: save_path must contain '_aug' or '_noaug'"
+
+    cka.plot_results(save_path=save_path, show_plot=show_plot, title=title)
 
     print(f"CKA heatmap saved to: {save_path}")
 
