@@ -21,38 +21,59 @@ def get_last_layer_channels(model):
     return last_conv_layer.out_channels
 
 class classifier_head(nn.Module):
-    def __init__(self, model_im, model_lid, pixel_wise='False'):
+    def __init__(self, model_im, model_lid, model_name=None):
         super().__init__()
         self.model_im = model_im
         self.model_lid = model_lid
         input_channel = get_last_layer_channels(self.model_im) + get_last_layer_channels(self.model_lid)
         first_channel = input_channel*2
 
-        self.classifier_layers = nn.Sequential(
-            nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 12, 39)
-            nn.BatchNorm2d(first_channel),
-            nn.ReLU(),
-            nn.Conv2d(first_channel, 1024, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 6, 20)
-            nn.BatchNorm2d(1024),
-            nn.ReLU(),
-            nn.Conv2d(1024, 2048, kernel_size=3, stride=2, padding=1),  # output: (N, 1024, 3, 10)
-            nn.BatchNorm2d(2048),
-            nn.ReLU(),
-            nn.AdaptiveAvgPool2d((1, 1)), # output: (N, 1024, 1, 1)
-            nn.Flatten(),
-            nn.Linear(2048, 512),
-            nn.BatchNorm1d(512),
-            nn.ReLU(),
-            nn.Linear(512, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
-            nn.Linear(256, 1),
-            nn.Sigmoid()
-            )
-
+        if model_name == 'resnet18_small':
+            self.classifier_layers = nn.Sequential(
+                nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 12, 39)
+                nn.BatchNorm2d(first_channel),
+                nn.ReLU(),
+                nn.Conv2d(first_channel, 1024, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 6, 20)
+                nn.BatchNorm2d(1024),
+                nn.ReLU(),
+                nn.Conv2d(1024, 2048, kernel_size=3, stride=2, padding=1),  # output: (N, 1024, 3, 10)
+                nn.BatchNorm2d(2048),
+                nn.ReLU(),
+                nn.AdaptiveAvgPool2d((1, 1)), # output: (N, 1024, 1, 1)
+                nn.Flatten(),
+                nn.Linear(2048, 512),
+                nn.BatchNorm1d(512),
+                nn.ReLU(),
+                nn.Linear(512, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+                nn.Linear(256, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+                nn.Linear(256, 1),
+                nn.Sigmoid()
+                )
+        elif model_name == 'resnet18_all':
+            self.classifier_layers = nn.Sequential(
+                nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),  # output: (N,
+                nn.BatchNorm2d(first_channel),
+                nn.ReLU(),
+                nn.AdaptiveAvgPool2d((1, 1)),
+                nn.Flatten(),
+                nn.Linear(first_channel, 512),
+                nn.BatchNorm1d(512),
+                nn.ReLU(),
+                nn.Linear(512, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+                nn.Linear(256, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+                nn.Linear(256, 1),
+                nn.Sigmoid()
+                )
+        else:
+            raise ValueError("Error: starting_epoch couldn't be found")
     def load_classifier_layers(self, state_dict):
         classifier_state_dict = {k.replace('classifier_layers.', ''): v for k, v in state_dict.items() if
                                  k.startswith('classifier_layers.')}
