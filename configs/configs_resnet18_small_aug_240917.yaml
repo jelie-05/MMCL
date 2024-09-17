@@ -16,7 +16,7 @@ meta:
   retrain: true
 optimization:
   optimizer: 'adamw'
-  epochs: 2
+  epochs: 20
   lr: 1e-3
   weight_decay: 0.05
   margin: 4
