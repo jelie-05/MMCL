@@ -75,7 +75,6 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
     # --
 
     if pretrained_encoder:
-        load_num_ep = args['meta']['load_num_ep']
         pretrained_name = args['meta']['pretrained_name']
         starting_epoch = args['meta']['starting_epoch']
 
@@ -83,7 +82,7 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
             path_encoders = os.path.join(project_root, 'outputs/models', f'{pretrained_name}_contrastive-latest.pth.tar')
         else:
             path_encoders = os.path.join(project_root, 'outputs/models',
-                                         f'{pretrained_name}_contrastive-ep{load_num_ep}.pth.tar')
+                                         f'{pretrained_name}_contrastive-ep{starting_epoch}.pth.tar')
 
         encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
                                                                           encoder_im=encoder_im,
