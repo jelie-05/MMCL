@@ -89,6 +89,8 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
                                                                           encoder_im=encoder_im,
                                                                           encoder_lid=encoder_lid,
                                                                           opt_im=optimizer_im, opt_lid=optimizer_lid)
+        for param_group in opt_im.param_groups:
+            print(f"Current learning rate: {param_group['lr']}")
 
     def save_checkpoint(epoch, curr_loss):
         save_dict = {
