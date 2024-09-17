@@ -84,5 +84,5 @@ if __name__ == "__main__":
                                                                       encoder_lid=encoder_lid,
                                                                       opt_im=opt_im, opt_lid=opt_lid)
 
-    classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
+    classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid, model_name=params['meta']['model_name'])
     classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)

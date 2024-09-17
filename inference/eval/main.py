@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # -
 
     # Saving directories
-    output_dir = path_encoders = os.path.join(root, 'inference/eval', args.save_name)
+    output_dir = path_encoders = os.path.join(root, 'inference/eval', f"{args.save_name}_{args.perturbation}")
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         print(f"Directory {output_dir} created.")
@@ -85,7 +85,7 @@ if __name__ == "__main__":
                                                                       opt_im=opt_im, opt_lid=opt_lid)
     encoder_im.eval()
     encoder_lid.eval()
-    classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
+    classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid, model_name=params['meta']['model_name'])
     classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
     classifier.to(device)
     classifier.eval()
@@ -119,13 +119,13 @@ if __name__ == "__main__":
                                                                           opt_im=opt_im, opt_lid=opt_lid)
         encoder_im.eval()
         encoder_lid.eval()
-        classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid)
+        classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid, model_name=params['meta']['model_name'])
         classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
         classifier.to(device)
         classifier.eval()
 
         PR_epoch = pr_evaluation(device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
-                           perturbation_eval=perturbation_file, output_dir=save_dir_epoch, show_plot=args.show_plot)
+                                 perturbation_eval=perturbation_file, output_dir=save_dir_epoch, show_plot=args.show_plot)
 
         cka_analysis(data_root=kitti_path, output_dir=save_dir_epoch, model_im=encoder_im, model_lid=encoder_lid,
                      perturbation_eval=perturbation_file, show_plot=args.show_plot)
