@@ -67,30 +67,23 @@ def load_checkpoint_cls(
 
 def gen_mixed_data(img_batch, depth_batch, depth_batch_neg, device, masking):
     stacked_mask = None
-    # Assign label randomly to each component of the batch (50/50)
-    batch_length = len(depth_batch)
-    # half_length = batch_length // 2
-    half_length = batch_length
+    half_length = len(depth_batch)
     stacked_img = torch.cat([img_batch, img_batch])
 
-    label_tensor = torch.cat(
-        [torch.zeros(half_length, device=device), torch.ones(half_length, device=device)])
-    label_list = label_tensor[torch.randperm(label_tensor.size(0))]
+    label_tensor = torch.cat([torch.ones(half_length, device=device), torch.zeros(half_length, device=device)])
 
+    stacked_depth_batch = torch.cat([depth_batch, depth_batch_neg])
+
+    indices = torch.randperm(stacked_depth_batch.size(0))
+
+    stacked_depth_batch = stacked_depth_batch[indices]
+    label_list = label_tensor[indices]
+    stacked_img = stacked_img[indices]
+
+    # label_list = label_tensor[torch.randperm(label_tensor.size(0))]
     # Stack depth batches according to labels (depth_batch or depth_neg)
     # stacked_depth_batch = torch.where(label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(), depth_batch,
     #                                   depth_batch_neg)
-
-    # Concatenate depth_batch and depth_batch_neg to match doubled batch size
-    stacked_depth = torch.cat([depth_batch, depth_batch])
-    stacked_neg =torch.cat([depth_batch_neg, depth_batch_neg])
-
-    # Stack depth batches according to labels (depth_batch or depth_batch_neg)
-    stacked_depth_batch = torch.where(
-        label_list.unsqueeze(1).unsqueeze(2).unsqueeze(3).bool(),
-        stacked_depth,
-        stacked_neg
-    )
 
     return stacked_depth_batch, stacked_img, label_list, stacked_mask
 
