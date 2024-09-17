@@ -212,9 +212,14 @@ class CKA:
     def plot_results(self,
                      save_path: str = None,
                      title: str = None,
-                     show_plot=False):
+                     show_plot=False,
+                     vmin=0,  # Minimum limit for color scale
+                     vmax=1):  # Maximum limit for color scale
         fig, ax = plt.subplots()
-        im = ax.imshow(self.hsic_matrix, origin='lower', cmap='magma')
+
+        # Set the color limits (vmin and vmax) for consistency across plots
+        im = ax.imshow(self.hsic_matrix, origin='lower', cmap='magma', vmin=vmin, vmax=vmax)
+
         ax.set_xlabel(f"Layers {self.model2_info['Name']}", fontsize=15)
         ax.set_ylabel(f"Layers {self.model1_info['Name']}", fontsize=15)
 
