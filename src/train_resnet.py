@@ -68,8 +68,9 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
     epochs = int(args['optimization']['epochs'])
     margin = args['optimization']['margin']
     learning_rate = float(args['optimization']['lr'])
+    mode = args['optimization']['mode']
     # --
-    loss_func = CL(margin=margin, patch_size=args['optimization']['patch_size'])
+    loss_func = CL(margin=margin, mode=mode)
     optimizer_im, scheduler_im = init_opt(model=encoder_im, args=args['optimization'])
     optimizer_lid, scheduler_lid = init_opt(model=encoder_lid, args=args['optimization'])
     # --
