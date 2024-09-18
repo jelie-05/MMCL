@@ -36,7 +36,7 @@ def generate_random_value(value_range):
     return round(random.uniform(*value_range)*np.random.choice([-1, 1]), 2)
 
 # Define the ranges for the values
-# Pertubation negativ (labeled as wrong)
+# # Pertubation negativ (labeled as wrong)
 # x_range = (0.02, 0.1)
 # y_range = (0.02, 0.1)
 # z_range = (0.02, 0.1)
@@ -45,6 +45,26 @@ def generate_random_value(value_range):
 # range_rad3 = (0.5, 5)
 # max_out = 5
 # tag = 'neg_master'
+
+# Pertubation negativ (labeled as wrong)
+x_range = (0.04, 0.1)
+y_range = (0.04, 0.1)
+z_range = (0.04, 0.1)
+range_rad1 = (0.5, 5)
+range_rad2 = (0.5, 5)
+range_rad3 = (0.5, 5)
+max_out = 5
+tag = 'neg_master_004'
+
+# # Perturbation positive: trans_004
+# x_range = (0, 0.04)
+# y_range = (0, 0.04)
+# z_range = (0, 0.04)
+# range_rad1 = (0, 0.5)
+# range_rad2 = (0, 0.5)
+# range_rad3 = (0, 0.5)
+# max_out = 6
+# tag = 'pos_master_trans_004'
 
 # # Perturbation positive: trans_002
 # x_range = (0, 0.02)
@@ -56,7 +76,7 @@ def generate_random_value(value_range):
 # max_out = 6
 # tag = 'pos_master_trans_002'
 
-# # Perturbation positive: trans_002
+# # Perturbation positive: trans_001
 # x_range = (0, 0.01)
 # y_range = (0, 0.01)
 # z_range = (0, 0.01)
@@ -126,15 +146,15 @@ def generate_random_value(value_range):
 # max_out = 2
 # tag = 'trans_hard_003'
 
-# Translation error - hard
-x_range = (0.1, 0.15)
-y_range = (0.1, 0.15)
-z_range = (0.1, 0.15)
-range_rad1 = (0, 0)
-range_rad2 = (0, 0)
-range_rad3 = (0, 0)
-max_out = 2
-tag = 'trans_ood'
+# # Translation error - hard
+# x_range = (0.1, 0.15)
+# y_range = (0.1, 0.15)
+# z_range = (0.1, 0.15)
+# range_rad1 = (0, 0)
+# range_rad2 = (0, 0)
+# range_rad3 = (0, 0)
+# max_out = 2
+# tag = 'trans_ood'
 
 # # Translation error - hard
 # x_range = (0.02, 0.05)
