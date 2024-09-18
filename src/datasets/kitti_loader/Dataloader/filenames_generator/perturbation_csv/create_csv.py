@@ -96,15 +96,25 @@ def generate_random_value(value_range):
 # max_out = 2
 # tag = 'trans_mid'
 
-# Translation error - mid
-x_range = (0.04, 0.05)
-y_range = (0.04, 0.05)
-z_range = (0.04, 0.05)
+# # Translation error - mid
+# x_range = (0.04, 0.05)
+# y_range = (0.04, 0.05)
+# z_range = (0.04, 0.05)
+# range_rad1 = (0, 0)
+# range_rad2 = (0, 0)
+# range_rad3 = (0, 0)
+# max_out = 2
+# tag = 'trans_mid_004'
+
+# Translation error - very hard
+x_range = (0.02, 0.03)
+y_range = (0.02, 0.03)
+z_range = (0.02, 0.03)
 range_rad1 = (0, 0)
 range_rad2 = (0, 0)
 range_rad3 = (0, 0)
 max_out = 2
-tag = 'trans_mid_004'
+tag = 'trans_very_hard'
 
 # # Translation error - hard
 # x_range = (0.02, 0.05)
