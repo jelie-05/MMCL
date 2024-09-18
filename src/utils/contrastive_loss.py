@@ -15,7 +15,7 @@ class ContrastiveLoss(nn.Module):
         # L2 Distances of feature embeddings
 
         if self.mode == 'vit':
-            print("Using CL for ViT")
+            # print("Using CL for ViT")
             # Input (B, N, D). Comparing each embedding (1, D)-vectors
             distances = F.pairwise_distance(output_im, output_lid, p=2)  # Shape (B, N)
             distances_mean = distances.mean(dim=1)  # Shape (B,)
@@ -26,7 +26,7 @@ class ContrastiveLoss(nn.Module):
             loss_contrastive = (positive_loss + negative_loss).mean()
 
         elif self.mode == 'resnet':
-            print("Using pixel-wise CL for ResNet")
+            # print("Using pixel-wise CL for ResNet")
             # Input (B, C, H, W). Comparing each pixel (across C)
             distance = torch.sqrt(torch.sum((output_im - output_lid) ** 2, dim=1))
             N, H_dist, W_dist = distance.shape
