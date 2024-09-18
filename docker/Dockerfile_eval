@@ -31,5 +31,5 @@ EXPOSE 8000
 #python ./inference/eval/main.py --save_name resnet18_small_aug_240917 --perturbation trans_easy && \
 #python ./inference/eval/main.py --save_name resnet18_small_aug_240917 --perturbation trans_hard"]
 
-CMD ["sh", "-c", "python ./inference/eval/main.py --save_name resnet18_small_aug_240917 --perturbation trans_very_hard"]
+CMD ["sh", "-c", "python ./inference/eval/main.py --save_name resnet18_small_aug_240917 --perturbation trans_hard_003"]
 
