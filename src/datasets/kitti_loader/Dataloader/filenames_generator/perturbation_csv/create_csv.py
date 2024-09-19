@@ -56,15 +56,25 @@ def generate_random_value(value_range):
 # max_out = 5
 # tag = 'neg_master_004'
 
+# # Perturbation positive: trans_004
+# x_range = (0, 0.035)
+# y_range = (0, 0.035)
+# z_range = (0, 0.035)
+# range_rad1 = (0, 0.5)
+# range_rad2 = (0, 0.5)
+# range_rad3 = (0, 0.5)
+# max_out = 6
+# tag = 'pos_master_trans_004'
+
 # Perturbation positive: trans_004
-x_range = (0, 0.035)
-y_range = (0, 0.035)
-z_range = (0, 0.035)
-range_rad1 = (0, 0.5)
-range_rad2 = (0, 0.5)
-range_rad3 = (0, 0.5)
-max_out = 6
-tag = 'pos_master_trans_004'
+x_range = (0.04, 0.05)
+y_range = (0.04, 0.05)
+z_range = (0.04, 0.05)
+range_rad1 = (0, 0.0)
+range_rad2 = (0, 0.0)
+range_rad3 = (0, 0.0)
+max_out = 2
+tag = 'trans_hard_004'
 
 # # Perturbation positive: trans_002
 # x_range = (0, 0.02)

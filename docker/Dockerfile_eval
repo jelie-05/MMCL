@@ -25,11 +25,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8000
 
 # 1:
-#CMD ["sh", "-c", "python ./inference/eval/main.py --save_name resnet18_small_aug_240917 --perturbation neg_master && \
-#python ./inference/eval/main.py --save_name resnet18_small_aug_240917 --perturbation rot_easy && \
-#python ./inference/eval/main.py --save_name resnet18_small_aug_240917 --perturbation rot_hard && \
-#python ./inference/eval/main.py --save_name resnet18_small_aug_240917 --perturbation trans_easy && \
-#python ./inference/eval/main.py --save_name resnet18_small_aug_240917 --perturbation trans_hard"]
+CMD ["sh", "-c", "python ./inference/eval/main.py --save_name resnet18_small_aug_240918 --perturbation neg_master_004 && \
+python ./inference/eval/main.py --save_name resnet18_small_aug_240918 --perturbation neg_master && \
+python ./inference/eval/main.py --save_name resnet18_small_aug_240918 --perturbation rot_easy && \
+python ./inference/eval/main.py --save_name resnet18_small_aug_240918 --perturbation rot_hard && \
+python ./inference/eval/main.py --save_name resnet18_small_aug_240918 --perturbation trans_easy && \
+python ./inference/eval/main.py --save_name resnet18_small_aug_240918 --perturbation trans_hard_004"]
 
-CMD ["sh", "-c", "python ./inference/eval/main.py --save_name resnet18_small_aug_240917 --perturbation trans_hard"]
+#CMD ["sh", "-c", "python ./inference/eval/main.py --save_name resnet18_small_aug_240917 --perturbation trans_hard"]
 
