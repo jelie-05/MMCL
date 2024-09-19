@@ -95,8 +95,8 @@ if __name__ == "__main__":
     PR = pr_evaluation(device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
                        perturbation_eval=perturbation_file, output_dir=save_dir, show_plot=args.show_plot)
 
-    # cka_analysis(data_root=kitti_path, output_dir=save_dir, model_im=encoder_im, model_lid=encoder_lid,
-    #              perturbation_eval=perturbation_file, show_plot=args.show_plot)
+    cka_analysis(data_root=kitti_path, output_dir=save_dir, model_im=encoder_im, model_lid=encoder_lid,
+                 perturbation_eval=perturbation_file, show_plot=args.show_plot)
 
 
     check_epoch = False
