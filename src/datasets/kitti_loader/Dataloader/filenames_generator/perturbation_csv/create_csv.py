@@ -56,6 +56,16 @@ def generate_random_value(value_range):
 # max_out = 5
 # tag = 'neg_master_004'
 
+# # Pertubation negativ (labeled as wrong)
+# x_range = (0.1, 0.2)
+# y_range = (0.1, 0.2)
+# z_range = (0.1, 0.2)
+# range_rad1 = (5.0, 10.0)
+# range_rad2 = (5.0, 10.0)
+# range_rad3 = (5.0, 10.0)
+# max_out = 5
+# tag = 'neg_ood'
+
 # # Perturbation positive: trans_004
 # x_range = (0, 0.035)
 # y_range = (0, 0.035)
@@ -66,15 +76,15 @@ def generate_random_value(value_range):
 # max_out = 6
 # tag = 'pos_master_trans_004'
 
-# Perturbation positive: trans_004
-x_range = (0.04, 0.05)
-y_range = (0.04, 0.05)
-z_range = (0.04, 0.05)
-range_rad1 = (0, 0.0)
-range_rad2 = (0, 0.0)
-range_rad3 = (0, 0.0)
-max_out = 2
-tag = 'trans_hard_004'
+# # Perturbation positive: noise
+# x_range = (0, 0.005)
+# y_range = (0, 0.005)
+# z_range = (0, 0.005)
+# range_rad1 = (0, 0.1)
+# range_rad2 = (0, 0.1)
+# range_rad3 = (0, 0.1)
+# max_out = 6
+# tag = 'noise'
 
 # # Perturbation positive: trans_002
 # x_range = (0, 0.02)
@@ -86,57 +96,7 @@ tag = 'trans_hard_004'
 # max_out = 6
 # tag = 'pos_master_trans_002'
 
-# # Perturbation positive: trans_001
-# x_range = (0, 0.01)
-# y_range = (0, 0.01)
-# z_range = (0, 0.01)
-# range_rad1 = (0, 0.5)
-# range_rad2 = (0, 0.5)
-# range_rad3 = (0, 0.5)
-# max_out = 6
-# tag = 'pos_master_trans_001'
-
-# Perturbation positive: notrans
-# x_range = (0, 0.0)
-# y_range = (0, 0.0)
-# z_range = (0, 0.0)
-# range_rad1 = (0, 0.5)
-# range_rad2 = (0, 0.5)
-# range_rad3 = (0, 0.5)
-# max_out = 6
-# tag = 'pos_master_notrans'
-
-# # Translation error - easy
-# x_range = (0.05, 0.1)
-# y_range = (0.05, 0.1)
-# z_range = (0.05, 0.1)
-# range_rad1 = (0, 0)
-# range_rad2 = (0, 0)
-# range_rad3 = (0, 0)
-# max_out = 2
-# tag = 'trans_easy'
-
-# # Translation error - mid
-# x_range = (0.03, 0.05)
-# y_range = (0.03, 0.05)
-# z_range = (0.03, 0.05)
-# range_rad1 = (0, 0)
-# range_rad2 = (0, 0)
-# range_rad3 = (0, 0)
-# max_out = 2
-# tag = 'trans_mid'
-
-# # Translation error - mid
-# x_range = (0.04, 0.05)
-# y_range = (0.04, 0.05)
-# z_range = (0.04, 0.05)
-# range_rad1 = (0, 0)
-# range_rad2 = (0, 0)
-# range_rad3 = (0, 0)
-# max_out = 2
-# tag = 'trans_mid_004'
-
-# # Translation error - very hard
+# # # Translation only
 # x_range = (0.02, 0.03)
 # y_range = (0.02, 0.03)
 # z_range = (0.02, 0.03)
@@ -144,57 +104,17 @@ tag = 'trans_hard_004'
 # range_rad2 = (0, 0)
 # range_rad3 = (0, 0)
 # max_out = 2
-# tag = 'trans_very_hard'
-
-# # Translation error - hard
-# x_range = (0.03, 0.03)
-# y_range = (0.03, 0.03)
-# z_range = (0.03, 0.03)
-# range_rad1 = (0, 0)
-# range_rad2 = (0, 0)
-# range_rad3 = (0, 0)
-# max_out = 2
-# tag = 'trans_hard_003'
-
-# # Translation error - hard
-# x_range = (0.1, 0.15)
-# y_range = (0.1, 0.15)
-# z_range = (0.1, 0.15)
-# range_rad1 = (0, 0)
-# range_rad2 = (0, 0)
-# range_rad3 = (0, 0)
-# max_out = 2
-# tag = 'trans_ood'
-
-# # Translation error - hard
-# x_range = (0.02, 0.05)
-# y_range = (0.02, 0.05)
-# z_range = (0.02, 0.05)
-# range_rad1 = (0, 0)
-# range_rad2 = (0, 0)
-# range_rad3 = (0, 0)
-# max_out = 2
 # tag = 'trans_hard'
-#
-# # Rotational error - hard
-# x_range = (0, 0)
-# y_range = (0, 0)
-# z_range = (0, 0)
-# range_rad1 = (0.5, 2)
-# range_rad2 = (0.5, 2)
-# range_rad3 = (0.5, 2)
-# max_out = 2
-# tag = 'rot_hard'
-#
-# # Rotational error - easy
-# x_range = (0, 0)
-# y_range = (0, 0)
-# z_range = (0, 0)
-# range_rad1 = (2, 5)
-# range_rad2 = (2, 5)
-# range_rad3 = (2, 5)
-# max_out = 2
-# tag = 'rot_easy'
+
+# Translation only
+x_range = (0, 0)
+y_range = (0, 0)
+z_range = (0, 0)
+range_rad1 = (1.01, 2.00)
+range_rad2 = (1.01, 2.00)
+range_rad3 = (1.01, 2.00)
+max_out = 2
+tag = 'rot_mid'
 
 # Define file paths
 current_file_path = os.path.abspath(__file__)
@@ -228,9 +148,10 @@ with (open(output_csv_file_path, mode='w', newline='') as file):
         theta_rad2 = generate_random_value(range_rad2)
         theta_rad3 = generate_random_value(range_rad3)
 
-        theta_rad1, theta_rad2, theta_rad3, x, y, z, n = choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out=max_out)
+        # theta_rad1, theta_rad2, theta_rad3, x, y, z, n = choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out=max_out)
 
         # x, y, z, n = choose_num_errors_3(x, y, z, max_out=max_out)
+        theta_rad1, theta_rad2, theta_rad3, n = choose_num_errors_3(theta_rad1, theta_rad2, theta_rad3, max_out=max_out)
 
         row = [
             name, x, y, z, theta_rad1, theta_rad2, theta_rad3, n
