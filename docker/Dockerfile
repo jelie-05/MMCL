@@ -37,7 +37,7 @@ EXPOSE 8000
 # 2: compare to 1.
 #CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_noaug_240906 --classifier"]
 
-CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_noaug_240919 --classifier"]
+CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_aug_240920 --classifier"]
 
 # 3: check init
 # Try other initialization for small
