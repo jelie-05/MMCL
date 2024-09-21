@@ -78,7 +78,8 @@ def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, ve
     velo2cam = read_calib_file(os.path.join(calib_dir, 'calib_velo_to_cam.txt'))
 
     perturb_dir = os.path.dirname(perturb_path)
-    augmentation_csv = os.path.join(perturb_dir, 'perturbation_pos_master.csv')
+    # augmentation_csv = os.path.join(perturb_dir, 'perturbation_pos_master.csv')   # During training
+    augmentation_csv = os.path.join(perturb_dir, 'perturbation_noise.csv')  # During eval
 
     # Equal to matrix Tr_velo_to_cam
     velo2cam = np.hstack((velo2cam['R'].reshape(3,3), velo2cam['T'][..., np.newaxis]))

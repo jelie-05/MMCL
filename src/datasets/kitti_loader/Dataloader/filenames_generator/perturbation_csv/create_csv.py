@@ -96,25 +96,25 @@ def generate_random_value(value_range):
 # max_out = 6
 # tag = 'pos_master_trans_002'
 
-# # # Translation only
-# x_range = (0.02, 0.03)
-# y_range = (0.02, 0.03)
-# z_range = (0.02, 0.03)
-# range_rad1 = (0, 0)
-# range_rad2 = (0, 0)
-# range_rad3 = (0, 0)
-# max_out = 2
-# tag = 'trans_hard'
-
-# Translation only
-x_range = (0, 0)
-y_range = (0, 0)
-z_range = (0, 0)
-range_rad1 = (1.01, 2.00)
-range_rad2 = (1.01, 2.00)
-range_rad3 = (1.01, 2.00)
+# # Translation only
+x_range = (0.1, 0.2)
+y_range = (0.1, 0.2)
+z_range = (0.1, 0.2)
+range_rad1 = (0, 0)
+range_rad2 = (0, 0)
+range_rad3 = (0, 0)
 max_out = 2
-tag = 'rot_mid'
+tag = 'trans_compare_wei'
+
+# # Translation only
+# x_range = (0, 0)
+# y_range = (0, 0)
+# z_range = (0, 0)
+# range_rad1 = (1.01, 2.00)
+# range_rad2 = (1.01, 2.00)
+# range_rad3 = (1.01, 2.00)
+# max_out = 2
+# tag = 'rot_mid'
 
 # Define file paths
 current_file_path = os.path.abspath(__file__)
@@ -150,8 +150,8 @@ with (open(output_csv_file_path, mode='w', newline='') as file):
 
         # theta_rad1, theta_rad2, theta_rad3, x, y, z, n = choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out=max_out)
 
-        # x, y, z, n = choose_num_errors_3(x, y, z, max_out=max_out)
-        theta_rad1, theta_rad2, theta_rad3, n = choose_num_errors_3(theta_rad1, theta_rad2, theta_rad3, max_out=max_out)
+        x, y, z, n = choose_num_errors_3(x, y, z, max_out=max_out)
+        # theta_rad1, theta_rad2, theta_rad3, n = choose_num_errors_3(theta_rad1, theta_rad2, theta_rad3, max_out=max_out)
 
         row = [
             name, x, y, z, theta_rad1, theta_rad2, theta_rad3, n
