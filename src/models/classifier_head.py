@@ -83,9 +83,6 @@ class classifier_head(nn.Module):
                 nn.Linear(512, 256),
                 nn.BatchNorm1d(256),
                 nn.ReLU(),
-                nn.Linear(256, 256),
-                nn.BatchNorm1d(256),
-                nn.ReLU(),
                 nn.Linear(256, 1),
                 nn.Sigmoid()
                 )
