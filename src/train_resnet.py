@@ -91,7 +91,7 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
                                                                           encoder_lid=encoder_lid,
                                                                           opt_im=optimizer_im, opt_lid=optimizer_lid)
         for param_group in opt_im.param_groups:
-            print(f"Current learning rate: {param_group['lr']}")
+            print(f"Current learning rate of im/lid optimizer: {param_group['lr']}")
 
     def save_checkpoint(epoch, curr_loss):
         save_dict = {
@@ -197,12 +197,11 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
 
     if train_classifier:
         # Load pretrained_encoder
-        trained_enc_im, trained_enc_lid = init_model(device=device,
-                                                     mode=backbone,
-                                                     model_name=model_name)
-
         if retrain or not pretrained_encoder:
             print(f"Used latest path")
+            trained_enc_im, trained_enc_lid = init_model(device=device,
+                                                         mode=backbone,
+                                                         model_name=model_name)
             trained_enc_im, trained_enc_lid, opt_im, opt_lid, epoch = load_checkpoint(latest_path,
                                                                                       encoder_im=trained_enc_im,
                                                                                       encoder_lid=trained_enc_lid,
@@ -210,9 +209,25 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
                                                                                       opt_im=optimizer_im)
         else:
             print(f"Used pretrained encoder in classifier:{path_encoders}")
+            pretrained_name = args['meta']['pretrained_name']
+            starting_epoch = args['meta']['starting_epoch']
+
+            if starting_epoch == 'latest':
+                path_encoders = os.path.join(project_root, f'outputs_gpu/{pretrained_name}/models',
+                                             f'{pretrained_name}_contrastive-latest.pth.tar')
+            else:
+                path_encoders = os.path.join(project_root, f'outputs_gpu/{pretrained_name}/models',
+                                             f'{pretrained_name}_contrastive-ep{starting_epoch}.pth.tar')
+
+            trained_enc_im, trained_enc_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
+                                                                              encoder_im=encoder_im,
+                                                                              encoder_lid=encoder_lid,
+                                                                              opt_im=optimizer_im,
+                                                                              opt_lid=optimizer_lid)
 
         trained_enc_im.to(device).eval()
         trained_enc_lid.to(device).eval()
+
         model_cls = classifier_head(model_im=trained_enc_im, model_lid=trained_enc_lid, model_name=model_name).to(device)
         # -
 
