@@ -72,18 +72,18 @@ class classifier_head(nn.Module):
                 # nn.Linear(256, 1),
                 # nn.Sigmoid()
                 # )
-                nn.Conv2d(input_channel, 512, kernel_size=3, stride=1, padding=1),  # output: (N,
-                nn.BatchNorm2d(512),
+                nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=1, padding=1),  # output: (N,
+                nn.BatchNorm2d(first_channel),
                 nn.ReLU(),
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
-                nn.Linear(512, 256),
+                nn.Linear(first_channel, 512),
                 nn.BatchNorm1d(512),
                 nn.ReLU(),
-                nn.Linear(256, 128),
-                nn.BatchNorm1d(128),
+                nn.Linear(512, 256),
+                nn.BatchNorm1d(256),
                 nn.ReLU(),
-                nn.Linear(128, 1),
+                nn.Linear(256, 1),
                 nn.Sigmoid()
                 )
         else:
