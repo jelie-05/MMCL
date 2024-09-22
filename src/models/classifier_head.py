@@ -72,9 +72,12 @@ class classifier_head(nn.Module):
                 # nn.Linear(256, 1),
                 # nn.Sigmoid()
                 # )
+                nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=1, padding=1),  # output: (N,
+                nn.BatchNorm2d(first_channel),
+                nn.ReLU(),
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
-                nn.Linear(input_channel, 512),
+                nn.Linear(first_channel, 512),
                 nn.BatchNorm1d(512),
                 nn.ReLU(),
                 nn.Linear(512, 256),
@@ -85,7 +88,7 @@ class classifier_head(nn.Module):
                 nn.ReLU(),
                 nn.Linear(256, 1),
                 nn.Sigmoid()
-            )
+                )
         else:
             raise ValueError("Error: starting_epoch couldn't be found")
     def load_classifier_layers(self, state_dict):
