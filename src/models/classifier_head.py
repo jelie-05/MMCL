@@ -55,18 +55,15 @@ class classifier_head(nn.Module):
                 )
         elif model_name == 'resnet18_all':
             self.classifier_layers = nn.Sequential(
-                nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),  # output: (N,
-                nn.BatchNorm2d(first_channel),
-                nn.ReLU(),
+                # nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),  # output: (N,
+                # nn.BatchNorm2d(first_channel),
+                # nn.ReLU(),
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
                 nn.Linear(first_channel, 512),
                 nn.BatchNorm1d(512),
                 nn.ReLU(),
                 nn.Linear(512, 256),
-                nn.BatchNorm1d(256),
-                nn.ReLU(),
-                nn.Linear(256, 256),
                 nn.BatchNorm1d(256),
                 nn.ReLU(),
                 nn.Linear(256, 1),
