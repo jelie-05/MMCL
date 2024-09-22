@@ -31,6 +31,5 @@ optimization_cls:
   epochs: 70
   lr: 1e-3
   weight_decay: 0.05
-  margin: 4
   scheduler_step: 30
   scheduler_gamma: 0.1
