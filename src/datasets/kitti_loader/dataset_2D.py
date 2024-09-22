@@ -13,7 +13,7 @@ class KittiDataset(Dataset):
                  mode,
                  perturb_filenames,
                  transform=None,
-                 augmentation=False):
+                 augmentation=None):
         self.mode = mode
         self.kitti_root = kittiDir
         self.perturb_filenames = perturb_filenames
@@ -21,7 +21,7 @@ class KittiDataset(Dataset):
         self.augmentation = augmentation
 
         # use left image by default
-        if self.augmentation:
+        if self.augmentation is not None:
             print(f"Create augmentation for correct input. {self.augmentation}")
         else:
             print(f"No augmentation for correct input. {self.augmentation}")
@@ -45,7 +45,7 @@ class DataGenerator(object):
                  phase,
                  perturb_filenames,
                  high_gpu=True,
-                 augmentation=False):
+                 augmentation=None):
         self.phase = phase
         self.high_gpu = high_gpu
         self.perturb_filenames = perturb_filenames
@@ -75,7 +75,7 @@ class DataGenerator(object):
 
 
 class KittiLeftImageDataset(KittiDataset):
-    def __init__(self, kittiDir, mode, perturb_filenames, transform=None, augmentation=False):
+    def __init__(self, kittiDir, mode, perturb_filenames, transform=None, augmentation=None):
         super().__init__(kittiDir, mode, perturb_filenames, transform=transform,
                          augmentation=augmentation)  # Pass the transform
 
@@ -86,7 +86,7 @@ class KittiLeftImageDataset(KittiDataset):
 
 
 class KittiDepthDataset(KittiDataset):
-    def __init__(self, kittiDir, mode, perturb_filenames, transform=None, augmentation=False):
+    def __init__(self, kittiDir, mode, perturb_filenames, transform=None, augmentation=None):
         super().__init__(kittiDir, mode, perturb_filenames, transform=transform,
                          augmentation=augmentation)  # Pass the transform
 
