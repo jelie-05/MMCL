@@ -72,20 +72,19 @@ def disturb_matrices(perturbation_csv, target_name):
 
     return rot_error, translation_error
 
-def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, vel_depth=False, augmentation=False):
+def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, vel_depth=False, augmentation=None):
     # load calibration files
     cam2cam = read_calib_file(os.path.join(calib_dir, 'calib_cam_to_cam.txt'))
     velo2cam = read_calib_file(os.path.join(calib_dir, 'calib_velo_to_cam.txt'))
 
     perturb_dir = os.path.dirname(perturb_path)
-    # augmentation_csv = os.path.join(perturb_dir, 'perturbation_pos_master.csv')   # During training
-    augmentation_csv = os.path.join(perturb_dir, 'perturbation_noise.csv')  # During eval
 
     # Equal to matrix Tr_velo_to_cam
     velo2cam = np.hstack((velo2cam['R'].reshape(3,3), velo2cam['T'][..., np.newaxis]))
     velo2cam = np.vstack((velo2cam, np.array([0, 0, 0, 1.0])))
 
-    if augmentation:
+    if augmentation is not None:
+        augmentation_csv = os.path.join(perturb_dir, augmentation)  # During eval
         rot_error, translation_error = disturb_matrices(perturbation_csv=augmentation_csv, target_name=name)
         velo2cam_augmented = np.dot(velo2cam, rot_error) + translation_error
     else:

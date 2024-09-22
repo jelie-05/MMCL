@@ -15,7 +15,7 @@ class Kittiloader(object):
     param mode: 'train', 'test' or 'val'
     param cam: camera id. 2 represents the left cam, 3 represents the right one
     """
-    def __init__(self, kittiDir, mode, perturb_filenames, cam=2, augmentation=False):
+    def __init__(self, kittiDir, mode, perturb_filenames, cam=2, augmentation=None):
         self.mode = mode
         self.cam = cam
         self.files = []
