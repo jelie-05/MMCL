@@ -152,6 +152,6 @@ if __name__ == "__main__":
         plot_tag = 'Contrastive Loss'
 
     # Call the plot function with the validation plot disabled (set to False to disable)
-    enable_validation = False  # Change this to False to disable validation plot
+    enable_validation = True  # Change this to False to disable validation plot
 
     plot_tensorboard_logs(log_files, training_tag, validation_tag, plot_tag, enable_validation)
