@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # -
 
     # Saving directories
-    output_dir = path_encoders = os.path.join(root, 'inference/eval', f"{args.save_name}_{args.perturbation}")
+    output_dir = os.path.join(root, 'inference/eval', f"{args.save_name}_{args.perturbation}")
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         print(f"Directory {output_dir} created.")
@@ -71,20 +71,34 @@ if __name__ == "__main__":
         torch.cuda.set_device(device)
     # -
 
-    # Load pretrained model
-    path_encoders = os.path.join(root, 'outputs_gpu', args.save_name, 'models', f'{args.save_name}_contrastive-latest.pth.tar')
-    path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models', f'{args.save_name}_classifier-latest.pth.tar')
-
     encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'],
                                          model_name=params['meta']['model_name'])
     opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
     opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])
+
+    # Load pretrained model
+    pretrained = params['meta']['pretrained_encoder']
+    if pretrained:
+        pretrained_name = params['meta']['pretrained_name']
+        path_encoders = os.path.join(root, 'outputs_gpu', pretrained_name, 'models',
+                                     f'{pretrained_name}_contrastive-latest.pth.tar')
+        print(f"Use pretrained encoder from: {pretrained_name}")
+
+    else:
+        path_encoders = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
+                                     f'{args.save_name}_contrastive-latest.pth.tar')
+        print("Not using pretrained encoder")
+
     encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
-                                                                      encoder_im=encoder_im,
-                                                                      encoder_lid=encoder_lid,
-                                                                      opt_im=opt_im, opt_lid=opt_lid)
+                                                                  encoder_im=encoder_im,
+                                                                  encoder_lid=encoder_lid,
+                                                                  opt_im=opt_im, opt_lid=opt_lid)
+
     encoder_im.eval()
     encoder_lid.eval()
+
+    path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
+                            f'{args.save_name}_classifier-latest.pth.tar')
     classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid, model_name=params['meta']['model_name'])
     classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
     classifier.to(device)

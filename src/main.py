@@ -53,11 +53,9 @@ if __name__ == "__main__":
 
     # Train Model
     mode = params['meta']['backbone']
-    if mode == 'resnet':
+    if mode in ['resnet', 'vit']:
         train_resnet(args=params, project_root=root, save_name=save_name, vit=args.vit, masking=args.masking, logger_launch='True',
                      train_classifier=args.classifier)
-    elif mode == 'vit':
-        print('vit')
     else:
         assert mode in ['resnet', 'vit'], 'backbone is not covered'
 
