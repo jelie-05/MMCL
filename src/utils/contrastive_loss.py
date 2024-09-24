@@ -39,18 +39,22 @@ class ContrastiveLoss(nn.Module):
         elif self.mode == 'resnet_instance':
             N = output_im.shape[0]
 
-            # Flatten the embeddings
-            output_im_flat = output_im.view(N, -1)  # Shape: [N, D]
-            output_lid_flat = output_lid.view(N, -1)  # Shape: [N, D]
+            # Apply global average pooling over the spatial dimensions (H, W)
+            output_im_pooled = output_im.mean(dim=(2, 3))  # Shape: [N, C]
+            output_lid_pooled = output_lid.mean(dim=(2, 3))  # Shape: [N, C]
 
-            # Compute the L2 distance between flattened embeddings
-            instance_wise_distance = torch.sqrt(torch.sum((output_im_flat - output_lid_flat) ** 2, dim=1))  # Shape: [N]
+            # Calculate the Euclidean distance between the pooled outputs
+            euclidean_distance = F.pairwise_distance(output_im_pooled, output_lid_pooled)  # Shape: [N]
 
+            # Ensure labels are shaped correctly for batch-wise contrastive loss
             labels = labels.view(N)  # Shape: [N]
 
-            positive_loss = torch.pow(instance_wise_distance, 2) * labels
-            negative_loss = torch.pow(torch.clamp(self.margin - instance_wise_distance, min=0.0), 2) * (1 - labels)
-            loss_contrastive = (positive_loss + negative_loss).mean()
+            # Compute the contrastive loss
+            loss_contrastive = (1 - labels) * torch.pow(euclidean_distance, 2) + \
+                               labels * torch.pow(torch.clamp(self.margin - euclidean_distance, min=0.0), 2)
+
+            # Take the mean loss over the batch
+            loss_contrastive = loss_contrastive.mean()
         else:
             raise ValueError(f"Mode '{self.mode}' is not supported. Choose from 'vit', 'resnet', or 'resnet_instance'.")
 
