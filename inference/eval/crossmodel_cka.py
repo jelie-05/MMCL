@@ -57,6 +57,8 @@ if __name__ == "__main__":
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         print(f"Directory {output_dir} created.")
+    else:
+        raise FileNotFoundError(f"Failed to create directory {output_dir}.")
 
     if os.path.exists(output_dir) and not os.listdir(output_dir):
         save_dir = os.path.join(output_dir, 'run_1')

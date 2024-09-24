@@ -82,9 +82,10 @@ def confusion_matrix(label, prediction, threshold=0.5, name_list=None):
 
 def plot_distribution(label, prediction, dist_save):
     flipped_prediction = 1 - prediction # still for wrong CL Function
+    flipped_label = 1 - label
 
-    pred_label_1 = flipped_prediction[label == 1].cpu()
-    pred_label_0 = flipped_prediction[label == 0].cpu()
+    pred_label_1 = flipped_prediction[flipped_label == 1].cpu()
+    pred_label_0 = flipped_prediction[flipped_label == 0].cpu()
 
     # Plot the distributions
     plt.figure(figsize=(10, 6))
