@@ -95,6 +95,16 @@ class KittiDepthDataset(KittiDataset):
         depth = data_item['depth']  # Just extract the depth
         return depth
 
+class KittiNegDataset(KittiDataset):
+    def __init__(self, kittiDir, mode, perturb_filenames, transform=None, augmentation=None):
+        super().__init__(kittiDir, mode, perturb_filenames, transform=transform,
+                         augmentation=augmentation)  # Pass the transform
+
+    def __getitem__(self, idx):
+        data_item = super().__getitem__(idx)  # Get the full data item, already transformed
+        depth_neg = data_item['depth_neg']  # Just extract the depth
+        return depth_neg
+
 
 def create_dataloaders(root, perturb_filenames, mode, batch_size, num_cores):
     # Initialize the transformer based on mode
@@ -110,5 +120,11 @@ def create_dataloaders(root, perturb_filenames, mode, batch_size, num_cores):
     depth_dataset = KittiDepthDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform)
     dataloader_lid = DataLoader(depth_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
                                 drop_last=True, pin_memory=True)
+
+    # Dataset for depth with the transform
+    depth_dataset = KittiNegDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform)
+    dataloader_neg = DataLoader(depth_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
+                                drop_last=True, pin_memory=True)
+
     print("data is loaded")
-    return dataloader_img, dataloader_lid
+    return dataloader_img, dataloader_lid, dataloader_neg

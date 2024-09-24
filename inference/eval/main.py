@@ -132,10 +132,7 @@ if __name__ == "__main__":
                      tag_1='Encoder Image', tag_2="Encoder LiDAR", title=title,
                      perturbation_eval=perturbation_file, show_plot=args.show_plot)
         cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_im, model_2=encoder_im,
-                     tag_1='Encoder Image', tag_2="Encoder Image", title=title,
-                     perturbation_eval=perturbation_file, show_plot=args.show_plot)
-        cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_lid, model_2=encoder_lid,
-                     tag_1='Encoder LiDAR', tag_2="Encoder LiDAR", title=title,
+                     tag_1='Encoder Image', tag_2="Miscalibrated", title=title,
                      perturbation_eval=perturbation_file, show_plot=args.show_plot)
     else:
         print("No CKA Analysis")

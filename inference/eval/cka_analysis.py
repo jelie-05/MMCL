@@ -60,8 +60,8 @@ def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, p
 
     batch_size = 64
     num_cores = min(multiprocessing.cpu_count(), 64)
-    dataloader_im, dataloader_lid = create_dataloaders(root=data_root, perturb_filenames=perturbation_eval, mode='test',
-                                                       batch_size=batch_size, num_cores=num_cores)
+    dataloader_im, dataloader_lid, dataloader_neg = create_dataloaders(root=data_root, perturb_filenames=perturbation_eval, mode='test',
+                                                                       batch_size=batch_size, num_cores=num_cores)
 
     if 'Image' in tag_1:
         dataloader_1 = dataloader_im
@@ -69,6 +69,9 @@ def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, p
     elif 'LiDAR' in tag_1:
         dataloader_1 = dataloader_lid
         save_1 = 'lid'
+    elif tag_1 == 'Miscalibrated':
+        dataloader_1 = dataloader_neg
+        save_1 = 'neg'
     else:
         assert False, "Error: tag_1 must contain 'Image' or 'LiDAR'"
 
@@ -78,6 +81,9 @@ def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, p
     elif 'LiDAR' in tag_2:
         dataloader_2 = dataloader_lid
         save_2 = 'lid'
+    elif tag_2 == 'Miscalibrated':
+        dataloader_2 = dataloader_neg
+        save_2 = 'neg'
     else:
         assert False, "Error: tag_2 must contain 'Image' or 'LiDAR'"
 
