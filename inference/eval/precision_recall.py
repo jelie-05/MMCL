@@ -88,14 +88,14 @@ def plot_distribution(label, prediction, dist_save):
     plt.figure(figsize=(10, 6))
 
     # Check if there are any label == 1 predictions to plot
-    if len(pred_label_1) > 0:
-        plt.hist(pred_label_1.numpy(), bins=30, alpha=0.3, label='Label == 1', color='blue', density=True)
+    if len(pred_label_1) > 0: # still for wrong CL Function
+        plt.hist(pred_label_1.numpy(), bins=30, alpha=0.4, label='Label == 0', color='red', density=True)
     else:
         print("No instances of label == 1")
 
     # Check if there are any label == 0 predictions to plot
     if len(pred_label_0) > 0:
-        plt.hist(pred_label_0.numpy(), bins=30, alpha=0.7, label='Label == 0', color='red', density=True)
+        plt.hist(pred_label_0.numpy(), bins=30, alpha=0.4, label='Label == 1', color='blue', density=True)
     else:
         print("No instances of label == 0")
 

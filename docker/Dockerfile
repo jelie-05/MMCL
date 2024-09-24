@@ -50,4 +50,4 @@ CMD ["sh", "-c", "python ./src/main.py --save_name resnet18_small_aug_240923 --c
 
 # CUDA_VISIBLE_DEVICES=0 for 2 cudas
 
-#&& python ./inference/eval/precision_recall/main.py --model_im image_240708_full_1 --model_lid lidar_240708_full_1 --name_cls cls_240708_full_1 
+#&& python ./inference/eval/precision_recall/main.py --model_1 image_240708_full_1 --model_2 lidar_240708_full_1 --name_cls cls_240708_full_1
