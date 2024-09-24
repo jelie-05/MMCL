@@ -145,3 +145,44 @@ def init_opt(
 
     return optimizer, scheduler
 
+def full_load_latest(
+        device,
+        params,
+        root,
+        save_name,
+):
+    # Initialized and Load Encoders
+    encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'],
+                                         model_name=params['meta']['model_name'])
+    opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
+    opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])
+
+    # Load pretrained model
+    pretrained = params['meta']['pretrained_encoder']
+    if pretrained:
+        pretrained_name = params['meta']['pretrained_name']
+        path_encoders = os.path.join(root, 'outputs_gpu', pretrained_name, 'models',
+                                     f'{pretrained_name}_contrastive-latest.pth.tar')
+        print(f"Use pretrained encoder from: {pretrained_name}")
+    else:
+        path_encoders = os.path.join(root, 'outputs_gpu', save_name, 'models',
+                                     f'{save_name}_contrastive-latest.pth.tar')
+        print("Not using pretrained encoder")
+
+    encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
+                                                                      encoder_im=encoder_im,
+                                                                      encoder_lid=encoder_lid,
+                                                                      opt_im=opt_im, opt_lid=opt_lid)
+    encoder_im.eval()
+    encoder_lid.eval()
+    # -
+
+    # Initialized and Load Classifier
+    path_cls = os.path.join(root, 'outputs_gpu', save_name, 'models',
+                            f'{save_name}_classifier-latest.pth.tar')
+    classifier_load = classifier(model_im=encoder_im, model_lid=encoder_lid, model_name=params['meta']['model_name'])
+    classifier_load, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier_load)
+    classifier_load.to(device)
+    classifier_load.eval()
+    # -
+    return encoder_im, encoder_lid, classifier_load
