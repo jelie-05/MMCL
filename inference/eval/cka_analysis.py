@@ -41,22 +41,22 @@ def compute_and_save_cka_heatmap(model1, model2, dataloader1, dataloader2, tag_1
 
     cka = CKA(
         model1=model1,
-        model2=model1,
+        model2=model2,
         model1_name=tag_1,  # Provide unique names
-        model2_name=tag_1,
+        model2_name=tag_2,
         model1_layers=layer_names_1,
-        model2_layers=layer_names_1,
+        model2_layers=layer_names_2,
         device='cuda' if torch.cuda.is_available() else 'cpu'
     )
 
     # Perform CKA comparison on the dataloader
-    cka.compare(dataloader1=dataloader1)
+    cka.compare(dataloader1=dataloader1, dataloader2=dataloader2)
 
     cka.plot_results(save_path=save_path, show_plot=show_plot, title=title)
 
     print(f"CKA heatmap saved to: {save_path}")
 
-def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, perturbation_eval, show_plot=False):
+def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, perturbation_eval, show_plot=False, crossmodel=False):
 
     batch_size = 64
     num_cores = min(multiprocessing.cpu_count(), 64)
@@ -93,6 +93,10 @@ def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, p
         module.register_forward_hook(check_for_nan)
 
     save_path = os.path.join(output_dir, f'cka_analysis_{save_1}_{save_2}.png')
+
+    if crossmodel:
+        dataloader_2 = None
+
     # Call the function to compute and save the CKA heatmap between two models
     compute_and_save_cka_heatmap(model_1, model_2, dataloader_1, dataloader_2, tag_1, tag_2, title,
                                  save_path=save_path, show_plot=show_plot)
