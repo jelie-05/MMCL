@@ -72,9 +72,12 @@ class classifier_head(nn.Module):
                 nn.Conv2d(first_channel, 1024, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 6, 20)
                 nn.BatchNorm2d(1024),
                 nn.ReLU(),
+                nn.Conv2d(1024, 2048, kernel_size=3, stride=2, padding=1),  # output: (N, 1024, 3, 10)
+                nn.BatchNorm2d(2048),
+                nn.ReLU(),
                 nn.AdaptiveAvgPool2d((1, 1)), # output: (N, 1024, 1, 1)
                 nn.Flatten(),
-                nn.Linear(1024, 512),
+                nn.Linear(2048, 512),
                 nn.BatchNorm1d(512),
                 nn.ReLU(),
                 nn.Linear(512, 256),
