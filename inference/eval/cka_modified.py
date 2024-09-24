@@ -189,8 +189,8 @@ class CKA:
                     assert not torch.isnan(self.hsic_matrix).any(), "HSIC computation resulted in NANs"
 
         # Normalize the HSIC matrix for final CKA calculation
-        self.hsic_matrix = self.hsic_matrix[:, :, 1] / (
-                    self.hsic_matrix[:, :, 0].sqrt() * self.hsic_matrix[:, :, 2].sqrt())
+        self.hsic_matrix = self.hsic_matrix[:, :, 1] / (self.hsic_matrix[:, :, 0].sqrt() *
+                                                        self.hsic_matrix[:, :, 2].sqrt())
 
         assert not torch.isnan(self.hsic_matrix).any(), "HSIC computation resulted in NANs"
 

@@ -3,6 +3,7 @@ import torch
 from src.datasets.kitti_loader.dataset_2D import create_dataloaders
 import multiprocessing
 from cka_modified import CKA
+# from torch_cka import CKA
 
 
 def compute_and_save_cka_heatmap(model1, model2, dataloader1, dataloader2, tag_1, tag_2, title,
