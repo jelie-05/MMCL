@@ -81,21 +81,23 @@ def confusion_matrix(label, prediction, threshold=0.5, name_list=None):
 
 
 def plot_distribution(label, prediction, dist_save):
-    pred_label_1 = prediction[label == 1].cpu()
-    pred_label_0 = prediction[label == 0].cpu()
+    flipped_prediction = 1 - prediction # still for wrong CL Function
+
+    pred_label_1 = flipped_prediction[label == 1].cpu()
+    pred_label_0 = flipped_prediction[label == 0].cpu()
 
     # Plot the distributions
     plt.figure(figsize=(10, 6))
 
     # Check if there are any label == 1 predictions to plot
-    if len(pred_label_1) > 0: # still for wrong CL Function
-        plt.hist(pred_label_1.numpy(), bins=30, alpha=0.4, label='Label == 0', color='red', density=True)
+    if len(pred_label_1) > 0:
+        plt.hist(pred_label_1.numpy(), bins=30, alpha=0.4, label='Label == 1', color='red', density=True)
     else:
         print("No instances of label == 1")
 
     # Check if there are any label == 0 predictions to plot
     if len(pred_label_0) > 0:
-        plt.hist(pred_label_0.numpy(), bins=30, alpha=0.4, label='Label == 1', color='blue', density=True)
+        plt.hist(pred_label_0.numpy(), bins=30, alpha=0.4, label='Label == 0', color='blue', density=True)
     else:
         print("No instances of label == 0")
 
