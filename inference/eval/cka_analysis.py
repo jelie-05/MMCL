@@ -21,21 +21,35 @@ def compute_and_save_cka_heatmap(model1, model2, dataloader1, dataloader2, tag_1
     # Automatically get the layer names for both models
     layer_names_1 = get_layer_names(model1)
     layer_names_2 = get_layer_names(model2)
+    if layer_names_1 == layer_names_2:
+        print("The layer names are identical.")
+    else:
+        print("The layer names differ.")
 
     # Initialize CKA with unique model names
 
+    # cka = CKA(
+    #     model1=model1,
+    #     model2=model2,
+    #     model1_name=tag_1,  # Provide unique names
+    #     model2_name=tag_2,
+    #     model1_layers=layer_names_1,
+    #     model2_layers=layer_names_2,
+    #     device='cuda' if torch.cuda.is_available() else 'cpu'
+    # )
+
     cka = CKA(
         model1=model1,
-        model2=model2,
+        model2=model1,
         model1_name=tag_1,  # Provide unique names
-        model2_name=tag_2,
+        model2_name=tag_1,
         model1_layers=layer_names_1,
-        model2_layers=layer_names_2,
+        model2_layers=layer_names_1,
         device='cuda' if torch.cuda.is_available() else 'cpu'
     )
 
     # Perform CKA comparison on the dataloader
-    cka.compare(dataloader1=dataloader1, dataloader2=dataloader2)
+    cka.compare(dataloader1=dataloader1)
 
     cka.plot_results(save_path=save_path, show_plot=show_plot, title=title)
 
