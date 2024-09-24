@@ -67,7 +67,7 @@ def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, p
         assert False, "Error: tag_2 must contain 'Image' or 'LiDAR'"
 
     # Check for NaNs in layer outputs
-    def check_for_nan(module, output):
+    def check_for_nan(module, input, output):
         if torch.isnan(output).any():
             print(f"NaN detected in module: {module}")
 
