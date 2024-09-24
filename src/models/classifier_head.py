@@ -53,13 +53,31 @@ class classifier_head(nn.Module):
             #     nn.Linear(256, 1),
             #     nn.Sigmoid()
             #     )
+            # self.classifier_layers = nn.Sequential(
+            #     nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),
+            #     nn.BatchNorm2d(first_channel),
+            #     nn.ReLU(),
+            #     nn.AdaptiveAvgPool2d((1, 1)),
+            #     nn.Flatten(),
+            #     nn.Linear(first_channel, 256),
+            #     nn.BatchNorm1d(256),
+            #     nn.ReLU(),
+            #     nn.Linear(256, 1),
+            #     nn.Sigmoid()
+            #     )
             self.classifier_layers = nn.Sequential(
-                nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),
+                nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 12, 39)
                 nn.BatchNorm2d(first_channel),
                 nn.ReLU(),
-                nn.AdaptiveAvgPool2d((1, 1)),
+                nn.Conv2d(first_channel, 1024, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 6, 20)
+                nn.BatchNorm2d(1024),
+                nn.ReLU(),
+                nn.AdaptiveAvgPool2d((1, 1)), # output: (N, 1024, 1, 1)
                 nn.Flatten(),
-                nn.Linear(first_channel, 256),
+                nn.Linear(1024, 512),
+                nn.BatchNorm1d(512),
+                nn.ReLU(),
+                nn.Linear(512, 256),
                 nn.BatchNorm1d(256),
                 nn.ReLU(),
                 nn.Linear(256, 1),
