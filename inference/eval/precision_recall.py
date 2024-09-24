@@ -106,7 +106,10 @@ def plot_distribution(label, prediction, dist_save):
     plt.title('Distribution of Predictions')
     plt.xlabel('Prediction Values')
     plt.ylabel('Density')
-    plt.legend()
+    plt.legend(fontsize=14)
+
+    # Set the y-axis limit from 0 to 30
+    plt.ylim(0, 30)
 
     # Save the plot
     plt.savefig(dist_save)

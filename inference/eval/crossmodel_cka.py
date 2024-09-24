@@ -99,5 +99,5 @@ if __name__ == "__main__":
                  perturbation_eval=perturbation_file, show_plot=False)
 
     cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_lid_1, model_2=encoder_lid_2,
-                 tag_1=f'{tag_1} LiDAR layers', tag_2=f'{tag_2} LiDAR layers', title="Image LiDAR",
+                 tag_1=f'{tag_1} LiDAR layers', tag_2=f'{tag_2} LiDAR layers', title="LiDAR Encoders",
                  perturbation_eval=perturbation_file, show_plot=False)
