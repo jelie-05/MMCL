@@ -91,7 +91,7 @@ if __name__ == "__main__":
     else:
         assert False, "Error: save_path must contain '_aug' or '_noaug'"
 
-
+    print("starting cka analysis")
     cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_im_1, model_2=encoder_im_2,
                  tag_1=f'{tag_1} Image layers', tag_2=f'{tag_2} Image layers', title="Image Encoders",
                  perturbation_eval=perturbation_file, show_plot=False)
