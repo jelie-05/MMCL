@@ -7,6 +7,7 @@ from warnings import warn
 from typing import List, Dict
 import matplotlib.pyplot as plt
 from utils import add_colorbar
+import os
 
 
 class CKA:
@@ -232,7 +233,15 @@ class CKA:
         plt.tight_layout()
 
         if save_path is not None:
+            save_dir = os.path.dirname(save_path)
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+                print(f"Directory {save_dir} created successfully.")
+            else:
+                print(f"Directory {save_dir} already exists.")
+
             plt.savefig(save_path, dpi=300)
+            print(f"Plot successfully saved to {save_path}")
 
         if show_plot:
             plt.show()
