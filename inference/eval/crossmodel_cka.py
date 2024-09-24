@@ -2,8 +2,11 @@ import os.path
 import torch
 import yaml
 import argparse
-from src.utils.helper import full_load_latest
 from cka_analysis import cka_analysis
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+from src.utils.helper import full_load_latest
 
 
 parser = argparse.ArgumentParser()
