@@ -23,6 +23,8 @@ The project investigates how different calibration methods affect the alignment 
 ### Training
 ```bash
 python ./src/main.py --save_name resnet18_small_aug_240924 --classifier
+```
+'save_name' refers to the name the outputs will be saved and also the configs file 'configs_(save_name).yaml'. '--classifier' activates the training of the classifier.
 
 External sources:
 Kitti downloader is from https://github.com/Deepak3994/Kitti-Dataset.git
