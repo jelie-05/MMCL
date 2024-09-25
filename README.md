@@ -26,6 +26,18 @@ python ./src/main.py --save_name resnet18_small_aug_240924 --classifier
 ```
 `save_name` refers to the name the outputs will be saved and also the configs file `configs_(save_name).yaml`. `--classifier` activates the classifier's training.
 
+#### Configuration File Options
+
+The following options are available for configuring the model via the `config.yaml` file:
+
+| Parameter    | Options                        | Description                                     |
+|--------------|--------------------------------|-------------------------------------------------|
+| `backbone`   | `resnet`, `vit`                | Specifies the model backbone architecture.      |
+| `model_name` | `resnet_small`, `resnet_all`, `vit` | Model variations for the selected backbone.      |
+| `optimizer`  | `adam`, `adamw`                | Optimizer used for training the model.           |
+
+
+
 External sources:
 Kitti downloader is from https://github.com/Deepak3994/Kitti-Dataset.git
 Kitti loader adapted from https://github.com/joseph-zhang/KITTI-TorchLoader
