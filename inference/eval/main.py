@@ -103,31 +103,32 @@ if __name__ == "__main__":
     encoder_lid.eval()
     # -
 
-    # Initialized and Load Classifier
-    path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
-                            f'{args.save_name}_classifier-latest.pth.tar')
-    classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid, model_name=params['meta']['model_name'])
-    classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
-    classifier.to(device)
-    classifier.eval()
-    # -
-
     # Starting Evaluation
     if args.eval_metrics:
+        # Initialized and Load Classifier
+        path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
+                                f'{args.save_name}_classifier-latest.pth.tar')
+        classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid,
+                                     model_name=params['meta']['model_name'])
+        classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
+        classifier.to(device)
+        classifier.eval()
+        # -
         PR = pr_evaluation(device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
                            perturbation_eval=perturbation_file, output_dir=save_dir, show_plot=args.show_plot)
     else:
         print("No Evalualtion Metrics Analysis")
 
-    model_name = params['meta']['model_name']
-    if '_aug' in save_name:
-        title = f'{model_name} (Calibrated II)'
-    elif '_noaug' in save_name:
-        title = f'{model_name} (Calibrated I)'
-    else:
-        assert False, "Error: save_path must contain '_aug' or '_noaug'"
-
     if args.cka:
+        # cka title
+        model_name = params['meta']['model_name']
+        if '_aug' in save_name:
+            title = f'{model_name} (Calibrated II)'
+        elif '_noaug' in save_name:
+            title = f'{model_name} (Calibrated I)'
+        else:
+            assert False, "Error: save_path must contain '_aug' or '_noaug'"
+
         cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_im, model_2=encoder_lid,
                      tag_1='Encoder Image', tag_2="Encoder LiDAR", title=title,
                      perturbation_eval=perturbation_file, show_plot=args.show_plot)
