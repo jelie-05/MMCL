@@ -38,7 +38,7 @@ The encoders can be further retrained by enabling `retrain` and giving the start
 
 ### Evaluation 
 ```bash
-python ./inference/eval/main.py --save_name resnet18_small_noaug_240919 --perturbation (CSV file) --eval_metrics --cka
+python ./inference/eval/main.py --save_name (save_name) --perturbation (CSV file) --eval_metrics --cka
 ```
 `--perturbation` refers to CSV file, where the miscalibration errors are saved, e.g., `neg_master`. Two evaluation methods are implemented, namely evaluation metrics and CKA analysis. They can be enabled by giving `--eval_metrics` and `--cka` respectively.
 
