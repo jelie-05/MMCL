@@ -22,9 +22,9 @@ The project investigates how different calibration methods affect the alignment 
 ## Usage
 ### Training
 ```bash
-python ./src/main.py --save_name resnet18_small_aug_240924 --classifier
+python ./src/main.py --save_name (save_name) --classifier
 ```
-`save_name` refers to the name the outputs will be saved and also the configs file `configs_(save_name).yaml`. `--classifier` activates the classifier's training.
+`--save_name` refers to the name the outputs will be saved (e.g., resnet18_small_aug_240924) and also the configs file `configs_(save_name).yaml`. `--classifier` activates the classifier's training.
 
 #### Configuration File Options
 
@@ -33,10 +33,17 @@ The following options are available for configuring the model via the `config.ya
 | Parameter    | Options                        | Description                                     |
 |--------------|--------------------------------|-------------------------------------------------|
 | `backbone`   | `resnet`, `vit`                | Specifies the model backbone architecture.      |
-| `model_name` | `resnet_small`, `resnet_all`, `vit` | Model variations for the selected backbone.      |
+| `model_name` | `resnet_small`, `resnet_all`, `vit_small` | Model variations for the selected backbone.      |
 | `optimizer`  | `adam`, `adamw`                | Optimizer used for training the model.           |
 
+Furthermore, pre-trained encoders can be used by enabling `pretrained_encoder` and inserting the `save_name` in `pretrained_name`. 
+The encoders can be further retrained by enabling `retrain` and giving the starting epoch.
 
+### Evaluation 
+```bash
+python ./inference/eval/main.py --save_name resnet18_small_noaug_240919 --perturbation (CSV file) --eval_metrics --cka
+```
+`--perturbation` refers to CSV file, where the miscalibration errors are saved, e.g., `neg_master`. Two evaluation methods are implemented, namely evaluation metrics and CKA analysis. They can be enabled by giving `--eval_metrics` and `--cka` respectively.
 
 External sources:
 Kitti downloader is from https://github.com/Deepak3994/Kitti-Dataset.git
