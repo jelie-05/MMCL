@@ -15,9 +15,9 @@ The project investigates how different calibration methods affect the alignment 
 - [Usage](#usage)
 - [Dataset](#dataset)
 - [Results](#results)
-- [Future Work](#future-work)
-- [Contributors](#contributors)
-- [License](#license)
+%- [Future Work](#future-work)
+%- [Contributors](#contributors)
+%- [License](#license)
 
 ## Usage
 ### Training
