@@ -11,6 +11,19 @@ The project investigates how different calibration methods affect the alignment 
 - **Fault Detection**: Using the representations from encoders trained with contrastive learning, we trained the classifier head to detect errors in the input.
 - **Robust Calibration Evaluation**: A thorough evaluation of the models using different error modes providing insights into which calibration leads to better sensor fusion.
 
+## Table of Contents
+- [Usage](#usage)
+- [Dataset](#dataset)
+- [Results](#results)
+- [Future Work](#future-work)
+- [Contributors](#contributors)
+- [License](#license)
+
+## Usage
+### Training
+```bash
+python ./src/main.py --save_name resnet18_small_aug_240924 --classifier
+
 External sources:
 Kitti downloader is from https://github.com/Deepak3994/Kitti-Dataset.git
 Kitti loader adapted from https://github.com/joseph-zhang/KITTI-TorchLoader
