@@ -114,10 +114,7 @@ class ResNet18_n(nn.Module):
         # Optionally add the projection head (average pooling + MLP with 1000 neurons)
         if self.projection:
             self.avgpool = nn.AdaptiveAvgPool2d((1, 1))  # Adaptive average pooling to 1x1
-            self.projection_head = nn.Sequential(
-                nn.Flatten(),
-                nn.Linear(last_block_channels, 1000) # Final projection to 1000 neurons
-            )
+            self.fc = nn.Linear(last_block_channels, 1000) # Final projection to 1000 neurons
 
     def get_last_layer_channels(self):
         """Get the output channels of the last convolutional layer in the selected block."""
@@ -145,7 +142,8 @@ class ResNet18_n(nn.Module):
         # If projection is enabled, apply avg pooling and the projection MLP
         if self.projection:
             x = self.avgpool(x)
-            x = self.projection_head(x)
+            x = torch.flatten(x, 1)
+            x = self.fc(x)
 
         if flag:
             x = x.squeeze(0)
