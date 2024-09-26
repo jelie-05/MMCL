@@ -61,9 +61,10 @@ def initialize_weights(model):
 
 # Define a new model that changes the first conv1 layer based on the mode
 class ResNet18_n(nn.Module):
-    def __init__(self, n, mode="default", freeze=False):
+    def __init__(self, n, mode="default", freeze=False, projection=False):
         super(ResNet18_n, self).__init__()
         self.freeze = freeze
+        self.projection = projection
 
         # Load the pretrained ResNet-18 model
         resnet18 = models.resnet18(pretrained=True)
@@ -109,6 +110,17 @@ class ResNet18_n(nn.Module):
         # Combine the selected blocks into a sequential model
         self.blocks = nn.Sequential(*blocks)
 
+        # Optionally add the projection head (average pooling + MLP with 1000 neurons)
+        if self.projection:
+            self.avgpool = nn.AdaptiveAvgPool2d((1, 1))  # Adaptive average pooling to 1x1
+            self.projection_head = nn.Sequential(
+                nn.Flatten(),
+                nn.Linear(resnet18.fc.in_features, 512),  # First MLP layer (512 is an example, adjust as needed)
+                nn.BatchNorm1d(512),
+                nn.ReLU(inplace=True),
+                nn.Linear(512, 1000)  # Final projection to 1000 neurons
+            )
+
     def forward(self, x):
         flag = False
         if len(x.shape) == 3:
@@ -117,6 +129,12 @@ class ResNet18_n(nn.Module):
 
         x = self.initial_layers(x)
         x = self.blocks(x)
+
+        # If projection is enabled, apply avg pooling and the projection MLP
+        if self.projection:
+            x = self.avgpool(x)
+            x = self.projection_head(x)
+
         if flag:
             x = x.squeeze(0)
             flag = False
@@ -139,3 +157,12 @@ def resnet18_small_im(mode="default"):
 def resnet18_small_lid(mode="lidar"):
     model = ResNet18_n(n=2, mode=mode)
     return model
+
+def resnet18_instance_small_im(mode="default", projection=True):
+    model = ResNet18_n(n=2, mode=mode, projection=projection)
+    return model
+
+def resnet18_instance_small_lid(mode="lidar", projection=True):
+    model = ResNet18_n(n=2, mode=mode, projection=projection)
+    return model
+

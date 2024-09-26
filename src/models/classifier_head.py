@@ -30,13 +30,13 @@ class classifier_head(nn.Module):
 
         if model_name == 'resnet18_small':
             self.classifier_layers = nn.Sequential(
-                nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 12, 39)
+                nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),
                 nn.BatchNorm2d(first_channel),
                 nn.ReLU(),
-                nn.Conv2d(first_channel, 1024, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 6, 20)
+                nn.Conv2d(first_channel, 1024, kernel_size=3, stride=2, padding=1),
                 nn.BatchNorm2d(1024),
                 nn.ReLU(),
-                nn.Conv2d(1024, 2048, kernel_size=3, stride=2, padding=1),  # output: (N, 1024, 3, 10)
+                nn.Conv2d(1024, 2048, kernel_size=3, stride=2, padding=1),
                 nn.BatchNorm2d(2048),
                 nn.ReLU(),
                 nn.AdaptiveAvgPool2d((1, 1)), # output: (N, 1024, 1, 1)
@@ -53,61 +53,8 @@ class classifier_head(nn.Module):
                 nn.Linear(256, 1),
                 nn.Sigmoid()
                 )
-            # self.classifier_layers = nn.Sequential(
-            #     nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),
-            #     nn.BatchNorm2d(first_channel),
-            #     nn.ReLU(),
-            #     nn.AdaptiveAvgPool2d((1, 1)),
-            #     nn.Flatten(),
-            #     nn.Linear(first_channel, 256),
-            #     nn.BatchNorm1d(256),
-            #     nn.ReLU(),
-            #     nn.Linear(256, 1),
-            #     nn.Sigmoid()
-            #     )
-            # self.classifier_layers = nn.Sequential(
-            #     nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 12, 39)
-            #     nn.BatchNorm2d(first_channel),
-            #     nn.ReLU(),
-            #     nn.Conv2d(first_channel, 1024, kernel_size=3, stride=2, padding=1),  # output: (N, 512, 6, 20)
-            #     nn.BatchNorm2d(1024),
-            #     nn.ReLU(),
-            #     nn.Conv2d(1024, 2048, kernel_size=3, stride=2, padding=1),  # output: (N, 1024, 3, 10)
-            #     nn.BatchNorm2d(2048),
-            #     nn.ReLU(),
-            #     nn.AdaptiveAvgPool2d((1, 1)), # output: (N, 1024, 1, 1)
-            #     nn.Flatten(),
-            #     nn.Linear(2048, 512),
-            #     nn.BatchNorm1d(512),
-            #     nn.ReLU(),
-            #     nn.Linear(512, 256),
-            #     nn.BatchNorm1d(256),
-            #     nn.ReLU(),
-            #     nn.Linear(256, 1),
-            #     nn.Sigmoid()
-            #     )
         elif model_name == 'resnet18_all':
             self.classifier_layers = nn.Sequential(
-                # nn.Conv2d(input_channel, first_channel, kernel_size=3, stride=2, padding=1),  # output: (N,
-                # nn.BatchNorm2d(first_channel),
-                # nn.ReLU(),
-                # nn.AdaptiveAvgPool2d((1, 1)),
-                # nn.Flatten(),
-                # nn.Linear(first_channel, 512),
-                # nn.BatchNorm1d(512),
-                # nn.ReLU(),
-                # nn.Linear(512, 256),
-                # nn.BatchNorm1d(256),
-                # nn.ReLU(),
-                # nn.Linear(256, 256),
-                # nn.BatchNorm1d(256),
-                # nn.ReLU(),
-                # nn.Linear(256, 1),
-                # nn.Sigmoid()
-                # )
-                # nn.Conv2d(input_channel, input_channel, kernel_size=3, stride=1, padding=1),  # output: (N,
-                # nn.BatchNorm2d(input_channel),
-                # nn.ReLU(),
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
                 nn.Linear(input_channel, 256),
@@ -117,6 +64,17 @@ class classifier_head(nn.Module):
                 nn.BatchNorm1d(128),
                 nn.ReLU(),
                 nn.Linear(128, 1),
+                nn.Sigmoid()
+                )
+        elif model_name == 'resnet18_instance_small':
+            self.classifier_layers = nn.Sequential(
+                nn.Linear(2000, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+                nn.Linear(256, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+                nn.Linear(256, 1),
                 nn.Sigmoid()
                 )
         else:
