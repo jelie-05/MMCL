@@ -39,12 +39,8 @@ class ContrastiveLoss(nn.Module):
         elif self.mode == 'resnet_instance':
             N = output_im.shape[0]
 
-            # Apply global average pooling over the spatial dimensions (H, W)
-            output_im_pooled = output_im.mean(dim=(2, 3))  # Shape: [N, C]
-            output_lid_pooled = output_lid.mean(dim=(2, 3))  # Shape: [N, C]
-
             # Calculate the Euclidean distance between the pooled outputs
-            euclidean_distance = F.pairwise_distance(output_im_pooled, output_lid_pooled)  # Shape: [N]
+            euclidean_distance = F.pairwise_distance(output_im, output_lid)  # Shape: [N]
 
             # Ensure labels are shaped correctly for batch-wise contrastive loss
             labels = labels.view(N)  # Shape: [N]
