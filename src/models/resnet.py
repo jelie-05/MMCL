@@ -110,16 +110,31 @@ class ResNet18_n(nn.Module):
         # Combine the selected blocks into a sequential model
         self.blocks = nn.Sequential(*blocks)
 
+        last_block_channels = self.get_last_layer_channels()
         # Optionally add the projection head (average pooling + MLP with 1000 neurons)
         if self.projection:
             self.avgpool = nn.AdaptiveAvgPool2d((1, 1))  # Adaptive average pooling to 1x1
             self.projection_head = nn.Sequential(
                 nn.Flatten(),
-                nn.Linear(resnet18.fc.in_features, 512),  # First MLP layer (512 is an example, adjust as needed)
+                nn.Linear(last_block_channels, 512),  # First MLP layer (512 is an example, adjust as needed)
                 nn.BatchNorm1d(512),
                 nn.ReLU(inplace=True),
                 nn.Linear(512, 1000)  # Final projection to 1000 neurons
             )
+
+        def get_last_layer_channels(self):
+            """Get the output channels of the last convolutional layer in the selected block."""
+            # Get the last block in the model
+            last_block = list(self.blocks.children())[-1]
+
+            # Get the last BasicBlock in the last block
+            last_basic_block = list(last_block.children())[-1]
+
+            # The last BasicBlock should have a conv2 layer, which is the last convolutional layer
+            last_conv_layer = last_basic_block.conv2
+
+            # Return the number of output channels of the last convolutional layer
+            return last_conv_layer.out_channels
 
     def forward(self, x):
         flag = False
