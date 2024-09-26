@@ -122,19 +122,19 @@ class ResNet18_n(nn.Module):
                 nn.Linear(512, 1000)  # Final projection to 1000 neurons
             )
 
-        def get_last_layer_channels(self):
-            """Get the output channels of the last convolutional layer in the selected block."""
-            # Get the last block in the model
-            last_block = list(self.blocks.children())[-1]
+    def get_last_layer_channels(self):
+        """Get the output channels of the last convolutional layer in the selected block."""
+        # Get the last block in the model
+        last_block = list(self.blocks.children())[-1]
 
-            # Get the last BasicBlock in the last block
-            last_basic_block = list(last_block.children())[-1]
+        # Get the last BasicBlock in the last block
+        last_basic_block = list(last_block.children())[-1]
 
-            # The last BasicBlock should have a conv2 layer, which is the last convolutional layer
-            last_conv_layer = last_basic_block.conv2
+        # The last BasicBlock should have a conv2 layer, which is the last convolutional layer
+        last_conv_layer = last_basic_block.conv2
 
-            # Return the number of output channels of the last convolutional layer
-            return last_conv_layer.out_channels
+        # Return the number of output channels of the last convolutional layer
+        return last_conv_layer.out_channels
 
     def forward(self, x):
         flag = False
