@@ -60,7 +60,7 @@ def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, p
 
     batch_size = 64
     num_cores = min(multiprocessing.cpu_count(), 64)
-    dataloader_im, dataloader_lid, dataloader_neg = create_dataloaders(root=data_root, perturb_filenames=perturbation_eval, mode='eval',
+    dataloader_im, dataloader_lid, dataloader_neg = create_dataloaders(root=data_root, perturb_filenames=perturbation_eval, mode='val',
                                                                        batch_size=batch_size, num_cores=num_cores)
 
     if 'Image' in tag_1:
