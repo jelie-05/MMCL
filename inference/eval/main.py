@@ -32,10 +32,17 @@ parser.add_argument(
 parser.add_argument(
     '--cka', action='store_true', help='enable cka analysis')
 parser.add_argument(
-    '--other_epoch', action='store_true', help='enable analysis of other epochs')
+    '--other_epoch_cka', action='store_true', help='enable analysis of other epochs')
 parser.add_argument(
-    '--epoch', type=int,
-    help='the model to analyze',
+    '--epoch_contrastive', type=int,
+    help='the model to analyze at certain epochs (only for cka analysis, since the evaluation metrics will use '
+         'the defined epochs in configs file)',
+    default=40)
+parser.add_argument(
+    '--other_epoch_eval', action='store_true', help='enable analysis of other epochs')
+parser.add_argument(
+    '--epoch_cls', type=int,
+    help='the model to analyze at certain epochs for evaluation metrics',
     default=40)
 
 if __name__ == "__main__":
@@ -140,31 +147,92 @@ if __name__ == "__main__":
 
 
 
-    if args.other_epoch:
-        num_epoch = args.epoch
-        save_dir_epoch = output_dir = os.path.join(root, 'inference/eval', args.save_name, f'model_ep_{num_epoch}')
-        path_encoders = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
-                                     f'{args.save_name}_contrastive-ep{num_epoch}.pth.tar')
-        path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
-                                f'{args.save_name}_classifier-ep{num_epoch}.pth.tar')
+    if args.other_epoch_cka:
+        num_epoch_contrastive = args.epoch_contrastive
 
+        # Initialized and Load Encoders
         encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'],
                                              model_name=params['meta']['model_name'])
         opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
         opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])
+
+        # Load pretrained model
+        pretrained = params['meta']['pretrained_encoder']
+        if pretrained:
+            pretrained_name = params['meta']['pretrained_name']
+            path_encoders = os.path.join(root, 'outputs_gpu', pretrained_name, 'models',
+                                         f'{pretrained_name}_contrastive-ep{num_epoch_contrastive}.pth.tar')
+            print(f"Use pretrained encoder from: {pretrained_name}")
+        else:
+            path_encoders = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
+                                         f'{args.save_name}_contrastive-latest.pth.tar')
+            print("Not using pretrained encoder")
+
         encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
                                                                           encoder_im=encoder_im,
                                                                           encoder_lid=encoder_lid,
                                                                           opt_im=opt_im, opt_lid=opt_lid)
         encoder_im.eval()
         encoder_lid.eval()
-        classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid, model_name=params['meta']['model_name'])
-        classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
-        classifier.to(device)
-        classifier.eval()
+        # -
 
-        PR_epoch = pr_evaluation(device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
-                                 perturbation_eval=perturbation_file, output_dir=save_dir_epoch, show_plot=args.show_plot)
+        # cka title
+        model_name = params['meta']['model_name']
+        if '_aug' in save_name:
+            title = f'{model_name} (Calibrated II)'
+        elif '_noaug' in save_name:
+            title = f'{model_name} (Calibrated I)'
+        else:
+            assert False, "Error: save_path must contain '_aug' or '_noaug'"
 
-        cka_analysis(data_root=kitti_path, output_dir=save_dir_epoch, model_1=encoder_im, model_2=encoder_lid,
+        cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_im, model_2=encoder_lid,
+                     tag_1='Encoder Image', tag_2="Encoder LiDAR", title=title,
                      perturbation_eval=perturbation_file, show_plot=args.show_plot)
+        cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_im, model_2=encoder_lid,
+                     tag_1='Encoder Image', tag_2="Miscalibrated", title=title,
+                     perturbation_eval=perturbation_file, show_plot=args.show_plot)
+
+    if args.other_epoch_eval:
+        epoch_classifier = args.epoch_cls
+
+        # Initialized and Load Encoders
+        encoder_im, encoder_lid = init_model(device=device, mode=params['meta']['backbone'],
+                                             model_name=params['meta']['model_name'])
+        opt_im, scheduler_im = init_opt(encoder_im, params['optimization'])
+        opt_lid, scheduler_lid = init_opt(encoder_lid, params['optimization'])
+
+        # Load pretrained model
+        pretrained = params['meta']['pretrained_encoder']
+        if pretrained:
+            pretrained_name = params['meta']['pretrained_name']
+            path_encoders = os.path.join(root, 'outputs_gpu', pretrained_name, 'models',
+                                         f'{pretrained_name}_contrastive-latest.pth.tar')
+            print(f"Use pretrained encoder from: {pretrained_name}")
+        else:
+            path_encoders = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
+                                         f'{args.save_name}_contrastive-latest.pth.tar')
+            print("Not using pretrained encoder")
+
+        encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
+                                                                          encoder_im=encoder_im,
+                                                                          encoder_lid=encoder_lid,
+                                                                          opt_im=opt_im, opt_lid=opt_lid)
+        encoder_im.eval()
+        encoder_lid.eval()
+        # -
+
+        # Starting Evaluation
+        if args.eval_metrics:
+            # Initialized and Load Classifier
+            path_cls = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
+                                    f'{args.save_name}_classifier-ep{epoch_classifier}.pth.tar')
+            classifier = classifier_head(model_im=encoder_im, model_lid=encoder_lid,
+                                         model_name=params['meta']['model_name'])
+            classifier, epoch_cls = load_checkpoint_cls(r_path=path_cls, classifier=classifier)
+            classifier.to(device)
+            classifier.eval()
+            # -
+            PR = pr_evaluation(device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
+                               perturbation_eval=perturbation_file, output_dir=save_dir, show_plot=args.show_plot)
+        else:
+            print("No Evalualtion Metrics Analysis")
