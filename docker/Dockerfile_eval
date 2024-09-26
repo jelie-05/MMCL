@@ -56,10 +56,10 @@ EXPOSE 8000
 #python ./inference/eval/main.py --save_name resnet18_small_aug_240923 --perturbation neg_master --cka"]
 
 CMD ["sh", "-c", "python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation neg_master --cka && \
-#python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation neg_ood --cka && \
-#python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation rot_easy --cka && \
-#python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation rot_mid --cka && \
-#python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation rot_hard --cka && \
-#python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation trans_easy --cka && \
-#python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation trans_mid --cka && \
-#python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation trans_hard --cka"]
+python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation neg_ood --cka && \
+python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation rot_easy --cka && \
+python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation rot_mid --cka && \
+python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation rot_hard --cka && \
+python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation trans_easy --cka && \
+python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation trans_mid --cka && \
+python ./inference/eval/main.py --save_name resnet18_all_aug_240922 --perturbation trans_hard --cka"]
