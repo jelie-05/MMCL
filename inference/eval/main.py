@@ -165,7 +165,7 @@ if __name__ == "__main__":
             print(f"Use pretrained encoder from: {pretrained_name}")
         else:
             path_encoders = os.path.join(root, 'outputs_gpu', args.save_name, 'models',
-                                         f'{args.save_name}_contrastive-latest.pth.tar')
+                                         f'{args.save_name}_contrastive-ep{num_epoch_contrastive}.pth.tar')
             print("Not using pretrained encoder")
 
         encoder_im, encoder_lid, opt_im, opt_lid, epoch = load_checkpoint(r_path=path_encoders,
