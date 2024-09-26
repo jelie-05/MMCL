@@ -116,10 +116,7 @@ class ResNet18_n(nn.Module):
             self.avgpool = nn.AdaptiveAvgPool2d((1, 1))  # Adaptive average pooling to 1x1
             self.projection_head = nn.Sequential(
                 nn.Flatten(),
-                nn.Linear(last_block_channels, 512),  # First MLP layer (512 is an example, adjust as needed)
-                nn.BatchNorm1d(512),
-                nn.ReLU(inplace=True),
-                nn.Linear(512, 1000)  # Final projection to 1000 neurons
+                nn.Linear(last_block_channels, 1000) # Final projection to 1000 neurons
             )
 
     def get_last_layer_channels(self):
