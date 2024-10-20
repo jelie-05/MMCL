@@ -9,7 +9,7 @@ The project investigates how different calibration methods affect the alignment 
 ### Key Contributions
 - **Contrastive Learning**: Developed a contrastive loss function that enhances the calibration process by aligning multimodal features.
 - **Fault Detection**: Using the representations from encoders trained with contrastive learning, we trained the classifier head to detect errors in the input.
-- **Robust Calibration Evaluation**: A thorough evaluation of the models using different error modes providing insights into which calibration leads to better sensor fusion.
+- **Robust Calibration Evaluation**: A thorough evaluation of the models using different error modes providing insights into the learned representations and the generalization across different calibration matrices.
 
 ## Table of Contents
 - [Usage](#usage)
