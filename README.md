@@ -15,6 +15,7 @@ The project investigates how different calibration methods affect the alignment 
 - [Usage](#usage)
 - [Dataset](#dataset)
 - [Results](#results)
+- [Sources](#sources)
 
 ## Usage
 ### Training
@@ -42,6 +43,13 @@ python ./inference/eval/main.py --save_name (save_name) --perturbation (CSV file
 ```
 `--perturbation` refers to CSV file, where the miscalibration errors are saved, e.g., `neg_master`. Two evaluation methods are implemented, namely evaluation metrics and CKA analysis. They can be enabled by giving `--eval_metrics` and `--cka` respectively.
 
+## Dataset
+This paper used the KITTI Raw dataset and the derived miscalibration dataset. The dataset should be stored in folder 'data', with the miscalibration dataset saved as `perturbation_(type).csv`.
+
+## Results
+(See Thesis)
+
+## Sources
 External sources:
 Kitti downloader is from https://github.com/Deepak3994/Kitti-Dataset.git
 Kitti loader adapted from https://github.com/joseph-zhang/KITTI-TorchLoader
