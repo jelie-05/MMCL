@@ -50,6 +50,8 @@ This paper used the KITTI Raw dataset and the derived miscalibration dataset. Th
 (See Thesis)
 
 ## Sources
-External sources:\\
-Kitti downloader is from https://github.com/Deepak3994/Kitti-Dataset.git\\
+External sources:
+
+Kitti downloader is from https://github.com/Deepak3994/Kitti-Dataset.git
+
 Kitti loader adapted from https://github.com/joseph-zhang/KITTI-TorchLoader
