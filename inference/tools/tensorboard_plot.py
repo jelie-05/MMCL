@@ -51,9 +51,9 @@ def plot_tensorboard_logs(log_files, training_tag, validation_tag, plot_tag, ena
         # folder_name_cleaned = folder_name.replace('run', '').replace('contrastive', '').strip('_')
 
         if '_aug_' in folder_name:
-            folder_name_cleaned = "Dataset (II)"
+            folder_name_cleaned = "Calib (II)"
         else:
-            folder_name_cleaned = "Dataset (I)"
+            folder_name_cleaned = "Calib (I)"
 
         # Handle training loss
         if training_tag in event_acc.Tags()['scalars']:
@@ -94,9 +94,11 @@ def plot_tensorboard_logs(log_files, training_tag, validation_tag, plot_tag, ena
     # Set y-axis limits to clip outliers based on IQR
     plt.ylim(lower_bound, upper_bound)
 
-    plt.xlabel('Epoch', fontsize=16)
-    plt.ylabel('Loss', fontsize=16)
-    plt.title(f'{plot_tag}', fontsize=18)
+    plt.xlabel('Epoch', fontsize=20)
+    plt.ylabel('Loss', fontsize=20)
+    plt.title(f'{plot_tag}', fontsize=24)
+
+    plt.tick_params(axis='both', labelsize=16)
 
     # Add grid to the plot
     plt.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
