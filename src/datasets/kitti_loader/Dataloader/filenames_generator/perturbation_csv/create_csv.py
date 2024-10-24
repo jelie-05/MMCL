@@ -98,7 +98,6 @@ tag = 'neg_master_adjusted_2'
 # max_out = 6
 # tag = 'pos_master_trans_004'
 
-
 # # Pertubation negativ (labeled as wrong)
 # x_range = (0.04, 0.1)
 # y_range = (0.04, 0.1)
@@ -173,42 +172,46 @@ tag = 'neg_master_adjusted_2'
 current_file_path = os.path.abspath(__file__)
 root = os.path.abspath(os.path.join(current_file_path, '../../../../../../..'))
 
-input_file_path = os.path.join(root,'src/datasets/kitti_loader/Dataloader/filenames/eigen_all_files.txt')
+input_file_paths = [
+    os.path.join(root, 'src/datasets/kitti_loader/Dataloader/filenames/eigen_train_files.txt'),
+    os.path.join(root, 'src/datasets/kitti_loader/Dataloader/filenames/eigen_val_files.txt'),
+    os.path.join(root, 'src/datasets/kitti_loader/Dataloader/filenames/eigen_test_files.txt')
+]
+
 output_csv_file_path = os.path.join(root, f'src/datasets/kitti_loader/Dataloader/filenames_generator/perturbation_csv/perturbation_{tag}.csv')
 
-# Create the name list from the text file
-name_list = []
-
-with open(input_file_path, 'r') as file:
-    file_names = [line.strip() for line in file.readlines()]
-    for file_name in file_names:
-        name = file_name.split('.bin ')[-1]
-        name_list.append(name)
-
-
 # Create the CSV file
-with (open(output_csv_file_path, mode='w', newline='') as file):
+with open(output_csv_file_path, mode='w', newline='') as file:
     writer = csv.writer(file)
     # Write the header
     writer.writerow(['name', 'x', 'y', 'z', 'theta_rad1', 'theta_rad2', 'theta_rad3', 'n'])
 
-    # Write the data
-    for name in name_list:
-        x = generate_random_value(x_range)
-        y = generate_random_value(y_range)
-        z = generate_random_value(z_range)
-        theta_rad1 = generate_random_value(range_rad1)
-        theta_rad2 = generate_random_value(range_rad2)
-        theta_rad3 = generate_random_value(range_rad3)
+    # Loop over each input file path
+    for input_file_path in input_file_paths:
+        # Create the name list from the text file
+        name_list = []
+        with open(input_file_path, 'r') as f:
+            file_names = [line.strip() for line in f.readlines()]
+            for file_name in file_names:
+                name = file_name.split('.bin ')[-1]
+                name_list.append(name)
 
-        theta_rad1, theta_rad2, theta_rad3, x, y, z, n = choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out=max_out)
+        # Process each name and generate random values
+        for name in name_list:
+            x = generate_random_value(x_range)
+            y = generate_random_value(y_range)
+            z = generate_random_value(z_range)
+            theta_rad1 = generate_random_value(range_rad1)
+            theta_rad2 = generate_random_value(range_rad2)
+            theta_rad3 = generate_random_value(range_rad3)
 
-        # x, y, z, n = choose_num_errors_3(x, y, z, max_out=max_out)
-        # theta_rad1, theta_rad2, theta_rad3, n = choose_num_errors_3(theta_rad1, theta_rad2, theta_rad3, max_out=max_out)
+            # Apply the error generation function
+            theta_rad1, theta_rad2, theta_rad3, x, y, z, n = choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out=max_out)
 
-        row = [
-            name, x, y, z, theta_rad1, theta_rad2, theta_rad3, n
-        ]
-        writer.writerow(row)
+            # Write the row to the CSV file
+            row = [
+                name, x, y, z, theta_rad1, theta_rad2, theta_rad3, n
+            ]
+            writer.writerow(row)
 
-print("Name list saved and CSV file created successfully.")
+print("CSV file created successfully with data from multiple input file paths.")
