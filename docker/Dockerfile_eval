@@ -59,4 +59,4 @@ EXPOSE 8000
 #python ./inference/eval/main.py --save_name resnet18_small_aug_240926 --perturbation trans_mid --eval_metrics && \
 #python ./inference/eval/main.py --save_name resnet18_small_aug_240926 --perturbation trans_hard --eval_metrics"]
 
-CMD ["sh", "-c", "python ./inference/eval/main.py --save_name resnet18_small_aug_241024 --perturbation neg_master_adjusted --eval_metrics"]
+CMD ["sh", "-c", "python ./inference/eval/main.py --save_name resnet18_small_aug_241024 --perturbation neg_master_adjusted_2 --eval_metrics"]
