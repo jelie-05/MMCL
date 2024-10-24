@@ -7,7 +7,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from src.utils.calc_receptive_field import PixelwiseFeatureMaps
-from src.datasets.kitti_loader.dataset_2D import DataGenerator
+from src.datasets.dataloader.dataset_2D import DataGenerator
 import numpy as np
 import matplotlib.pyplot as plt
 from src.utils.save_load_model import load_model_lidar, load_model_img
