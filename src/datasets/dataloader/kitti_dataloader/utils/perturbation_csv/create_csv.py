@@ -46,6 +46,16 @@ def generate_random_value(value_range):
 # max_out = 5
 # tag = 'neg_master'
 
+# # # Perturbation positive
+# x_range = (0, 0.02)
+# y_range = (0, 0.02)
+# z_range = (0, 0.02)
+# range_rad1 = (0, 0.5)
+# range_rad2 = (0, 0.5)
+# range_rad3 = (0, 0.5)
+# max_out = 6
+# tag = 'pos_master'
+
 # # Define the ranges for the values
 # # Pertubation negativ (labeled as wrong)
 # x_range = (0.04, 0.1)
@@ -67,36 +77,26 @@ def generate_random_value(value_range):
 # max_out = 6
 # tag = 'pos_master_adjusted'
 
+# # # Perturbation positive
+# x_range = (0, 0.02)
+# y_range = (0, 0.02)
+# z_range = (0, 0.02)
+# range_rad1 = (0, 0.5)
+# range_rad2 = (0, 0.5)
+# range_rad3 = (0, 0.5)
+# max_out = 6
+# tag = 'pos_master_adjusted_3'
+
 # Define the ranges for the values
 # Pertubation negativ (labeled as wrong)
 x_range = (0.04, 0.1)
 y_range = (0.04, 0.1)
 z_range = (0.04, 0.1)
-range_rad1 = (0.5, 2)
-range_rad2 = (0.5, 2)
-range_rad3 = (0.5, 2)
+range_rad1 = (0.7, 3)
+range_rad2 = (0.7, 3)
+range_rad3 = (0.7, 3)
 max_out = 5
-tag = 'neg_master_adjusted_2'
-
-# # Perturbation positive: trans_004
-# x_range = (0, 0.035)
-# y_range = (0, 0.035)
-# z_range = (0, 0.035)
-# range_rad1 = (0, 0.5)
-# range_rad2 = (0, 0.5)
-# range_rad3 = (0, 0.5)
-# max_out = 6
-# tag = 'pos_master_trans_004'
-
-# # Pertubation negativ (labeled as wrong)
-# x_range = (0.04, 0.1)
-# y_range = (0.04, 0.1)
-# z_range = (0.04, 0.1)
-# range_rad1 = (0.5, 5)
-# range_rad2 = (0.5, 5)
-# range_rad3 = (0.5, 5)
-# max_out = 5
-# tag = 'neg_master_004'
+tag = 'neg_master_adjusted_3'
 
 # # Pertubation negativ (labeled as wrong)
 # x_range = (0.1, 0.2)
@@ -108,15 +108,6 @@ tag = 'neg_master_adjusted_2'
 # max_out = 5
 # tag = 'neg_ood'
 
-# # Perturbation positive: trans_004
-# x_range = (0, 0.035)
-# y_range = (0, 0.035)
-# z_range = (0, 0.035)
-# range_rad1 = (0, 0.5)
-# range_rad2 = (0, 0.5)
-# range_rad3 = (0, 0.5)
-# max_out = 6
-# tag = 'pos_master_trans_004'
 
 # # Perturbation positive: noise
 # x_range = (0, 0.005)
@@ -128,16 +119,6 @@ tag = 'neg_master_adjusted_2'
 # max_out = 6
 # tag = 'noise'
 
-# # Perturbation positive: trans_002
-# x_range = (0, 0.02)
-# y_range = (0, 0.02)
-# z_range = (0, 0.02)
-# range_rad1 = (0, 0.5)
-# range_rad2 = (0, 0.5)
-# range_rad3 = (0, 0.5)
-# max_out = 6
-# tag = 'pos_master_trans_002'
-
 # # # Translation only
 # x_range = (0.1, 0.2)
 # y_range = (0.1, 0.2)
@@ -147,16 +128,6 @@ tag = 'neg_master_adjusted_2'
 # range_rad3 = (0, 0)
 # max_out = 2
 # tag = 'trans_compare_wei'
-
-# # Translation only
-# x_range = (0, 0)
-# y_range = (0, 0)
-# z_range = (0, 0)
-# range_rad1 = (1.01, 2.00)
-# range_rad2 = (1.01, 2.00)
-# range_rad3 = (1.01, 2.00)
-# max_out = 2
-# tag = 'rot_mid'
 
 # Define file paths
 current_file_path = os.path.abspath(__file__)
@@ -168,7 +139,7 @@ input_file_paths = [
     os.path.join(root, 'src/datasets/dataloader/kitti_dataloader/filenames/eigen_test_files.txt')
 ]
 
-output_csv_file_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/filenames_generator/perturbation_csv/perturbation_{tag}.csv')
+output_csv_file_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/utils/perturbation_csv/perturbation_{tag}.csv')
 
 # Create the CSV file
 with open(output_csv_file_path, mode='w', newline='') as file:
