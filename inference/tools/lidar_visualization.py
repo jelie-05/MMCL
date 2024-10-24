@@ -1,4 +1,4 @@
-from src.datasets.kitti_loader.dataset_2D import DataGenerator
+from src.datasets.dataloader.dataset_2D import DataGenerator
 import os
 import numpy as np
 import matplotlib.pyplot as plt

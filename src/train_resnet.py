@@ -2,7 +2,7 @@ import torch
 from tqdm import tqdm
 import os
 from src.models.classifier_head import classifier_head
-from src.datasets.kitti_loader.dataset_2D import DataGenerator
+from src.datasets.dataloader.dataset_2D import DataGenerator
 from src.utils.contrastive_loss import ContrastiveLoss as CL
 from src.utils.helper import gen_mixed_data, init_model, load_checkpoint, init_opt
 from src.utils.logger import tb_logger
@@ -48,10 +48,10 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
     # Get the number of available CPU cores
     num_cores = min(multiprocessing.cpu_count(), 64)
     data_root = os.path.join(project_root, dataset_path)
-    train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)
-    val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file, augmentation=augmentation)
-    # train_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
-    # val_gen = DataGenerator(data_root, 'check', perturb_filenames=perturbation_file, augmentation=augmentation)
+    # train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file, augmentation=augmentation)
+    # val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file, augmentation=augmentation)
+    train_gen = DataGenerator(data_root, 'debug', perturb_filenames=perturbation_file, augmentation=augmentation)
+    val_gen = DataGenerator(data_root, 'debug', perturb_filenames=perturbation_file, augmentation=augmentation)
     train_loader = train_gen.create_data(batch_size=batch_size, shuffle=True, nthreads=num_cores)
     val_loader = val_gen.create_data(batch_size=batch_size, shuffle=False, nthreads=num_cores)
     # --

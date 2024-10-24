@@ -1,6 +1,6 @@
 import os.path
 import torch
-from src.datasets.kitti_loader.dataset_2D import create_dataloaders
+from src.datasets.dataloader.dataset_2D import create_dataloaders
 import multiprocessing
 from cka_modified import CKA
 # from torch_cka import CKA

@@ -137,13 +137,13 @@ class CKA:
         """
         Computes the feature similarity between the models on the
         given datasets.
-        :param dataloader1: (DataLoader) Dataloader for model1
+        :param dataloader1: (DataLoader) kitti_dataloader for model1
         :param dataloader2: (DataLoader) If given, model2 will run on this
                             dataset. (default = None)
         """
 
         if dataloader2 is None:
-            warn("Dataloader for Model 2 is not given. Using the same dataloader for both models.")
+            warn("kitti_dataloader for Model 2 is not given. Using the same dataloader for both models.")
             dataloader2 = dataloader1
 
         self.model1_info['Dataset'] = dataloader1.dataset.__repr__().split('\n')[0]
