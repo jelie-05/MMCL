@@ -57,15 +57,36 @@ def generate_random_value(value_range):
 # max_out = 5
 # tag = 'neg_master_adjusted'
 
-# # Perturbation positive
-x_range = (0, 0.02)
-y_range = (0, 0.02)
-z_range = (0, 0.02)
-range_rad1 = (0, 0.3)
-range_rad2 = (0, 0.3)
-range_rad3 = (0, 0.3)
-max_out = 6
-tag = 'pos_master_adjusted'
+# # # Perturbation positive
+# x_range = (0, 0.02)
+# y_range = (0, 0.02)
+# z_range = (0, 0.02)
+# range_rad1 = (0, 0.3)
+# range_rad2 = (0, 0.3)
+# range_rad3 = (0, 0.3)
+# max_out = 6
+# tag = 'pos_master_adjusted'
+
+# # Define the ranges for the values
+# # Pertubation negativ (labeled as wrong)
+# x_range = (0.04, 0.1)
+# y_range = (0.04, 0.1)
+# z_range = (0.04, 0.1)
+# range_rad1 = (0.5, 5)
+# range_rad2 = (0.5, 5)
+# range_rad3 = (0.5, 5)
+# max_out = 5
+# tag = 'neg_master_adjusted'
+#
+# # # Perturbation positive
+# x_range = (0, 0.02)
+# y_range = (0, 0.02)
+# z_range = (0, 0.02)
+# range_rad1 = (0, 0.3)
+# range_rad2 = (0, 0.3)
+# range_rad3 = (0, 0.3)
+# max_out = 6
+# tag = 'pos_master_adjusted'
 
 # # Perturbation positive: trans_004
 # x_range = (0, 0.035)

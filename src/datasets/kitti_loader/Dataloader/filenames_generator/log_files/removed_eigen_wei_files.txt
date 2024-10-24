@@ -1,0 +1,1 @@
+Folder: C:\Users\Jeremia\OneDrive\Me\StudiumMaster\00_Semesterarbeit\project_clean\MMCL\data/kitti\2011_09_26\2011_09_26_drive_0005_sync\image_02/data (Invalid path)

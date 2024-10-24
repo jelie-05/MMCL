@@ -70,7 +70,7 @@ if __name__ == "__main__":
     current_file_path = os.path.abspath(__file__)
     root = os.path.abspath(os.path.join(current_file_path, '../../../../../../..'))
 
-    tag = 'all'
+    tag = 'wei'
 
     sync_list_path = os.path.join(root, f'src/datasets/kitti_loader/Dataloader/filenames_generator/list_syncs/list_sync_{tag}.txt')
     output_file_path = os.path.join(root, f'src/datasets/kitti_loader/Dataloader/filenames_generator/log_files/unchecked_eigen_{tag}_files.txt')
