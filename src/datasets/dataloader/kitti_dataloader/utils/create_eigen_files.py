@@ -68,14 +68,14 @@ def create_eigen_files(sync_list_path, output_file_path):
 
 if __name__ == "__main__":
     current_file_path = os.path.abspath(__file__)
-    root = os.path.abspath(os.path.join(current_file_path, '../../../../../../..'))
+    root = os.path.abspath(os.path.join(current_file_path, '../../../../../../'))
 
-    tag = 'debug'
+    tag = 'test_seen'
 
-    sync_list_path = os.path.join(root, f'src/datasets/kitti_loader/Dataloader/filenames_generator/list_syncs/list_sync_{tag}.txt')
-    output_file_path = os.path.join(root, f'src/datasets/kitti_loader/Dataloader/filenames_generator/log_files/unchecked_eigen_{tag}_files.txt')
-    checked_file_path = os.path.join(root, f'src/datasets/kitti_loader/Dataloader/filenames_generator/log_files/eigen_{tag}_files.txt')
-    removed_file_path = os.path.join(root, f'src/datasets/kitti_loader/Dataloader/filenames/removed_eigen_{tag}_files.txt')
+    sync_list_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/utils/list_syncs/list_sync_{tag}.txt')
+    output_file_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/utils/log_files/unchecked_eigen_{tag}_files.txt')
+    checked_file_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/filenames/eigen_{tag}_files.txt')
+    removed_file_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/utils/log_files/removed_eigen_{tag}_files.txt')
 
     data_folder = 'data/kitti'
     
