@@ -87,16 +87,16 @@ def generate_random_value(value_range):
 # max_out = 6
 # tag = 'pos_master_adjusted_3'
 
-# Define the ranges for the values
-# Pertubation negativ (labeled as wrong)
-x_range = (0.04, 0.1)
-y_range = (0.04, 0.1)
-z_range = (0.04, 0.1)
-range_rad1 = (0.7, 3)
-range_rad2 = (0.7, 3)
-range_rad3 = (0.7, 3)
-max_out = 5
-tag = 'neg_master_adjusted_3'
+# # Define the ranges for the values
+# # Pertubation negativ (labeled as wrong)
+# x_range = (0.04, 0.1)
+# y_range = (0.04, 0.1)
+# z_range = (0.04, 0.1)
+# range_rad1 = (0.7, 3)
+# range_rad2 = (0.7, 3)
+# range_rad3 = (0.7, 3)
+# max_out = 5
+# tag = 'neg_master_adjusted_3'
 
 # # Pertubation negativ (labeled as wrong)
 # x_range = (0.1, 0.2)
