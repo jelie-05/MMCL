@@ -131,7 +131,7 @@ def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, ve
         depth[y_loc, x_loc] = velo_pts_im[pts, 2].min()
     depth[depth<0] = 0
 
-    # Introducing Pertubation
+    # Introducing Perturbation
     rot_error, translation_error = disturb_matrices(perturbation_csv=perturb_path, target_name=name)
     velo2cam_error = np.dot(velo2cam, rot_error) + translation_error
 
