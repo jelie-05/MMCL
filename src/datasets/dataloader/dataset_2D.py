@@ -40,21 +40,20 @@ class KittiDataset(Dataset):
 
 
 class KITTIOdometryDataset(Dataset):
-    def __init__(self, datadir, phase, perturb_filenames, cam_index=2, im_shape=(1242, 375), transform=None, augmentation=None):
+    def __init__(self, datadir, phase, perturb_filenames, cam_index=2, transform=None, augmentation=None):
         """
         Args:
             datadir (str): Path to the KITTI odometry dataset.
-            sequence_list_file (str): Path to the text file containing sequence numbers (e.g., 'sequence_list.txt').
+            phase (str): Phase of dataset (e.g., 'train', 'test').
+            perturb_filenames (str): Filename for perturbation csv.
             cam_index (int): Camera index to project points onto (0, 1, 2, or 3).
-            im_shape (tuple): Image shape (width, height) for filtering projected points.
             transform (callable, optional): Transformation to apply to images and points.
+            augmentation (optional): Augmentation to apply for perturbations.
         """
         self.basedir = datadir
         self.cam_index = cam_index
-        self.im_shape = im_shape
         self.transform = transform
         self.augmentation = augmentation
-
 
         sequence_list_file = os.path.join(datadir, f'sequence_list_{phase}.txt')
         self.perturb_path = os.path.join(datadir, f'{perturb_filenames}.csv')
@@ -88,9 +87,14 @@ class KITTIOdometryDataset(Dataset):
         velodyne_points = list(dataset.velo)[frame_idx]
         name = f"{sequence}_{frame_idx:06d}"
 
+        # Dynamically set im_shape based on rgb_image dimensions
+        self.im_shape = rgb_image.size  # (width, height)
+
         # Project Velodyne points onto the image
-        depth, depth_neg = project_velodyne_to_camera(velodyne_points, self.im_shape, T_cam_velo, R_rect, P_rect, self.perturb_path,
-                                                      name, augmentation=self.augmentation)
+        depth, depth_neg = project_velodyne_to_camera(
+            velodyne_points, self.im_shape, T_cam_velo, R_rect, P_rect, self.perturb_path,
+            name, augmentation=self.augmentation
+        )
 
         # Create data item with a zero-padded name
         data_item = {
@@ -110,6 +114,7 @@ class KITTIOdometryDataset(Dataset):
         data_item['depth_neg'] = torch.tensor(data_item['depth_neg'], dtype=torch.float32)
 
         return data_item
+
 
 class DataGenerator(object):
     def __init__(self,
@@ -139,7 +144,7 @@ class DataGenerator(object):
                                         transformer.get_transform(),
                                         augmentation=self.augmentation)
         elif self.loader == 'kitti_odom':
-            self.dataset = KITTIOdometryDataset(datadir, )
+            self.dataset = KITTIOdometryDataset(datadir=datadir, phase=self.phase, perturb_filenames=perturb_filenames, transform=transformer.get_transform(),, augmentation=augmentation)
 
     def create_data(self, batch_size, nthreads=0, shuffle=False):
         print(f'num_workers: {nthreads}')
