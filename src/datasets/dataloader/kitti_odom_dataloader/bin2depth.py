@@ -43,7 +43,11 @@ def disturb_matrices(perturbation_csv, target_name):
 
     return rot_error, translation_error
 
-def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, R_rect, P_rect, perturb_path, name, augmentation=None):
+def sub2ind(matrixSize, rowSub, colSub):
+    m, n = matrixSize
+    return rowSub * (n-1) + colSub - 1
+
+def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, perturb_path, name, augmentation=None):
     """
     Projects Velodyne points onto the camera image plane and includes depth information.
 
@@ -68,27 +72,41 @@ def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, R_rect, P_
     else:
         T_cam_velo = T_cam_velo
 
-    # Combine the transformation: P_rect * R_rect * T_cam_velo
-    full_transform = P_rect @ R_rect @ T_cam_velo  # Shape (3, 4)
-    error_transform = P_rect @ R_rect @ T_cam_velo_err
+    full_transform = P_rect @ T_cam_velo  # Shape (3, 4)
+    error_transform = P_rect @ T_cam_velo_err
 
-    # Convert Velodyne points to homogeneous coordinates (N, 4)
+    # Convert Velodyne points to homogeneous coordinates
     velo_hom = np.hstack((velodyne_points[:, :3], np.ones((velodyne_points.shape[0], 1))))
 
-    # Apply the full transformation in one step
-    points_2d_hom = (full_transform @ velo_hom.T).T  # Resulting shape (N, 3)
+    # Apply transformation
+    velo_pts_im = (full_transform @ velo_hom.T).T  # Shape (N, 3)
+    velo_pts_im[:, :2] /= velo_pts_im[:, 2][:, np.newaxis]  # Normalize
 
-    # Normalize to get 2D coordinates and retain depth (z)
-    x_y = points_2d_hom[:, :2] / points_2d_hom[:, 2][:, np.newaxis]  # Normalize x, y by z
-    z = points_2d_hom[:, 2]  # Depth information
+    # Set the depth information directly
+    velo_pts_im[:, 2] = velo_hom[:, 0]
 
-    # Concatenate x, y, and z to form (N, 3)
-    points_2d = np.hstack((x_y, z[:, np.newaxis]))
+    # Round coordinates and check bounds
+    velo_pts_im[:, :2] = np.round(velo_pts_im[:, :2]) - 1
+    val_inds = (
+            (velo_pts_im[:, 0] >= 0) & (velo_pts_im[:, 0] < im_shape[1]) &
+            (velo_pts_im[:, 1] >= 0) & (velo_pts_im[:, 1] < im_shape[0])
+    )
+    velo_pts_im = velo_pts_im[val_inds]
 
-    # Filter points within image boundaries
-    img_width, img_height = im_shape
-    mask = (points_2d[:, 0] >= 0) & (points_2d[:, 0] < img_width) & (points_2d[:, 1] >= 0) & (points_2d[:, 1] < img_height)
-    depth = points_2d[mask]
+    # Initialize depth map
+    depth = np.zeros(im_shape)
+    depth[velo_pts_im[:, 1].astype(int), velo_pts_im[:, 0].astype(int)] = velo_pts_im[:, 2]
+
+    # Manage duplicates, keeping the closest depth
+    inds = np.ravel_multi_index((velo_pts_im[:, 1].astype(int), velo_pts_im[:, 0].astype(int)), depth.shape)
+    dupe_inds = [idx for idx, count in Counter(inds).items() if count > 1]
+
+    for dd in dupe_inds:
+        pts = np.where(inds == dd)[0]
+        y_loc, x_loc = int(velo_pts_im[pts[0], 1]), int(velo_pts_im[pts[0], 0])
+        depth[y_loc, x_loc] = velo_pts_im[pts, 2].min()
+
+    depth[depth < 0] = 0
 
     ## Again for miscalibration
     # Apply the full transformation in one step

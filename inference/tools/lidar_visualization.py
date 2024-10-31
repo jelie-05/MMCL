@@ -2,13 +2,25 @@ from src.datasets.dataloader.dataset_2D import DataGenerator
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import multiprocessing
+
 
 if __name__ == "__main__":
-    root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
-    kitti_path = os.path.join(root, 'data', 'kitti')
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 
-    test_gen = DataGenerator(kitti_path, 'check')
-    test_dataloader = test_gen.create_data(2)
+    data_short_dir = 'data/kitti_odom'  # Replace with your actual data directory
+    datadir = os.path.join(root, data_short_dir)
+    phase = 'train'
+    perturb_filenames = 'perturbation_train.csv'  # Replace with your actual file name
+    batch_size = 64
+
+    test_gen = DataGenerator(datadir=datadir,
+                            phase=phase,
+                            augmentation=None,
+                            perturb_filenames=perturb_filenames,
+                            loader='kitti_odom')
+    num_cores = min(multiprocessing.cpu_count(), 64)
+    test_dataloader = test_gen.create_data(batch_size=batch_size, shuffle=False, nthreads=num_cores)
 
     for batch in test_dataloader:
         left_img_batch = batch['left_img']  # batch of left image, id 02
@@ -64,17 +76,17 @@ if __name__ == "__main__":
         # values_store_neg = values_store_neg[::2]
         values_store_neg2 = np.delete(values_store_neg2, np.where(values_store_neg2[:, 2] == 0), axis=0)
 
-        # plt.figure(figsize=(15, 7))
-        # plt.imshow(img_np1, alpha=0.0)
-        # plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='rainbow_r', alpha=0.5, s=3)
-        # plt.tight_layout()
-        # plt.show()
-
-        plt.figure(figsize=(15, 4.8))
-        plt.imshow(img_np1, alpha=0.0)
-        plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='gray', alpha=1, s=3)
+        plt.figure(figsize=(15, 7))
+        plt.imshow(img_np1, alpha=1)
+        plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='rainbow_r', alpha=0.5, s=3)
         plt.tight_layout()
         plt.show()
+
+        # plt.figure(figsize=(15, 4.8))
+        # plt.imshow(img_np1, alpha=0.0)
+        # plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='gray', alpha=1, s=3)
+        # plt.tight_layout()
+        # plt.show()
 
         # plt.figure(figsize=(15, 7))
         # plt.imshow(img_np1)
