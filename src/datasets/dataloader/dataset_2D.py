@@ -65,19 +65,31 @@ class KITTIOdometryDataset(Dataset):
         self.transform = transform
         self.augmentation = augmentation
 
-        sequence_list_file = os.path.join(datadir, f'sequence_list_{phase}.txt')
-        self.perturb_path = os.path.join(datadir, perturb_filenames)
-
-        # Read sequences from the sequence list file
-        with open(sequence_list_file, 'r') as f:
+        # Load sequence list and perturbation data once
+        with open(os.path.join(datadir, f'sequence_list_{phase}.txt'), 'r') as f:
             self.sequences = [line.strip() for line in f if line.strip()]
 
-        # Initialize pykitti datasets and accumulate all image and point indices
+        self.perturb_path = os.path.join(datadir, perturb_filenames)
+
+        # Preload sequence datasets and calibration data
+        self.dataset_cache = {}
         self.data_indices = []
         for sequence in self.sequences:
             with SuppressPrint():
                 dataset = pykitti.odometry(datadir, sequence)
-            num_frames = len(list(getattr(dataset, f"cam{cam_index}")))
+                T_cam_velo = getattr(dataset.calib, f"T_cam{self.cam_index}_velo")
+                P_rect = getattr(dataset.calib, f"P_rect_{self.cam_index}0")
+                num_frames = len(dataset.poses)
+
+            # Cache sequence dataset and calibration data
+            self.dataset_cache[sequence] = {
+                'dataset': dataset,
+                'T_cam_velo': T_cam_velo,
+                'P_rect': P_rect,
+                'num_frames': num_frames
+            }
+
+            # Build data indices for all frames in all sequences
             self.data_indices.extend([(sequence, idx) for idx in range(num_frames)])
 
     def __len__(self):
@@ -86,23 +98,22 @@ class KITTIOdometryDataset(Dataset):
     def __getitem__(self, idx):
         # Retrieve the sequence and frame index
         sequence, frame_idx = self.data_indices[idx]
+        dataset_info = self.dataset_cache[sequence]
 
-        # Load the specific sequence dataset and calibration parameters
-        with SuppressPrint():
-            dataset = pykitti.odometry(self.basedir, sequence)
+        # Retrieve preloaded calibration data
+        T_cam_velo = dataset_info['T_cam_velo']
+        P_rect = dataset_info['P_rect']
 
-        T_cam_velo = getattr(dataset.calib, f"T_cam{self.cam_index}_velo")
-        P_rect = getattr(dataset.calib, f"P_rect_{self.cam_index}0")
+        # Retrieve image and velodyne points without list conversion
+        rgb_image = getattr(dataset_info['dataset'], f"cam{self.cam_index}")[frame_idx]
+        velodyne_points = dataset_info['dataset'].velo[frame_idx]
 
-        # Load the image and Velodyne points for the given frame
-        rgb_image = list(getattr(dataset, f"cam{self.cam_index}"))[frame_idx]
-        velodyne_points = list(dataset.velo)[frame_idx]
-
+        # Name for identification
         name = f"{sequence}_{frame_idx:06d}"
 
-        # Dynamically set im_shape based on rgb_image dimensions
-        self.im_shape = rgb_image.size  # (width, height)
-        self.im_shape = self.im_shape[::-1]
+        # Set image shape dynamically based on the first image's dimensions
+        if not hasattr(self, 'im_shape'):
+            self.im_shape = rgb_image.size[::-1]  # Store as (height, width)
 
         # Project Velodyne points onto the image
         depth, depth_neg = project_velodyne_to_camera(
@@ -110,7 +121,7 @@ class KITTIOdometryDataset(Dataset):
             name, augmentation=self.augmentation
         )
 
-        # Create data item with a zero-padded name
+        # Create data item with necessary attributes
         data_item = {
             'left_img': rgb_image.convert('RGB'),  # Ensure RGB format if necessary
             'depth': depth.astype(np.float32),
