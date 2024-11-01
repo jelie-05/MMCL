@@ -10,9 +10,9 @@ if __name__ == "__main__":
 
     data_short_dir = 'data/kitti_odom'  # Replace with your actual data directory
     datadir = os.path.join(root, data_short_dir)
-    phase = 'train'
-    perturb_filenames = 'perturbation_train.csv'  # Replace with your actual file name
-    batch_size = 64
+    phase = 'debug'
+    perturb_filenames = 'perturbation_test_neg.csv'  # Replace with your actual file name
+    batch_size = 16
 
     test_gen = DataGenerator(datadir=datadir,
                             phase=phase,
@@ -20,7 +20,7 @@ if __name__ == "__main__":
                             perturb_filenames=perturb_filenames,
                             loader='kitti_odom')
     num_cores = min(multiprocessing.cpu_count(), 64)
-    test_dataloader = test_gen.create_data(batch_size=batch_size, shuffle=False, nthreads=num_cores)
+    test_dataloader = test_gen.create_data(batch_size=batch_size, shuffle=True, nthreads=num_cores)
 
     for batch in test_dataloader:
         left_img_batch = batch['left_img']  # batch of left image, id 02

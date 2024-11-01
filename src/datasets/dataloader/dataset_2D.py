@@ -1,5 +1,3 @@
-import torch
-import numpy as np
 from src.datasets.dataloader.kitti_dataloader import Kittiloader
 from src.datasets.dataloader.Transformer.custom_transformer import CustTransformer
 from torch.utils.data import Dataset, DataLoader
@@ -65,31 +63,40 @@ class KITTIOdometryDataset(Dataset):
         self.transform = transform
         self.augmentation = augmentation
 
+        # use left image by default
+        if self.augmentation is not None:
+            print(f"Create augmentation for correct input. {self.augmentation}")
+        else:
+            print(f"No augmentation for correct input. {self.augmentation}")
+
         sequence_list_file = os.path.join(datadir, f'sequence_list_{phase}.txt')
         self.perturb_path = os.path.join(datadir, perturb_filenames)
 
         self.data_indices = []
         with open(sequence_list_file, 'r') as f:
-            self.sequences_file = [line.strip() for line in f if line.strip()]
+            sequences_file = [line.strip() for line in f if line.strip()]
 
-            for file_name in self.sequences_file:
+            for file_name in sequences_file:
                 # Split by underscore to get sequence and idx
                 sequence, idx = file_name.split('_')
                 # Append the (sequence, idx) tuple to data_indices
                 self.data_indices.append((sequence, int(idx)))
 
+        sequence_folder = os.path.join(datadir, f'sequence_folder_{phase}.txt')
+        self.transform_matrices_dict = {}
+        with open(sequence_folder, 'r') as f:
+            sequence_list = [line.strip() for line in f if line.strip()]
 
-        # Read sequences from the sequence list file
-        # with open(sequence_list_file, 'r') as f:
-        #     self.sequences = [line.strip() for line in f if line.strip()]
+            for sequence in sequence_list:
+                with SuppressPrint():
+                    dataset = pykitti.odometry(self.basedir, sequence)
+                    T_cam_velo = getattr(dataset.calib, f"T_cam{self.cam_index}_velo")
+                    P_rect = getattr(dataset.calib, f"P_rect_{self.cam_index}0")
 
-        # # Initialize pykitti datasets and accumulate all image and point indices
-        # self.data_indices = []
-        # for sequence in self.sequences:
-        #     with SuppressPrint():
-        #         dataset = pykitti.odometry(datadir, sequence)
-        #     num_frames = len(list(getattr(dataset, f"cam{cam_index}")))
-        #     self.data_indices.extend([(sequence, idx) for idx in range(num_frames)])
+                    self.transform_matrices_dict[sequence] = {
+                        "T_cam_velo": T_cam_velo,
+                        "P_rect": P_rect
+                    }
 
     def __len__(self):
         return len(self.data_indices)
@@ -102,8 +109,11 @@ class KITTIOdometryDataset(Dataset):
         with SuppressPrint():
             dataset = pykitti.odometry(self.basedir, sequence)
 
-        T_cam_velo = getattr(dataset.calib, f"T_cam{self.cam_index}_velo")
-        P_rect = getattr(dataset.calib, f"P_rect_{self.cam_index}0")
+        # T_cam_velo = getattr(dataset.calib, f"T_cam{self.cam_index}_velo")
+        # P_rect = getattr(dataset.calib, f"P_rect_{self.cam_index}0")
+
+        T_cam_velo = self.transform_matrices_dict[sequence]["T_cam_velo"]
+        P_rect = self.transform_matrices_dict[sequence]["P_rect"]
 
         # Load the image and Velodyne points for the given frame
         rgb_image = list(getattr(dataset, f"cam{self.cam_index}"))[frame_idx]
@@ -112,12 +122,12 @@ class KITTIOdometryDataset(Dataset):
         name = f"{sequence}_{frame_idx:06d}"
 
         # Dynamically set im_shape based on rgb_image dimensions
-        self.im_shape = rgb_image.size  # (width, height)
-        self.im_shape = self.im_shape[::-1]
+        im_shape = rgb_image.size  # (width, height)
+        im_shape = im_shape[::-1]
 
         # Project Velodyne points onto the image
         depth, depth_neg = project_velodyne_to_camera(
-            velodyne_points, self.im_shape, T_cam_velo, P_rect, self.perturb_path,
+            velodyne_points, im_shape, T_cam_velo, P_rect, self.perturb_path,
             name, augmentation=self.augmentation
         )
 
