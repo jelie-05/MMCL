@@ -68,17 +68,28 @@ class KITTIOdometryDataset(Dataset):
         sequence_list_file = os.path.join(datadir, f'sequence_list_{phase}.txt')
         self.perturb_path = os.path.join(datadir, perturb_filenames)
 
-        # Read sequences from the sequence list file
-        with open(sequence_list_file, 'r') as f:
-            self.sequences = [line.strip() for line in f if line.strip()]
-
-        # Initialize pykitti datasets and accumulate all image and point indices
         self.data_indices = []
-        for sequence in self.sequences:
-            with SuppressPrint():
-                dataset = pykitti.odometry(datadir, sequence)
-            num_frames = len(list(getattr(dataset, f"cam{cam_index}")))
-            self.data_indices.extend([(sequence, idx) for idx in range(num_frames)])
+        with open(sequence_list_file, 'r') as f:
+            self.sequences_file = [line.strip() for line in f if line.strip()]
+
+            for file_name in self.sequences_file:
+                # Split by underscore to get sequence and idx
+                sequence, idx = file_name.split('_')
+                # Append the (sequence, idx) tuple to data_indices
+                self.data_indices.append((sequence, idx))
+
+
+        # Read sequences from the sequence list file
+        # with open(sequence_list_file, 'r') as f:
+        #     self.sequences = [line.strip() for line in f if line.strip()]
+
+        # # Initialize pykitti datasets and accumulate all image and point indices
+        # self.data_indices = []
+        # for sequence in self.sequences:
+        #     with SuppressPrint():
+        #         dataset = pykitti.odometry(datadir, sequence)
+        #     num_frames = len(list(getattr(dataset, f"cam{cam_index}")))
+        #     self.data_indices.extend([(sequence, idx) for idx in range(num_frames)])
 
     def __len__(self):
         return len(self.data_indices)
