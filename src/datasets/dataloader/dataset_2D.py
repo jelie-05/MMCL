@@ -76,7 +76,7 @@ class KITTIOdometryDataset(Dataset):
                 # Split by underscore to get sequence and idx
                 sequence, idx = file_name.split('_')
                 # Append the (sequence, idx) tuple to data_indices
-                self.data_indices.append((int(sequence), int(idx)))
+                self.data_indices.append((sequence, int(idx)))
 
 
         # Read sequences from the sequence list file
