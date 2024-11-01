@@ -62,48 +62,31 @@ def correction_existence(to_check_path, checked_file_path, removed_file_path):
 def create_perturb_csv(sync_list_path, output_file_path, logs_path, range_dict):
     # Read the folder paths from the folder list file
     with open(sync_list_path, 'r') as file:
-        syncs = [line.strip() for line in file.readlines()]
+        names = [line.strip() for line in file.readlines()]
 
     with open(output_file_path, mode='w', newline='') as file:
         writer = csv.writer(file)
         # Write the header
         writer.writerow(['name', 'x', 'y', 'z', 'theta_rad1', 'theta_rad2', 'theta_rad3', 'n'])
 
-        for sync in syncs:
-            sync_name = sync
-            image02_path = os.path.join(root, "data/kitti_odom/sequences", sync_name, 'image_2')
-            velo_path = os.path.join(root, "data/kitti_odom/sequences", sync_name, 'velodyne')
+        for name in names:
+            x = generate_random_value(range_dict["x_range"])
+            y = generate_random_value(range_dict["y_range"])
+            z = generate_random_value(range_dict["z_range"])
+            theta_rad1 = generate_random_value(range_dict["range_rad1"])
+            theta_rad2 = generate_random_value(range_dict["range_rad2"])
+            theta_rad3 = generate_random_value(range_dict["range_rad3"])
 
-            # Check if the folder path is valid
-            if os.path.isdir(image02_path):
-                images_02 = os.listdir(image02_path)
+            # Apply the error generation function
+            theta_rad1, theta_rad2, theta_rad3, x, y, z, n = choose_num_errors(theta_rad1, theta_rad2,
+                                                                               theta_rad3, x, y, z,
+                                                                               max_out=range_dict["max_out"])
 
-                for image in images_02:
-                    # Get file number
-                    number_parts = image.split('.')[0]
-
-                    name = f"{sync_name}_{number_parts}"
-
-                    x = generate_random_value(range_dict["x_range"])
-                    y = generate_random_value(range_dict["y_range"])
-                    z = generate_random_value(range_dict["z_range"])
-                    theta_rad1 = generate_random_value(range_dict["range_rad1"])
-                    theta_rad2 = generate_random_value(range_dict["range_rad2"])
-                    theta_rad3 = generate_random_value(range_dict["range_rad3"])
-
-                    # Apply the error generation function
-                    theta_rad1, theta_rad2, theta_rad3, x, y, z, n = choose_num_errors(theta_rad1, theta_rad2,
-                                                                                       theta_rad3, x, y, z,
-                                                                                       max_out=range_dict["max_out"])
-
-                    # Write the row to the CSV file
-                    row = [
-                        name, x, y, z, theta_rad1, theta_rad2, theta_rad3, n
-                    ]
-                    writer.writerow(row)
-            else:
-                with open(logs_path, 'a') as logs:
-                    logs.write(f"Folder: {image02_path} (Invalid path)\n\n")
+            # Write the row to the CSV file
+            row = [
+                name, x, y, z, theta_rad1, theta_rad2, theta_rad3, n
+            ]
+            writer.writerow(row)
 
     print(f"File names have been written to {output_file_path}")
 
@@ -159,7 +142,7 @@ if __name__ == "__main__":
         "range_rad3": (0.5, 5),
         "max_out": 5
     }
-    tag = 'test'
+    tag = 'val'
 
     sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
     output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
@@ -177,7 +160,7 @@ if __name__ == "__main__":
         "range_rad3": (0, 0.3),
         "max_out": 6
     }
-    tag = 'test'
+    tag = 'val'
 
     sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
     output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_pos_csv.txt')
@@ -185,3 +168,39 @@ if __name__ == "__main__":
 
     create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
                        range_dict=range_dict)
+
+    # range_dict = {
+    #     "x_range": (0.04, 0.1),
+    #     "y_range": (0.04, 0.1),
+    #     "z_range": (0.04, 0.1),
+    #     "range_rad1": (0.5, 5),
+    #     "range_rad2": (0.5, 5),
+    #     "range_rad3": (0.5, 5),
+    #     "max_out": 5
+    # }
+    # tag = 'test'
+    #
+    # sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
+    # output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
+    # output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}_neg.csv')
+    #
+    # create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
+    #                    range_dict=range_dict)
+    #
+    # range_dict = {
+    #     "x_range": (0, 0.02),
+    #     "y_range":(0, 0.02),
+    #     "z_range": (0, 0.02),
+    #     "range_rad1": (0, 0.3),
+    #     "range_rad2": (0, 0.3),
+    #     "range_rad3": (0, 0.3),
+    #     "max_out": 6
+    # }
+    # tag = 'test'
+    #
+    # sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
+    # output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_pos_csv.txt')
+    # output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}_pos.csv')
+    #
+    # create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
+    #                    range_dict=range_dict)
