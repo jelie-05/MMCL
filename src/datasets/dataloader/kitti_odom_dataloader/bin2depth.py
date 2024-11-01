@@ -98,14 +98,16 @@ def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, pe
     depth[velo_pts_im[:, 1].astype(int), velo_pts_im[:, 0].astype(int)] = velo_pts_im[:, 2]
 
     # Manage duplicates, keeping the closest depth
-    inds = np.ravel_multi_index((velo_pts_im[:, 1].astype(int), velo_pts_im[:, 0].astype(int)), depth.shape)
-    dupe_inds = [idx for idx, count in Counter(inds).items() if count > 1]
+    # inds = np.ravel_multi_index((velo_pts_im[:, 1].astype(int), velo_pts_im[:, 0].astype(int)), depth.shape)
+    # dupe_inds = [idx for idx, count in Counter(inds).items() if count > 1]
+    inds = sub2ind(depth.shape, velo_pts_im[:, 1], velo_pts_im[:, 0])
+    dupe_inds = [item for item, count in Counter(inds).items() if count > 1]
 
     for dd in dupe_inds:
-        pts = np.where(inds == dd)[0]
-        y_loc, x_loc = int(velo_pts_im[pts[0], 1]), int(velo_pts_im[pts[0], 0])
+        pts = np.where(inds==dd)[0]
+        x_loc = int(velo_pts_im[pts[0], 0])
+        y_loc = int(velo_pts_im[pts[0], 1])
         depth[y_loc, x_loc] = velo_pts_im[pts, 2].min()
-
     depth[depth < 0] = 0
 
     ## Again for miscalibration
@@ -129,12 +131,15 @@ def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, pe
     depth_neg[velo_pts_im_neg[:, 1].astype(int), velo_pts_im_neg[:, 0].astype(int)] = velo_pts_im_neg[:, 2]
 
     # Manage duplicates, keeping the closest depth
-    inds = np.ravel_multi_index((velo_pts_im_neg[:, 1].astype(int), velo_pts_im_neg[:, 0].astype(int)), depth_neg.shape)
-    dupe_inds = [idx for idx, count in Counter(inds).items() if count > 1]
+    # inds = np.ravel_multi_index((velo_pts_im_neg[:, 1].astype(int), velo_pts_im_neg[:, 0].astype(int)), depth_neg.shape)
+    # dupe_inds = [idx for idx, count in Counter(inds).items() if count > 1]
+    inds = sub2ind(depth_neg.shape, velo_pts_im_neg[:, 1], velo_pts_im_neg[:, 0])
+    dupe_inds = [item for item, count in Counter(inds).items() if count > 1]
 
     for dd in dupe_inds:
-        pts = np.where(inds == dd)[0]
-        y_loc, x_loc = int(velo_pts_im_neg[pts[0], 1]), int(velo_pts_im_neg[pts[0], 0])
+        pts = np.where(inds==dd)[0]
+        x_loc = int(velo_pts_im_neg[pts[0], 0])
+        y_loc = int(velo_pts_im_neg[pts[0], 1])
         depth_neg[y_loc, x_loc] = velo_pts_im_neg[pts, 2].min()
 
     depth_neg[depth_neg < 0] = 0

@@ -4,6 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 import pykitti
 from src.datasets.dataloader.kitti_odom_dataloader.bin2depth import *
 import sys
+from PIL import Image
 
 
 
@@ -101,13 +102,24 @@ class KITTIOdometryDataset(Dataset):
     def __len__(self):
         return len(self.data_indices)
 
+    def _check_path(self, filename, err_info):
+        file_path = os.path.join(self.basedir, filename)
+        assert os.path.exists(file_path), err_info
+        return file_path
+
+    def _load_velodyne_points(self, file_name):
+        # adapted from https://github.com/hunse/kitti
+        points = np.fromfile(file_name, dtype=np.float32).reshape(-1, 4)
+        points[:, 3] = 1.0  # homogeneous
+        return points
+
     def __getitem__(self, idx):
         # Retrieve the sequence and frame index
         sequence, frame_idx = self.data_indices[idx]
 
         # Load the specific sequence dataset and calibration parameters
-        with SuppressPrint():
-            dataset = pykitti.odometry(self.basedir, sequence)
+        # with SuppressPrint():
+        #     dataset = pykitti.odometry(self.basedir, sequence)
 
         # T_cam_velo = getattr(dataset.calib, f"T_cam{self.cam_index}_velo")
         # P_rect = getattr(dataset.calib, f"P_rect_{self.cam_index}0")
@@ -115,9 +127,15 @@ class KITTIOdometryDataset(Dataset):
         T_cam_velo = self.transform_matrices_dict[sequence]["T_cam_velo"]
         P_rect = self.transform_matrices_dict[sequence]["P_rect"]
 
+        rgb_path = os.path.join(self.basedir, f"sequences/{sequence}/image_{self.cam_index}/{frame_idx:06d}.png")
+        velo_path = os.path.join(self.basedir, f"sequences/{sequence}/velodyne/{frame_idx:06d}.bin")
+
         # Load the image and Velodyne points for the given frame
-        rgb_image = list(getattr(dataset, f"cam{self.cam_index}"))[frame_idx]
-        velodyne_points = list(dataset.velo)[frame_idx]
+        # rgb_image = list(getattr(dataset, f"cam{self.cam_index}"))[frame_idx]
+        # velodyne_points = list(dataset.velo)[frame_idx]
+
+        rgb_image = Image.open(rgb_path).convert('RGB')
+        velodyne_points = self._load_velodyne_points(velo_path)
 
         name = f"{sequence}_{frame_idx:06d}"
 
