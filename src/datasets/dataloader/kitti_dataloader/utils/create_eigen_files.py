@@ -81,6 +81,8 @@ if __name__ == "__main__":
     output_file_path = os.path.join(root, f'outputs/others/unchecked_eigen_{tag}_files.txt')
     checked_file_path = os.path.join(root, f'outputs/others/eigen_{tag}_files.txt')
     removed_file_path = os.path.join(root, f'outputs/others/removed_eigen_{tag}_files.txt')
+
+    data_folder = 'data/kitti'
     
     create_eigen_files(sync_list_path=sync_list_path, output_file_path=output_file_path)
 
