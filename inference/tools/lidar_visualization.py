@@ -88,9 +88,9 @@ if __name__ == "__main__":
         # plt.tight_layout()
         # plt.show()
 
-        # plt.figure(figsize=(15, 7))
-        # plt.imshow(img_np1)
-        # plt.scatter(values_store_neg[:, 0], values_store_neg[:, 1], c=values_store_neg[:, 2], cmap='rainbow_r', alpha=0.5,
-        #             s=5)
-        # plt.tight_layout()
-        # plt.show()
+        plt.figure(figsize=(15, 7))
+        plt.imshow(img_np1)
+        plt.scatter(values_store_neg[:, 0], values_store_neg[:, 1], c=values_store_neg[:, 2], cmap='rainbow_r', alpha=0.5,
+                    s=5)
+        plt.tight_layout()
+        plt.show()

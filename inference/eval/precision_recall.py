@@ -146,12 +146,13 @@ def find_optimal_threshold(label, prediction):
     return max_f1_score, float(opt_threshold)
 
 
-def pr_evaluation(device, data_root, output_dir, model_cls, perturbation_eval, mode='labeled', show_plot=False):
+def pr_evaluation(device, data_root, output_dir, model_cls, perturbation_eval, mode='labeled', show_plot=False, loader='kitti_raw'):
 
     batch_size = 64
     num_cores = min(multiprocessing.cpu_count(), 64)
 
-    eval_gen = DataGenerator(data_root, 'test', perturb_filenames=perturbation_eval, augmentation="perturbation_noise.csv")
+    eval_gen = DataGenerator(data_root, 'test', perturb_filenames=perturbation_eval,
+                             augmentation="perturbation_noise.csv", loader=loader)
     eval_dataloader = eval_gen.create_data(batch_size=batch_size, shuffle=False, nthreads=num_cores)
 
     os.makedirs(output_dir, exist_ok=True)

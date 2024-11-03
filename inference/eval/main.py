@@ -121,8 +121,9 @@ if __name__ == "__main__":
         classifier.to(device)
         classifier.eval()
         # -
+        loader = params['data']['loader']
         PR = pr_evaluation(device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
-                           perturbation_eval=perturbation_file, output_dir=save_dir, show_plot=args.show_plot)
+                           perturbation_eval=perturbation_file, output_dir=save_dir, show_plot=args.show_plot, loader=loader)
     else:
         print("No Evalualtion Metrics Analysis")
 

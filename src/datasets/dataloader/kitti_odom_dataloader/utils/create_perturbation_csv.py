@@ -96,78 +96,78 @@ if __name__ == "__main__":
     root = os.path.abspath(os.path.join(current_file_path, '../../../../../../'))
 
     # Define the ranges for the values
-    # Pertubation negativ (labeled as wrong)
-    range_dict = {
-        "x_range": (0.04, 0.1),
-        "y_range": (0.04, 0.1),
-        "z_range": (0.04, 0.1),
-        "range_rad1": (0.5, 5),
-        "range_rad2": (0.5, 5),
-        "range_rad3": (0.5, 5),
-        "max_out": 5
-    }
-    tag = 'train'
-
-    sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
-    output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
-    output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}_neg.csv')
-
-    create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
-                       range_dict=range_dict)
-
-    range_dict = {
-        "x_range": (0, 0.02),
-        "y_range":(0, 0.02),
-        "z_range": (0, 0.02),
-        "range_rad1": (0, 0.3),
-        "range_rad2": (0, 0.3),
-        "range_rad3": (0, 0.3),
-        "max_out": 6
-    }
-    tag = 'train'
-
-    sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
-    output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_pos_csv.txt')
-    output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}_pos.csv')
-
-    create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
-                       range_dict=range_dict)
-
-    range_dict = {
-        "x_range": (0.04, 0.1),
-        "y_range": (0.04, 0.1),
-        "z_range": (0.04, 0.1),
-        "range_rad1": (0.5, 5),
-        "range_rad2": (0.5, 5),
-        "range_rad3": (0.5, 5),
-        "max_out": 5
-    }
-    tag = 'val'
-
-    sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
-    output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
-    output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}_neg.csv')
-
-    create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
-                       range_dict=range_dict)
-
-    range_dict = {
-        "x_range": (0, 0.02),
-        "y_range":(0, 0.02),
-        "z_range": (0, 0.02),
-        "range_rad1": (0, 0.3),
-        "range_rad2": (0, 0.3),
-        "range_rad3": (0, 0.3),
-        "max_out": 6
-    }
-    tag = 'val'
-
-    sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
-    output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_pos_csv.txt')
-    output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}_pos.csv')
-
-    create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
-                       range_dict=range_dict)
+    # # Pertubation negativ (labeled as wrong)
+    # range_dict = {
+    #     "x_range": (0.04, 0.1),
+    #     "y_range": (0.04, 0.1),
+    #     "z_range": (0.04, 0.1),
+    #     "range_rad1": (0.5, 5),
+    #     "range_rad2": (0.5, 5),
+    #     "range_rad3": (0.5, 5),
+    #     "max_out": 5
+    # }
+    # tag = 'train'
+    #
+    # sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
+    # output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
+    # output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}_neg.csv')
+    #
+    # create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
+    #                    range_dict=range_dict)
+    #
+    # range_dict = {
+    #     "x_range": (0, 0.02),
+    #     "y_range":(0, 0.02),
+    #     "z_range": (0, 0.02),
+    #     "range_rad1": (0, 0.3),
+    #     "range_rad2": (0, 0.3),
+    #     "range_rad3": (0, 0.3),
+    #     "max_out": 6
+    # }
+    # tag = 'train'
+    #
+    # sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
+    # output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_pos_csv.txt')
+    # output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}_pos.csv')
+    #
+    # create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
+    #                    range_dict=range_dict)
+    #
+    # range_dict = {
+    #     "x_range": (0.04, 0.1),
+    #     "y_range": (0.04, 0.1),
+    #     "z_range": (0.04, 0.1),
+    #     "range_rad1": (0.5, 5),
+    #     "range_rad2": (0.5, 5),
+    #     "range_rad3": (0.5, 5),
+    #     "max_out": 5
+    # }
+    # tag = 'val'
+    #
+    # sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
+    # output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
+    # output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}_neg.csv')
+    #
+    # create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
+    #                    range_dict=range_dict)
+    #
+    # range_dict = {
+    #     "x_range": (0, 0.02),
+    #     "y_range":(0, 0.02),
+    #     "z_range": (0, 0.02),
+    #     "range_rad1": (0, 0.3),
+    #     "range_rad2": (0, 0.3),
+    #     "range_rad3": (0, 0.3),
+    #     "max_out": 6
+    # }
+    # tag = 'val'
+    #
+    # sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
+    # output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_pos_csv.txt')
+    # output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}_pos.csv')
+    #
+    # create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
+    #                    range_dict=range_dict)
 
     # range_dict = {
     #     "x_range": (0.04, 0.1),
@@ -199,8 +199,63 @@ if __name__ == "__main__":
     # tag = 'test'
     #
     # sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_{tag}.txt')
-    # output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_pos_csv.txt')
+    # output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
     # output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}_pos.csv')
     #
     # create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
     #                    range_dict=range_dict)
+
+    range_dict = {
+        "x_range": (0, 0),
+        "y_range": (0, 0),
+        "z_range": (0, 0),
+        "range_rad1": (0.5, 1),
+        "range_rad2": (0.5, 1),
+        "range_rad3": (0.5, 1),
+        "max_out": 5
+    }
+    tag = 'test_rot'
+
+    sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_test.txt')
+    output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
+    output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}.csv')
+
+    create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
+                       range_dict=range_dict)
+
+    range_dict = {
+        "x_range": (0.1, 0.2),
+        "y_range": (0.1, 0.2),
+        "z_range": (0.1, 0.2),
+        "range_rad1": (0, 0),
+        "range_rad2": (0, 0),
+        "range_rad3": (0, 0),
+        "max_out": 5
+    }
+    tag = 'test_trans'
+
+    sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_test.txt')
+    output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
+    output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}.csv')
+
+    create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
+                       range_dict=range_dict)
+
+    range_dict = {
+        "x_range": (0, 0.005),
+        "y_range":(0, 0.005),
+        "z_range": (0, 0.005),
+        "range_rad1": (0, 0.1),
+        "range_rad2": (0, 0.1),
+        "range_rad3": (0, 0.1),
+        "max_out": 6
+    }
+    tag = 'noise'
+
+    sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_test.txt')
+    output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
+    output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}.csv')
+
+    create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
+                       range_dict=range_dict)
+
