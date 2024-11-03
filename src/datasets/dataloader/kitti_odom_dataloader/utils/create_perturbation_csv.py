@@ -212,7 +212,7 @@ if __name__ == "__main__":
         "range_rad1": (0.5, 1),
         "range_rad2": (0.5, 1),
         "range_rad3": (0.5, 1),
-        "max_out": 5
+        "max_out": 2
     }
     tag = 'test_rot'
 
@@ -230,7 +230,7 @@ if __name__ == "__main__":
         "range_rad1": (0, 0),
         "range_rad2": (0, 0),
         "range_rad3": (0, 0),
-        "max_out": 5
+        "max_out": 2
     }
     tag = 'test_trans'
 

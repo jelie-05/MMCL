@@ -137,7 +137,7 @@ def get_contrastive_log_files(root_dir, tag):
 if __name__ == "__main__":
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
     root_dir = os.path.join(root, 'outputs/logs/active')
-    tag = "classifier"  # "classifier" or "contrastive
+    tag = "contrastive"  # "classifier" or "contrastive
 
     # Get all log files from '_contrastive' or '_classifier' folders
     log_files = get_contrastive_log_files(root_dir, tag)
