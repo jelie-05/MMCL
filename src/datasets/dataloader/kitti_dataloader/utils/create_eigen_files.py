@@ -70,14 +70,14 @@ if __name__ == "__main__":
     current_file_path = os.path.abspath(__file__)
     root = os.path.abspath(os.path.join(current_file_path, '../../../../../../'))
 
-    tag = 'test_seen'
+    tag = 'train_val_large'
 
     # sync_list_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/utils/list_syncs/list_sync_{tag}.txt')
     # output_file_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/utils/log_files/unchecked_eigen_{tag}_files.txt')
     # checked_file_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/filenames/eigen_{tag}_files.txt')
     # removed_file_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/utils/log_files/removed_eigen_{tag}_files.txt')
 
-    sync_list_path = os.path.join(root, f'outputs/others/list_sync_{tag}.txt')
+    sync_list_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/utils/list_syncs/list_sync_{tag}.txt')
     output_file_path = os.path.join(root, f'outputs/others/unchecked_eigen_{tag}_files.txt')
     checked_file_path = os.path.join(root, f'outputs/others/eigen_{tag}_files.txt')
     removed_file_path = os.path.join(root, f'outputs/others/removed_eigen_{tag}_files.txt')
