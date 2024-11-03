@@ -4,7 +4,7 @@ logging:
 data:
   batch_size: 32
   perturbation_file: 'perturbation_neg_master_adjusted.csv'
-  dataset_path: 'data/kitti_raw'
+  dataset_path: 'data/kitti'
   augmentation: 'perturbation_pos_master_adjusted.csv'
   loader: 'kitti_raw'
 meta:
