@@ -56,16 +56,16 @@ def generate_random_value(value_range):
 # max_out = 6
 # tag = 'pos_master'
 
-# # Define the ranges for the values
-# # Pertubation negativ (labeled as wrong)
-# x_range = (0.04, 0.1)
-# y_range = (0.04, 0.1)
-# z_range = (0.04, 0.1)
-# range_rad1 = (0.5, 5)
-# range_rad2 = (0.5, 5)
-# range_rad3 = (0.5, 5)
-# max_out = 5
-# tag = 'neg_master_adjusted'
+# Define the ranges for the values
+# Pertubation negativ (labeled as wrong)
+x_range = (0.04, 0.1)
+y_range = (0.04, 0.1)
+z_range = (0.04, 0.1)
+range_rad1 = (0.5, 5)
+range_rad2 = (0.5, 5)
+range_rad3 = (0.5, 5)
+max_out = 5
+tag = 'neg_master_adjusted'
 
 # # # Perturbation positive
 # x_range = (0, 0.02)
@@ -108,16 +108,16 @@ def generate_random_value(value_range):
 # max_out = 6
 # tag = 'pos_master_adjusted_4'
 
-# Define the ranges for the values
-# Pertubation negativ (labeled as wrong)
-x_range = (0.03, 0.1)
-y_range = (0.03, 0.1)
-z_range = (0.03, 0.1)
-range_rad1 = (0.5, 3)
-range_rad2 = (0.5, 3)
-range_rad3 = (0.5, 3)
-max_out = 5
-tag = 'neg_master_adjusted_4'
+# # Define the ranges for the values
+# # Pertubation negativ (labeled as wrong)
+# x_range = (0.03, 0.1)
+# y_range = (0.03, 0.1)
+# z_range = (0.03, 0.1)
+# range_rad1 = (0.5, 3)
+# range_rad2 = (0.5, 3)
+# range_rad3 = (0.5, 3)
+# max_out = 5
+# tag = 'neg_master_adjusted_4'
 
 # # Pertubation negativ (labeled as wrong)
 # x_range = (0.1, 0.2)
