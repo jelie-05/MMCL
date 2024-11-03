@@ -52,7 +52,6 @@ if __name__ == "__main__":
     # Directory
     save_name = args.save_name
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
-    kitti_path = os.path.join(root, 'data', 'kitti')
     config_name = 'configs_' + save_name + '.yaml'
     configs_path = os.path.join(root, 'configs', config_name)
     perturbation_file = 'perturbation_' + args.perturbation + '.csv'
@@ -109,6 +108,8 @@ if __name__ == "__main__":
     encoder_im.eval()
     encoder_lid.eval()
     # -
+    loader = params['data']['loader']
+    kitti_path = os.path.join(root, 'data', loader)
 
     # Starting Evaluation
     if args.eval_metrics:
@@ -121,7 +122,7 @@ if __name__ == "__main__":
         classifier.to(device)
         classifier.eval()
         # -
-        loader = params['data']['loader']
+
         PR = pr_evaluation(device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
                            perturbation_eval=perturbation_file, output_dir=save_dir, show_plot=args.show_plot, loader=loader)
     else:
