@@ -109,7 +109,8 @@ if __name__ == "__main__":
     encoder_lid.eval()
     # -
     loader = params['data']['loader']
-    kitti_path = os.path.join(root, 'data', loader)
+    dataset_path = params['data']['dataset_path']
+    kitti_path = os.path.join(root, dataset_path)
 
     # Starting Evaluation
     if args.eval_metrics:
