@@ -265,6 +265,7 @@ def pr_evaluation(device, data_root, output_dir, model_cls, perturbation_eval, m
 
     # Save FP list to a text file
     with open(fp_output_file, 'w') as f:
+        f.write("Time:%.6f\n" % inference_time)
         f.write("False Positives (FP):\n")
         for item in fp_list:
             f.write("%s\n" % item)
