@@ -70,7 +70,7 @@ if __name__ == "__main__":
     current_file_path = os.path.abspath(__file__)
     root = os.path.abspath(os.path.join(current_file_path, '../../../../../../'))
 
-    tag = 'train_val_large'
+    tag = 'test_unseen'
 
     # sync_list_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/utils/list_syncs/list_sync_{tag}.txt')
     # output_file_path = os.path.join(root, f'src/datasets/dataloader/kitti_dataloader/utils/log_files/unchecked_eigen_{tag}_files.txt')
