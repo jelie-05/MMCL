@@ -56,16 +56,16 @@ def generate_random_value(value_range):
 # max_out = 6
 # tag = 'pos_master'
 
-# # Define the ranges for the values
-# # Pertubation negativ (labeled as wrong)
-# x_range = (0.04, 0.1)
-# y_range = (0.04, 0.1)
-# z_range = (0.04, 0.1)
-# range_rad1 = (0.5, 5)
-# range_rad2 = (0.5, 5)
-# range_rad3 = (0.5, 5)
-# max_out = 5
-# tag = 'neg_master_adjusted'
+# Define the ranges for the values
+# Pertubation negativ (labeled as wrong)
+x_range = (0.04, 0.1)
+y_range = (0.04, 0.1)
+z_range = (0.04, 0.1)
+range_rad1 = (0.5, 5)
+range_rad2 = (0.5, 5)
+range_rad3 = (0.5, 5)
+max_out = 5
+tag = 'neg_master_adjusted_seen'
 
 # # # Perturbation positive
 # x_range = (0, 0.02)
@@ -87,15 +87,15 @@ def generate_random_value(value_range):
 # max_out = 5
 # tag = 'neg_ood'
 
-# Perturbation positive: noise
-x_range = (0, 0.005)
-y_range = (0, 0.005)
-z_range = (0, 0.005)
-range_rad1 = (0, 0.1)
-range_rad2 = (0, 0.1)
-range_rad3 = (0, 0.1)
-max_out = 6
-tag = 'noise'
+# # Perturbation positive: noise
+# x_range = (0, 0.005)
+# y_range = (0, 0.005)
+# z_range = (0, 0.005)
+# range_rad1 = (0, 0.1)
+# range_rad2 = (0, 0.1)
+# range_rad3 = (0, 0.1)
+# max_out = 6
+# tag = 'noise'
 
 # # # Translation only
 # x_range = (0.1, 0.2)
@@ -105,17 +105,7 @@ tag = 'noise'
 # range_rad2 = (0, 0)
 # range_rad3 = (0, 0)
 # max_out = 2
-# tag = 'trans_compare_wei'
-
-# # Translation only
-# x_range = (0.1, 0.2)
-# y_range = (0.1, 0.2)
-# z_range = (0.1, 0.2)
-# range_rad1 = (0, 0)
-# range_rad2 = (0, 0)
-# range_rad3 = (0, 0)
-# max_out = 2
-# tag = 'trans_compare_wei'
+# tag = 'trans_compare_wei_seen'
 
 # # Translation only
 # x_range = (0.04, 0.1)
@@ -125,7 +115,7 @@ tag = 'noise'
 # range_rad2 = (0, 0)
 # range_rad3 = (0, 0)
 # max_out = 2
-# tag = 'trans_hard'
+# tag = 'trans_hard_seen'
 
 # # Rotation only
 # x_range = (0, 0)
@@ -135,7 +125,7 @@ tag = 'noise'
 # range_rad2 = (0.5, 1)
 # range_rad3 = (0.5, 1)
 # max_out = 2
-# tag = 'rot_only'
+# tag = 'rot_only_seen'
 
 # Define file paths
 current_file_path = os.path.abspath(__file__)
