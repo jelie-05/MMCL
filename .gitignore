@@ -2,3 +2,4 @@ data/kitti/*/
 archieve/outputs/models
 outputs_gpu/*/
 data/kitti_odom/*/
+outputs/others/*/

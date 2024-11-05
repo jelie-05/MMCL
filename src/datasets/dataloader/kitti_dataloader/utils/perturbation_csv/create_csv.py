@@ -56,16 +56,16 @@ def generate_random_value(value_range):
 # max_out = 6
 # tag = 'pos_master'
 
-# Define the ranges for the values
-# Pertubation negativ (labeled as wrong)
-x_range = (0.04, 0.1)
-y_range = (0.04, 0.1)
-z_range = (0.04, 0.1)
-range_rad1 = (0.5, 5)
-range_rad2 = (0.5, 5)
-range_rad3 = (0.5, 5)
-max_out = 5
-tag = 'neg_master_adjusted'
+# # Define the ranges for the values
+# # Pertubation negativ (labeled as wrong)
+# x_range = (0.04, 0.1)
+# y_range = (0.04, 0.1)
+# z_range = (0.04, 0.1)
+# range_rad1 = (0.5, 5)
+# range_rad2 = (0.5, 5)
+# range_rad3 = (0.5, 5)
+# max_out = 5
+# tag = 'neg_master_adjusted'
 
 # # # Perturbation positive
 # x_range = (0, 0.02)
@@ -77,48 +77,6 @@ tag = 'neg_master_adjusted'
 # max_out = 6
 # tag = 'pos_master_adjusted'
 
-# # # Perturbation positive
-# x_range = (0, 0.02)
-# y_range = (0, 0.02)
-# z_range = (0, 0.02)
-# range_rad1 = (0, 0.5)
-# range_rad2 = (0, 0.5)
-# range_rad3 = (0, 0.5)
-# max_out = 6
-# tag = 'pos_master_adjusted_3'
-
-# # Define the ranges for the values
-# # Pertubation negativ (labeled as wrong)
-# x_range = (0.04, 0.1)
-# y_range = (0.04, 0.1)
-# z_range = (0.04, 0.1)
-# range_rad1 = (0.7, 3)
-# range_rad2 = (0.7, 3)
-# range_rad3 = (0.7, 3)
-# max_out = 5
-# tag = 'neg_master_adjusted_3'
-
-# # # Perturbation positive
-# x_range = (0, 0.02)
-# y_range = (0, 0.02)
-# z_range = (0, 0.02)
-# range_rad1 = (0, 0.4)
-# range_rad2 = (0, 0.4)
-# range_rad3 = (0, 0.4)
-# max_out = 6
-# tag = 'pos_master_adjusted_4'
-
-# # Define the ranges for the values
-# # Pertubation negativ (labeled as wrong)
-# x_range = (0.03, 0.1)
-# y_range = (0.03, 0.1)
-# z_range = (0.03, 0.1)
-# range_rad1 = (0.5, 3)
-# range_rad2 = (0.5, 3)
-# range_rad3 = (0.5, 3)
-# max_out = 5
-# tag = 'neg_master_adjusted_4'
-
 # # Pertubation negativ (labeled as wrong)
 # x_range = (0.1, 0.2)
 # y_range = (0.1, 0.2)
@@ -129,15 +87,15 @@ tag = 'neg_master_adjusted'
 # max_out = 5
 # tag = 'neg_ood'
 
-# # Perturbation positive: noise
-# x_range = (0, 0.005)
-# y_range = (0, 0.005)
-# z_range = (0, 0.005)
-# range_rad1 = (0, 0.1)
-# range_rad2 = (0, 0.1)
-# range_rad3 = (0, 0.1)
-# max_out = 6
-# tag = 'noise'
+# Perturbation positive: noise
+x_range = (0, 0.005)
+y_range = (0, 0.005)
+z_range = (0, 0.005)
+range_rad1 = (0, 0.1)
+range_rad2 = (0, 0.1)
+range_rad3 = (0, 0.1)
+max_out = 6
+tag = 'noise'
 
 # # # Translation only
 # x_range = (0.1, 0.2)
@@ -148,6 +106,36 @@ tag = 'neg_master_adjusted'
 # range_rad3 = (0, 0)
 # max_out = 2
 # tag = 'trans_compare_wei'
+
+# # Translation only
+# x_range = (0.1, 0.2)
+# y_range = (0.1, 0.2)
+# z_range = (0.1, 0.2)
+# range_rad1 = (0, 0)
+# range_rad2 = (0, 0)
+# range_rad3 = (0, 0)
+# max_out = 2
+# tag = 'trans_compare_wei'
+
+# # Translation only
+# x_range = (0.04, 0.1)
+# y_range = (0.04, 0.1)
+# z_range = (0.04, 0.1)
+# range_rad1 = (0, 0)
+# range_rad2 = (0, 0)
+# range_rad3 = (0, 0)
+# max_out = 2
+# tag = 'trans_hard'
+
+# # Rotation only
+# x_range = (0, 0)
+# y_range = (0, 0)
+# z_range = (0, 0)
+# range_rad1 = (0.5, 1)
+# range_rad2 = (0.5, 1)
+# range_rad3 = (0.5, 1)
+# max_out = 2
+# tag = 'rot_only'
 
 # Define file paths
 current_file_path = os.path.abspath(__file__)

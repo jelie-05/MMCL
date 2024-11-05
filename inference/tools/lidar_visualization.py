@@ -8,17 +8,17 @@ import multiprocessing
 if __name__ == "__main__":
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 
-    data_short_dir = 'data/kitti_odom'  # Replace with your actual data directory
+    data_short_dir = 'data/kitti'  # Replace with your actual data directory
     datadir = os.path.join(root, data_short_dir)
     phase = 'debug'
-    perturb_filenames = 'perturbation_test_neg.csv'  # Replace with your actual file name
-    batch_size = 16
+    perturb_filenames = 'perturbation_neg_master_adjusted.csv'  # Replace with your actual file name
+    batch_size = 1
 
     test_gen = DataGenerator(datadir=datadir,
                             phase=phase,
                             augmentation=None,
                             perturb_filenames=perturb_filenames,
-                            loader='kitti_odom')
+                            loader='kitti_raw')
     num_cores = min(multiprocessing.cpu_count(), 64)
     test_dataloader = test_gen.create_data(batch_size=batch_size, shuffle=True, nthreads=num_cores)
 
@@ -35,7 +35,7 @@ if __name__ == "__main__":
         # Permute
         lidar = depth_1.permute(1, 2, 0).numpy()  # position (H, W, 1) = (ca. 100x600x1)
         img_np1 = left_img_batch[0].permute(1, 2, 0).numpy()
-        img_np2 = left_img_batch[1].permute(1, 2, 0).numpy()
+        img_np2 = left_img_batch[0].permute(1, 2, 0).numpy()
 
         # Reshape tensor into (x, y, value)
         values_store = []
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         values_store_neg = np.delete(values_store_neg, np.where(values_store_neg[:, 2] == 0), axis=0)
 
         # negative sample
-        depth_neg2 = depth_neg[1]
+        depth_neg2 = depth_neg[0]
         lidar_neg2 = depth_neg2.permute(1, 2, 0).numpy()
 
         # Reshape tensor into (x, y, value)
@@ -76,21 +76,28 @@ if __name__ == "__main__":
         # values_store_neg = values_store_neg[::2]
         values_store_neg2 = np.delete(values_store_neg2, np.where(values_store_neg2[:, 2] == 0), axis=0)
 
+        import matplotlib.pyplot as plt
+
+        # First plot with img_np1 as the background
         plt.figure(figsize=(15, 7))
         plt.imshow(img_np1, alpha=1)
-        plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='rainbow_r', alpha=0.5, s=3)
+        # plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='rainbow_r', alpha=0.5, s=3)
+        plt.axis('off')  # Remove axis values
         plt.tight_layout()
         plt.show()
 
-        # plt.figure(figsize=(15, 4.8))
-        # plt.imshow(img_np1, alpha=0.0)
-        # plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='gray', alpha=1, s=3)
+        # Second plot with only scatter and no background
+        plt.figure(figsize=(15, 4.8))
+        plt.imshow(img_np1, alpha=0.0)
+        plt.scatter(values_store[:, 0], values_store[:, 1], c=values_store[:, 2], cmap='rainbow_r', alpha=1, s=3)
+        plt.axis('off')  # Remove axis values
+        plt.tight_layout()
+        plt.show()
+
+        #
+        # plt.figure(figsize=(15, 7))
+        # plt.imshow(img_np1)
+        # plt.scatter(values_store_neg[:, 0], values_store_neg[:, 1], c=values_store_neg[:, 2], cmap='rainbow_r', alpha=0.5,
+        #             s=5)
         # plt.tight_layout()
         # plt.show()
-
-        plt.figure(figsize=(15, 7))
-        plt.imshow(img_np1)
-        plt.scatter(values_store_neg[:, 0], values_store_neg[:, 1], c=values_store_neg[:, 2], cmap='rainbow_r', alpha=0.5,
-                    s=5)
-        plt.tight_layout()
-        plt.show()

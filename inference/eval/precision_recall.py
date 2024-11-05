@@ -11,6 +11,7 @@ import multiprocessing
 from sklearn.metrics import f1_score
 import numpy as np
 from collections import Counter
+import time
 
 def pr_auc(label, prediction):
     # Convert tensors to numpy arrays
@@ -181,6 +182,7 @@ def pr_evaluation(device, data_root, output_dir, model_cls, perturbation_eval, m
 
     with torch.no_grad():
         print("Evaluation is started")
+        start_time = time.time()
         for batch in eval_dataloader:
             left_img_batch = batch['left_img'].to(device)  # batch of left image, id 02
             depth_batch = batch['depth'].to(device)  # the corresponding depth ground truth of given id
@@ -246,6 +248,11 @@ def pr_evaluation(device, data_root, output_dir, model_cls, perturbation_eval, m
 
             iter += 1
             print(f'Iteration {iter} finished')
+
+        end_time = time.time()
+
+        inference_time = end_time - start_time
+        print(f"Inference time: {inference_time:.6f} seconds")
 
     print(f'True Positives: {sum_TP}')
     print(f'True Negatives: {sum_TN}')
