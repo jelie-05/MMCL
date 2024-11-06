@@ -4,9 +4,9 @@ logging:
 data:
   batch_size: 32
   perturbation_file: 'perturbation_neg_master_adjusted.csv'
-  dataset_path: 'data/kitti'
+  dataset_path: 'data/kitti_odom'
   augmentation: 'perturbation_pos_master_adjusted.csv'
-  loader: 'kitti_raw'
+  loader: 'kitti_odom'
 meta:
   backbone: 'resnet'
   model_name: 'resnet18_all'
