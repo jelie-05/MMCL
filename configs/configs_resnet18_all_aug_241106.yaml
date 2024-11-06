@@ -3,9 +3,9 @@ logging:
   tag: 'contrastive'
 data:
   batch_size: 32
-  perturbation_file: 'perturbation_neg_master_adjusted.csv'
+  perturbation_file: 'perturbation_neg.csv'
   dataset_path: 'data/kitti_odom'
-  augmentation: 'perturbation_pos_master_adjusted.csv'
+  augmentation: 'perturbation_pos.csv'
   loader: 'kitti_odom'
 meta:
   backbone: 'resnet'
