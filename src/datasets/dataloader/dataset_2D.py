@@ -239,26 +239,72 @@ class KittiNegDataset(KittiDataset):
         depth_neg = data_item['depth_neg']  # Just extract the depth
         return depth_neg
 
+class KittiOdomLRGB(KITTIOdometryDataset):
+    def __init__(self, datadir, phase, perturb_filenames, cam_index=2, transform=None, augmentation=None):
+        super().__init__(datadir, phase, perturb_filenames, cam_index=cam_index, transform=transform,
+                         augmentation=augmentation)
 
-def create_dataloaders(root, perturb_filenames, mode, batch_size, num_cores):
+    def __getitem__(self, idx):
+        data_item = super().__getitem__(idx)
+        left_img = data_item['left_img']
+        return left_img
+
+
+class KittiOdomDepth(KITTIOdometryDataset):
+    def __init__(self, datadir, phase, perturb_filenames, cam_index=2, transform=None, augmentation=None):
+        super().__init__(datadir, phase, perturb_filenames, cam_index=cam_index, transform=transform, augmentation=augmentation)
+
+    def __getitem__(self, idx):
+        data_item = super().__getitem__(idx)
+        depth = data_item['depth']
+        return depth
+
+
+class KittiOdomDepthNeg(KITTIOdometryDataset):
+    def __init__(self, datadir, phase, perturb_filenames, cam_index=2, transform=None, augmentation=None):
+        super().__init__(datadir, phase, perturb_filenames, cam_index=cam_index, transform=transform, augmentation=augmentation)
+
+    def __getitem__(self, idx):
+        data_item = super().__getitem__(idx)
+        depth_neg = data_item['depth_neg']
+        return depth_neg
+
+def create_dataloaders(root, perturb_filenames, mode, batch_size, num_cores, augmentation, loader='kitti_raw'):
     # Initialize the transformer based on mode
     transformer = CustTransformer(mode)
     transform = transformer.get_transform()
 
     # Dataset for left images with the transform
-    left_img_dataset = KittiLeftImageDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform)
-    dataloader_img = DataLoader(left_img_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
-                                drop_last=True, pin_memory=True)
+    if loader == 'kitti_raw':
+        left_img_dataset = KittiLeftImageDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform, augmentation=augmentation)
+        dataloader_img = DataLoader(left_img_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
+                                    drop_last=True, pin_memory=True)
 
-    # Dataset for depth with the transform
-    depth_dataset = KittiDepthDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform)
-    dataloader_lid = DataLoader(depth_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
-                                drop_last=True, pin_memory=True)
+        # Dataset for depth with the transform
+        depth_dataset = KittiDepthDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform, augmentation=augmentation)
+        dataloader_lid = DataLoader(depth_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
+                                    drop_last=True, pin_memory=True)
 
-    # Dataset for depth with the transform
-    depth_dataset = KittiNegDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform)
-    dataloader_neg = DataLoader(depth_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
-                                drop_last=True, pin_memory=True)
+        # Dataset for depth with the transform
+        depth_dataset = KittiNegDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform, augmentation=augmentation)
+        dataloader_neg = DataLoader(depth_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
+                                    drop_last=True, pin_memory=True)
+    elif loader == 'kitti_odom':
+        left_img_dataset = KittiOdomLRGB(root, mode, perturb_filenames=perturb_filenames, transform=transform, augmentation=augmentation)
+        dataloader_img = DataLoader(left_img_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
+                                    drop_last=True, pin_memory=True)
+
+        # Dataset for depth with the transform
+        depth_dataset = KittiDepthDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform, augmentation=augmentation)
+        dataloader_lid = DataLoader(depth_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
+                                    drop_last=True, pin_memory=True)
+
+        # Dataset for depth with the transform
+        depth_dataset = KittiNegDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform, augmentation=augmentation)
+        dataloader_neg = DataLoader(depth_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
+                                    drop_last=True, pin_memory=True)
+    else:
+        raise NotImplementedError(f"Loader '{loader}' not implemented.")
 
     print("data is loaded")
     return dataloader_img, dataloader_lid, dataloader_neg
