@@ -53,9 +53,9 @@ def main(args, project_root, save_name, vit, masking, logger_launch='True', trai
                               augmentation=augmentation, loader=loader)
     val_gen = DataGenerator(data_root, 'val', perturb_filenames=perturbation_file,
                             augmentation=augmentation, loader=loader)
-    # train_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file,
+    # train_gen = DataGenerator(data_root, 'debug', perturb_filenames=perturbation_file,
     #                           augmentation=augmentation, loader=loader)
-    # val_gen = DataGenerator(data_root, 'train', perturb_filenames=perturbation_file,
+    # val_gen = DataGenerator(data_root, 'debug', perturb_filenames=perturbation_file,
     #                         augmentation=augmentation, loader=loader)
     train_loader = train_gen.create_data(batch_size=batch_size, shuffle=True, nthreads=num_cores)
     val_loader = val_gen.create_data(batch_size=batch_size, shuffle=False, nthreads=num_cores)
