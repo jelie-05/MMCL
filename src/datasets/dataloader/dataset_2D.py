@@ -71,6 +71,7 @@ class KITTIOdometryDataset(Dataset):
             print(f"No augmentation for correct input. {self.augmentation}")
 
         sequence_list_file = os.path.join(datadir, f'sequence_list_{phase}.txt')
+        print(sequence_list_file)
         self.perturb_path = os.path.join(datadir, perturb_filenames)
 
         self.data_indices = []
