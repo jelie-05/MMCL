@@ -15,7 +15,6 @@ def find_row_by_name(filename, target_name):
 def disturb_matrices(perturbation_csv, target_name):
 
     perturbation = find_row_by_name(perturbation_csv, target_name)
-    print(perturbation)
     assert perturbation is not None, "perturbation data is missing."
 
     theta_rad1 = float(perturbation["theta_rad1"])/180 * 2 * np.pi
