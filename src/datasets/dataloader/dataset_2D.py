@@ -295,12 +295,12 @@ def create_dataloaders(root, perturb_filenames, mode, batch_size, num_cores, aug
                                     drop_last=True, pin_memory=True)
 
         # Dataset for depth with the transform
-        depth_dataset = KittiDepthDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform, augmentation=augmentation)
+        depth_dataset = KittiOdomDepth(root, mode, perturb_filenames=perturb_filenames, transform=transform, augmentation=augmentation)
         dataloader_lid = DataLoader(depth_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
                                     drop_last=True, pin_memory=True)
 
         # Dataset for depth with the transform
-        depth_dataset = KittiNegDataset(root, mode, perturb_filenames=perturb_filenames, transform=transform, augmentation=augmentation)
+        depth_dataset = KittiOdomDepthNeg(root, mode, perturb_filenames=perturb_filenames, transform=transform, augmentation=augmentation)
         dataloader_neg = DataLoader(depth_dataset, batch_size=batch_size, shuffle=False, num_workers=num_cores,
                                     drop_last=True, pin_memory=True)
     else:
