@@ -259,16 +259,49 @@ if __name__ == "__main__":
     # create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
     #                    range_dict=range_dict)
 
+    # range_dict = {
+    #     "x_range": (0.1, 0.2),
+    #     "y_range": (0.1, 0.2),
+    #     "z_range": (0.1, 0.2),
+    #     "range_rad1": (0.5, 1),
+    #     "range_rad2": (0.5, 1),
+    #     "range_rad3": (0.5, 1),
+    #     "max_out": 5
+    # }
+    # tag = 'test_wei_scale_1'
+
+    # range_dict = {
+    #     "x_range": (0.1, 0.2),
+    #     "y_range": (0.1, 0.2),
+    #     "z_range": (0.1, 0.2),
+    #     "range_rad1": (5, 10),
+    #     "range_rad2": (5, 10),
+    #     "range_rad3": (5, 10),
+    #     "max_out": 5
+    # }
+    # tag = 'test_unseen'
+
+    # range_dict = {
+    #     "x_range": (0.04, 0.1),
+    #     "y_range": (0.04, 0.1),
+    #     "z_range": (0.04, 0.1),
+    #     "range_rad1": (0, 0),
+    #     "range_rad2": (0, 0),
+    #     "range_rad3": (0, 0),
+    #     "max_out": 2
+    # }
+    # tag = 'test_trans_hard'
+
     range_dict = {
-        "x_range": (0.1, 0.2),
-        "y_range": (0.1, 0.2),
-        "z_range": (0.1, 0.2),
-        "range_rad1": (0.5, 1),
-        "range_rad2": (0.5, 1),
-        "range_rad3": (0.5, 1),
-        "max_out": 5
+        "x_range": (0, 0),
+        "y_range": (0, 0),
+        "z_range": (0, 0),
+        "range_rad1": (1, 5),
+        "range_rad2": (1, 5),
+        "range_rad3": (1, 5),
+        "max_out": 2
     }
-    tag = 'test_wei_scale_1'
+    tag = 'test_rot_easy'
 
     sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_test.txt')
     output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')

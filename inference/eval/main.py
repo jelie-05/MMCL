@@ -110,6 +110,7 @@ if __name__ == "__main__":
     # -
     loader = params['data']['loader']
     dataset_path = params['data']['dataset_path']
+    augmentation = args['data']['augmentation']
     kitti_path = os.path.join(root, dataset_path)
 
     # Starting Evaluation
@@ -140,11 +141,11 @@ if __name__ == "__main__":
             assert False, "Error: save_path must contain '_aug' or '_noaug'"
 
         cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_im, model_2=encoder_lid,
-                     tag_1='Encoder Image', tag_2="Encoder LiDAR", title=title,
-                     perturbation_eval=perturbation_file, show_plot=args.show_plot)
+                     tag_1='Encoder Image', tag_2="LiDAR Calibrated", title=title,
+                     perturbation_eval=perturbation_file, show_plot=args.show_plot, loader=loader, augmentation=augmentation)
         cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_im, model_2=encoder_lid,
-                     tag_1='Encoder Image', tag_2="Miscalibrated", title=title,
-                     perturbation_eval=perturbation_file, show_plot=args.show_plot)
+                     tag_1='Encoder Image', tag_2="LiDAR Miscalibrated", title=title,
+                     perturbation_eval=perturbation_file, show_plot=args.show_plot, loader=loader, augmentation=augmentation)
     else:
         print("No CKA Analysis")
 
@@ -190,10 +191,10 @@ if __name__ == "__main__":
 
         cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_im, model_2=encoder_lid,
                      tag_1='Encoder Image', tag_2="Encoder LiDAR", title=title,
-                     perturbation_eval=perturbation_file, show_plot=args.show_plot)
+                     perturbation_eval=perturbation_file, show_plot=args.show_plot, augmentation=augmentation, loader=loader)
         cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_im, model_2=encoder_lid,
                      tag_1='Encoder Image', tag_2="Miscalibrated", title=title,
-                     perturbation_eval=perturbation_file, show_plot=args.show_plot)
+                     perturbation_eval=perturbation_file, show_plot=args.show_plot, augmentation=augmentation, loader=loader)
 
     if args.other_epoch_eval:
         epoch_classifier = args.epoch_cls

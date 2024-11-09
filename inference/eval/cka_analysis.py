@@ -56,17 +56,17 @@ def compute_and_save_cka_heatmap(model1, model2, dataloader1, dataloader2, tag_1
 
     print(f"CKA heatmap saved to: {save_path}")
 
-def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, perturbation_eval, show_plot=False, crossmodel=False):
+def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, perturbation_eval, loader, augmentation, show_plot=False, crossmodel=False):
 
     batch_size = 64
     num_cores = min(multiprocessing.cpu_count(), 64)
     dataloader_im, dataloader_lid, dataloader_neg = create_dataloaders(root=data_root, perturb_filenames=perturbation_eval, mode='test',
-                                                                       batch_size=batch_size, num_cores=num_cores)
+                                                                       batch_size=batch_size, num_cores=num_cores, loader=loader, augmentation=augmentation)
 
     if 'Image' in tag_1:
         dataloader_1 = dataloader_im
         save_1 = 'im'
-    elif 'LiDAR' in tag_1:
+    elif 'Calibrated' in tag_1:
         dataloader_1 = dataloader_lid
         save_1 = 'lid'
     elif tag_1 == 'Miscalibrated':
@@ -78,7 +78,7 @@ def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, p
     if 'Image' in tag_2:
         dataloader_2 = dataloader_im
         save_2 = 'im'
-    elif 'LiDAR' in tag_2:
+    elif 'Calibrated' in tag_2:
         dataloader_2 = dataloader_lid
         save_2 = 'lid'
     elif tag_2 == 'Miscalibrated':

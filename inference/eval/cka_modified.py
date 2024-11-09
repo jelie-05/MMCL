@@ -221,13 +221,16 @@ class CKA:
         # Set the color limits (vmin and vmax) for consistency across plots
         im = ax.imshow(self.hsic_matrix, origin='lower', cmap='magma', vmin=vmin, vmax=vmax)
 
-        ax.set_xlabel(f"Layers {self.model2_info['Name']}", fontsize=15)
-        ax.set_ylabel(f"Layers {self.model1_info['Name']}", fontsize=15)
+        ax.set_xlabel(f"Layers {self.model2_info['Name']}", fontsize=20)
+        ax.set_ylabel(f"Layers {self.model1_info['Name']}", fontsize=20)
+
+        # Set the font size for the axis tick labels
+        ax.tick_params(axis='both', which='major', labelsize=17)  # Adjust the label size as needed
 
         if title is not None:
-            ax.set_title(f"{title}", fontsize=18)
+            ax.set_title(f"{title}", fontsize=25)
         else:
-            ax.set_title(f"{self.model1_info['Name']} vs {self.model2_info['Name']}", fontsize=18)
+            ax.set_title(f"{self.model1_info['Name']} vs {self.model2_info['Name']}", fontsize=25)
 
         add_colorbar(im)
         plt.tight_layout()
