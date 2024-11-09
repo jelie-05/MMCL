@@ -64,6 +64,7 @@ def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, pe
         np.array: Projected 2D points on the image plane with depth (M, 3), where each point has (x, y, z).
     """
     perturb_dir = os.path.dirname(perturb_path)
+    print(f"perturb_path: {perturb_dir}")
 
     R_error, T_error = disturb_matrices(perturbation_csv=perturb_path, target_name=name)
     T_cam_velo_err = T_cam_velo @ R_error + T_error
