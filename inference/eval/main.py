@@ -110,7 +110,6 @@ if __name__ == "__main__":
     # -
     loader = params['data']['loader']
     dataset_path = params['data']['dataset_path']
-    augmentation = params['data']['augmentation']
     kitti_path = os.path.join(root, dataset_path)
 
     # Starting Evaluation
@@ -142,10 +141,10 @@ if __name__ == "__main__":
 
         cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_im, model_2=encoder_lid,
                      tag_1='Encoder Image', tag_2="LiDAR Calibrated", title=title,
-                     perturbation_eval=perturbation_file, show_plot=args.show_plot, loader=loader, augmentation=augmentation)
+                     perturbation_eval=perturbation_file, show_plot=args.show_plot, loader=loader, augmentation="perturbation_noise.csv")
         cka_analysis(data_root=kitti_path, output_dir=save_dir, model_1=encoder_im, model_2=encoder_lid,
                      tag_1='Encoder Image', tag_2="LiDAR Miscalibrated", title=title,
-                     perturbation_eval=perturbation_file, show_plot=args.show_plot, loader=loader, augmentation=augmentation)
+                     perturbation_eval=perturbation_file, show_plot=args.show_plot, loader=loader, augmentation="perturbation_noise.csv")
     else:
         print("No CKA Analysis")
 
