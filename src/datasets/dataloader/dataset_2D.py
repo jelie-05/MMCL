@@ -71,7 +71,6 @@ class KITTIOdometryDataset(Dataset):
             print(f"No augmentation for correct input. {self.augmentation}")
 
         sequence_list_file = os.path.join(datadir, f'sequence_list_{phase}.txt')
-        print(sequence_list_file)
         self.perturb_path = os.path.join(datadir, perturb_filenames)
 
         self.data_indices = []
@@ -80,7 +79,6 @@ class KITTIOdometryDataset(Dataset):
 
             for file_name in sequences_file:
                 # Split by underscore to get sequence and idx
-                print(f"file name: {file_name}")
                 sequence, idx = file_name.split('_')
                 # Append the (sequence, idx) tuple to data_indices
                 self.data_indices.append((sequence, int(idx)))
