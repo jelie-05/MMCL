@@ -69,11 +69,11 @@ def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, p
     elif 'Calibrated' in tag_1:
         dataloader_1 = dataloader_lid
         save_1 = 'lid'
-    elif tag_1 == 'Miscalibrated':
+    elif 'Miscalibrated' in tag_1:
         dataloader_1 = dataloader_neg
         save_1 = 'neg'
     else:
-        assert False, "Error: tag_1 must contain 'Image' or 'LiDAR'"
+        assert False, f"Error: tag_1: {tag_1} must contain 'Image' or 'LiDAR'"
 
     if 'Image' in tag_2:
         dataloader_2 = dataloader_im
@@ -81,11 +81,11 @@ def cka_analysis(data_root, output_dir, model_1, model_2, tag_1, tag_2, title, p
     elif 'Calibrated' in tag_2:
         dataloader_2 = dataloader_lid
         save_2 = 'lid'
-    elif tag_2 == 'Miscalibrated':
+    elif 'Miscalibrated' in tag_2:
         dataloader_2 = dataloader_neg
         save_2 = 'neg'
     else:
-        assert False, "Error: tag_2 must contain 'Image' or 'LiDAR'"
+        assert False, f"Error: tag_2: {tag_2} must contain 'Image' or 'Calibrated' or 'Miscalibrated'"
 
     # Check for NaNs in layer outputs
     def check_for_nan(module, input, output):
