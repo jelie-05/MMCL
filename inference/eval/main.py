@@ -110,7 +110,7 @@ if __name__ == "__main__":
     # -
     loader = params['data']['loader']
     dataset_path = params['data']['dataset_path']
-    augmentation = args['data']['augmentation']
+    augmentation = params['data']['augmentation']
     kitti_path = os.path.join(root, dataset_path)
 
     # Starting Evaluation
