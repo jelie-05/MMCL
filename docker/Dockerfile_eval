@@ -76,4 +76,4 @@ EXPOSE 8000
 #python ./inference/eval/main.py --save_name resnet18_all_aug_241106 --perturbation test_trans_easy --eval_metrics && \
 #python ./inference/eval/main.py --save_name resnet18_all_aug_241106 --perturbation test_trans_hard --eval_metrics"]
 
-CMD ["sh", "-c", "python ./inference/eval/main.py --save_name resnet18_small_aug_241031 --perturbation test_neg --cka"]
+CMD ["sh", "-c", "python ./inference/eval/main.py --save_name resnet18_all_aug_241106 --perturbation test_neg --cka"]
