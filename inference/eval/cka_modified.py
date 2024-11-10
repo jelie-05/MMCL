@@ -227,10 +227,10 @@ class CKA:
         # Set the font size for the axis tick labels
         ax.tick_params(axis='both', which='major', labelsize=17)  # Adjust the label size as needed
 
-        if title is not None:
-            ax.set_title(f"{title}", fontsize=25)
-        else:
-            ax.set_title(f"{self.model1_info['Name']} vs {self.model2_info['Name']}", fontsize=25)
+        # if title is not None:
+        #     ax.set_title(f"{title}", fontsize=25)
+        # else:
+        #     ax.set_title(f"{self.model1_info['Name']} vs {self.model2_info['Name']}", fontsize=25)
 
         add_colorbar(im)
         plt.tight_layout()
