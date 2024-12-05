@@ -47,7 +47,7 @@ python ./inference/eval/main.py --save_name (save_name) --perturbation (CSV file
 This paper used the KITTI Raw dataset and the derived miscalibration dataset. The dataset should be stored in folder 'data', with the miscalibration dataset saved as `perturbation_(type).csv`.
 
 ## Results
-Our model shows better performance compared to the state of the art model. More detail result will follow after peer-review of submitted paper.
+Our model shows better overall performance and trade-off compared to the state-of-the-art model. More details of the results will follow after the peer review of the submitted paper.
 
 | **Metrics**     | **Methods** | **All Errors** | **Rot Hard** | **Trans Easy** |
 |------------------|-------------|----------------|--------------|----------------|
