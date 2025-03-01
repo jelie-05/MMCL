@@ -349,14 +349,23 @@ if __name__ == "__main__":
     # }
     # tag = 'test_intrinsic_mid'
 
+    # range_dict = {
+    #     "fu": (5, 10),
+    #     "fv": (5, 10),
+    #     "cu": (5, 10),
+    #     "cv": (5, 10),
+    #     "max_out": 3
+    # }
+    # tag = 'test_intrinsic_large'
+        
     range_dict = {
-        "fu": (5, 10),
-        "fv": (5, 10),
-        "cu": (5, 10),
-        "cv": (5, 10),
+        "fu": (10, 20),
+        "fv": (10, 20),
+        "cu": (10, 20),
+        "cv": (10, 20),
         "max_out": 3
     }
-    tag = 'test_intrinsic_large'
+    tag = 'test_intrinsic_very_large'
 
     sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_test.txt')
     output_logs_path = os.path.join(root, f'data/kitti_odom/logs_{tag}_neg_csv.txt')
