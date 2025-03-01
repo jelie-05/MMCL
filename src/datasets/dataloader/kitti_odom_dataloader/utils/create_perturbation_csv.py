@@ -341,24 +341,25 @@ if __name__ == "__main__":
     # }
     # tag = 'test_intrinsic'
 
+    # range_dict = {
+    #     "fu": (3, 5),
+    #     "fv": (3, 5),
+    #     "cu": (3, 5),
+    #     "cv": (3, 5),
+    #     "gamma": (0.3, 0.5),
+    #     "max_out": 4
+    # }
+    # tag = 'test_intrinsic_abs'
+
     range_dict = {
-        "fu": (3, 5),
-        "fv": (3, 5),
-        "cu": (3, 5),
-        "cv": (3, 5),
-        "gamma": (3, 5),
+        "fu": (5, 10),
+        "fv": (5, 10),
+        "cu": (5, 10),
+        "cv": (5, 10),
+        "gamma": (5, 10),
         "max_out": 4
     }
-    tag = 'test_intrinsic_3_5'
-
-    # range_dict = {
-    #     "fu": (5, 10),
-    #     "fv": (5, 10),
-    #     "cu": (5, 10),
-    #     "cv": (5, 10),
-    #     "max_out": 3
-    # }
-    # tag = 'test_intrinsic_large'
+    tag = 'test_intrinsic_5_10'
         
     # range_dict = {
     #     "fu": (10, 20),
