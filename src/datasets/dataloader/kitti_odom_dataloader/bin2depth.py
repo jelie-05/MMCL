@@ -49,7 +49,7 @@ def sub2ind(matrixSize, rowSub, colSub):
     m, n = matrixSize
     return rowSub * (n-1) + colSub - 1
 
-def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, perturb_path, name, augmentation=None):
+def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, perturb_path, name, augmentation=None, intrinsic=False):
     """
     Projects Velodyne points onto the camera image plane and includes depth information.
 
@@ -113,37 +113,83 @@ def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, pe
     depth[depth < 0] = 0
 
     ## Again for miscalibration
-    # Apply transformation
-    velo_pts_im_neg = (error_transform @ velo_hom.T).T  # Shape (N, 3)
-    velo_pts_im_neg[:, :2] /= velo_pts_im_neg[:, 2][:, np.newaxis]  # Normalize
+    # Apply extrinsic miscalibration
+    if not intrinsic:
+        # Apply transformation
+        velo_pts_im_neg = (error_transform @ velo_hom.T).T  # Shape (N, 3)
+        velo_pts_im_neg[:, :2] /= velo_pts_im_neg[:, 2][:, np.newaxis]  # Normalize
 
-    # Set the depth information directly
-    velo_pts_im_neg[:, 2] = velo_hom[:, 0]
+        # Set the depth information directly
+        velo_pts_im_neg[:, 2] = velo_hom[:, 0]
 
-    # Round coordinates and check bounds
-    velo_pts_im_neg[:, :2] = np.round(velo_pts_im_neg[:, :2]) - 1
-    val_inds_neg = (
-            (velo_pts_im_neg[:, 0] >= 0) & (velo_pts_im_neg[:, 0] < im_shape[1]) &
-            (velo_pts_im_neg[:, 1] >= 0) & (velo_pts_im_neg[:, 1] < im_shape[0])
-    )
-    velo_pts_im_neg = velo_pts_im_neg[val_inds_neg]
+        # Round coordinates and check bounds
+        velo_pts_im_neg[:, :2] = np.round(velo_pts_im_neg[:, :2]) - 1
+        val_inds_neg = (
+                (velo_pts_im_neg[:, 0] >= 0) & (velo_pts_im_neg[:, 0] < im_shape[1]) &
+                (velo_pts_im_neg[:, 1] >= 0) & (velo_pts_im_neg[:, 1] < im_shape[0])
+        )
+        velo_pts_im_neg = velo_pts_im_neg[val_inds_neg]
 
-    # Initialize depth map
-    depth_neg = np.zeros(im_shape)
-    depth_neg[velo_pts_im_neg[:, 1].astype(int), velo_pts_im_neg[:, 0].astype(int)] = velo_pts_im_neg[:, 2]
+        # Initialize depth map
+        depth_neg = np.zeros(im_shape)
+        depth_neg[velo_pts_im_neg[:, 1].astype(int), velo_pts_im_neg[:, 0].astype(int)] = velo_pts_im_neg[:, 2]
 
-    # Manage duplicates, keeping the closest depth
-    # inds = np.ravel_multi_index((velo_pts_im_neg[:, 1].astype(int), velo_pts_im_neg[:, 0].astype(int)), depth_neg.shape)
-    # dupe_inds = [idx for idx, count in Counter(inds).items() if count > 1]
-    inds = sub2ind(depth_neg.shape, velo_pts_im_neg[:, 1], velo_pts_im_neg[:, 0])
-    dupe_inds = [item for item, count in Counter(inds).items() if count > 1]
+        # Manage duplicates, keeping the closest depth
+        # inds = np.ravel_multi_index((velo_pts_im_neg[:, 1].astype(int), velo_pts_im_neg[:, 0].astype(int)), depth_neg.shape)
+        # dupe_inds = [idx for idx, count in Counter(inds).items() if count > 1]
+        inds = sub2ind(depth_neg.shape, velo_pts_im_neg[:, 1], velo_pts_im_neg[:, 0])
+        dupe_inds = [item for item, count in Counter(inds).items() if count > 1]
 
-    for dd in dupe_inds:
-        pts = np.where(inds==dd)[0]
-        x_loc = int(velo_pts_im_neg[pts[0], 0])
-        y_loc = int(velo_pts_im_neg[pts[0], 1])
-        depth_neg[y_loc, x_loc] = velo_pts_im_neg[pts, 2].min()
+        for dd in dupe_inds:
+            pts = np.where(inds==dd)[0]
+            x_loc = int(velo_pts_im_neg[pts[0], 0])
+            y_loc = int(velo_pts_im_neg[pts[0], 1])
+            depth_neg[y_loc, x_loc] = velo_pts_im_neg[pts, 2].min()
 
-    depth_neg[depth_neg < 0] = 0
+        depth_neg[depth_neg < 0] = 0
+    else:
+        print("Applying intrinsic miscalibration")
+        
+        perturbation_intr = find_row_by_name(perturbation_csv=perturb_path, target_name=name)
+        assert perturbation_intr is not None, "perturbation intrinsic data is missing."
+        
+        P_rect_err  = P_rect.copy()
+        P_rect_err[0,0] += float(perturbation_intr["fu"])
+        P_rect_err[1,1] += float(perturbation_intr["fv"])
+        P_rect_err[0,2] += float(perturbation_intr["cu"])
+        P_rect_err[1,2] += float(perturbation_intr["cv"])
+
+        full_transform_intr = P_rect_err @ T_cam_velo
+
+        # Apply transformation
+        velo_pts_im_neg = (full_transform_intr @ velo_hom.T).T  # Shape (N, 3)
+        velo_pts_im_neg[:, :2] /= velo_pts_im_neg[:, 2][:, np.newaxis]  # Normalize
+
+        # Set the depth information directly
+        velo_pts_im_neg[:, 2] = velo_hom[:, 0]
+
+        # Round coordinates and check bounds
+        velo_pts_im_neg[:, :2] = np.round(velo_pts_im_neg[:, :2]) - 1
+        val_inds_neg = (
+                (velo_pts_im_neg[:, 0] >= 0) & (velo_pts_im_neg[:, 0] < im_shape[1]) &
+                (velo_pts_im_neg[:, 1] >= 0) & (velo_pts_im_neg[:, 1] < im_shape[0])
+        )
+        velo_pts_im_neg = velo_pts_im_neg[val_inds_neg]
+
+        # Initialize depth map
+        depth_neg = np.zeros(im_shape)
+        depth_neg[velo_pts_im_neg[:, 1].astype(int), velo_pts_im_neg[:, 0].astype(int)] = velo_pts_im_neg[:, 2]
+
+        # Manage duplicates, keeping the closest depth
+        inds = sub2ind(depth_neg.shape, velo_pts_im_neg[:, 1], velo_pts_im_neg[:, 0])
+        dupe_inds = [item for item, count in Counter(inds).items() if count > 1]
+
+        for dd in dupe_inds:
+            pts = np.where(inds==dd)[0]
+            x_loc = int(velo_pts_im_neg[pts[0], 0])
+            y_loc = int(velo_pts_im_neg[pts[0], 1])
+            depth_neg[y_loc, x_loc] = velo_pts_im_neg[pts, 2].min()
+
+        depth_neg[depth_neg < 0] = 0
 
     return depth, depth_neg

@@ -14,12 +14,14 @@ class KittiDataset(Dataset):
                  mode,
                  perturb_filenames,
                  transform=None,
-                 augmentation=None):
+                 augmentation=None,
+                 extrinsic=False):
         self.mode = mode
         self.kitti_root = kittiDir
         self.perturb_filenames = perturb_filenames
         self.transform = transform
         self.augmentation = augmentation
+        self.extrinsic = extrinsic
 
         # use left image by default
         if self.augmentation is not None:
@@ -27,7 +29,7 @@ class KittiDataset(Dataset):
         else:
             print(f"No augmentation for correct input. {self.augmentation}")
             
-        self.kittiloader = Kittiloader(kittiDir, mode, perturb_filenames, cam=2, augmentation=self.augmentation)
+        self.kittiloader = Kittiloader(kittiDir, mode, perturb_filenames, cam=2, augmentation=self.augmentation, extrinsic=self.extrinsic)
 
     def __getitem__(self, idx):
         # load an item according to the given index
@@ -49,7 +51,7 @@ class SuppressPrint:
         sys.stdout = self._original_stdout
 
 class KITTIOdometryDataset(Dataset):
-    def __init__(self, datadir, phase, perturb_filenames, cam_index=2, transform=None, augmentation=None):
+    def __init__(self, datadir, phase, perturb_filenames, cam_index=2, transform=None, augmentation=None, intrinsic=False):
         """
         Args:
             datadir (str): Path to the KITTI odometry dataset.
@@ -58,11 +60,13 @@ class KITTIOdometryDataset(Dataset):
             cam_index (int): Camera index to project points onto (0, 1, 2, or 3).
             transform (callable, optional): Transformation to apply to images and points.
             augmentation (optional): Augmentation to apply for perturbations.
+            intrinsic (bool): Whether to use intrinsic matrix for projection. Otherwise, use extrinsic matrix.
         """
         self.basedir = datadir
         self.cam_index = cam_index
         self.transform = transform
         self.augmentation = augmentation
+        self.intrinsic = intrinsic
 
         # use left image by default
         if self.augmentation is not None:
@@ -146,7 +150,7 @@ class KITTIOdometryDataset(Dataset):
         # Project Velodyne points onto the image
         depth, depth_neg = project_velodyne_to_camera(
             velodyne_points, im_shape, T_cam_velo, P_rect, self.perturb_path,
-            name, augmentation=self.augmentation
+            name, augmentation=self.augmentation, intrinsic=self.intrinsic
         )
 
         # Create data item with a zero-padded name
@@ -171,12 +175,14 @@ class DataGenerator(object):
                  perturb_filenames,
                  high_gpu=True,
                  augmentation=None,
-                 loader='kitti_raw'):
+                 loader='kitti_raw',
+                 intrinsic=False):
         self.phase = phase
         self.high_gpu = high_gpu
         self.perturb_filenames = perturb_filenames
         self.augmentation = augmentation
         self.loader = loader
+        self.intrinsic = intrinsic
 
         # if not self.phase in ['train', 'test', 'val', 'check', 'checkval']:
         #     raise ValueError("Panic::Invalid phase parameter")
@@ -193,7 +199,9 @@ class DataGenerator(object):
                                         augmentation=self.augmentation)
         elif self.loader == 'kitti_odom':
             self.dataset = KITTIOdometryDataset(datadir=datadir, phase=self.phase, perturb_filenames=perturb_filenames,
-                                                transform=transformer.get_transform(), augmentation=augmentation)
+                                                transform=transformer.get_transform(), augmentation=augmentation, intrinsic=self.intrinsic)
+        # TODO: Implement self.loader == 'WOD' for Waymo Open Dataset
+        
         else:
             raise NotImplementedError(f"Loader '{self.loader}' not implemented.")
 

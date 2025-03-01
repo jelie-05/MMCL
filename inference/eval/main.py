@@ -30,6 +30,8 @@ parser.add_argument(
 parser.add_argument(
     '--eval_metrics', action='store_true', help='enable evaluation metrics analysis')
 parser.add_argument(
+    '--intrinsic', action='store_true', help='evaluate only intrinsics, otherwise only extrinsics')
+parser.add_argument(
     '--cka', action='store_true', help='enable cka analysis')
 parser.add_argument(
     '--other_epoch_cka', action='store_true', help='enable analysis of other epochs')
@@ -125,7 +127,7 @@ if __name__ == "__main__":
         # -
 
         PR = pr_evaluation(device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
-                           perturbation_eval=perturbation_file, output_dir=save_dir, show_plot=args.show_plot, loader=loader)
+                           perturbation_eval=perturbation_file, output_dir=save_dir, show_plot=args.show_plot, loader=loader, intrinsic=args.intrinsic)
     else:
         print("No Evalualtion Metrics Analysis")
 

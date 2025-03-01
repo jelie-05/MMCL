@@ -72,7 +72,7 @@ def disturb_matrices(perturbation_csv, target_name):
 
     return rot_error, translation_error
 
-def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, vel_depth=False, augmentation=None):
+def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, vel_depth=False, augmentation=None, extrinsic=False):
     # load calibration files
     cam2cam = read_calib_file(os.path.join(calib_dir, 'calib_cam_to_cam.txt'))
     velo2cam = read_calib_file(os.path.join(calib_dir, 'calib_velo_to_cam.txt'))
@@ -90,7 +90,7 @@ def get_depth(calib_dir, velo_file_name, im_shape, perturb_path, name, cam=2, ve
     else:
         velo2cam_augmented = velo2cam
 
-    # compute projection matrix velodyne->image plane
+    # compute projection matrix velodyne -> image plane
     R_cam2rect = np.eye(4)
     R_cam2rect[:3,:3] = cam2cam['R_rect_00'].reshape(3,3)
     P_rect = cam2cam['P_rect_0'+str(cam)].reshape(3,4)

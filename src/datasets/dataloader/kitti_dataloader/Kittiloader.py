@@ -15,13 +15,14 @@ class Kittiloader(object):
     param mode: 'train', 'test' or 'val'
     param cam: camera id. 2 represents the left cam, 3 represents the right one
     """
-    def __init__(self, kittiDir, mode, perturb_filenames, cam=2, augmentation=None):
+    def __init__(self, kittiDir, mode, perturb_filenames, cam=2, augmentation=None, extrinsic=False):
         self.mode = mode
         self.cam = cam
         self.files = []
         self.kitti_root = kittiDir
         self.perturb_filenames = perturb_filenames
         self.augmentation = augmentation
+        self.extrinsic = extrinsic
         # read filenames files
         dir_name = os.path.dirname(os.path.realpath(__file__))
         # currpath = os.path.join(dir_name, '..')
@@ -62,7 +63,7 @@ class Kittiloader(object):
 
         l_rgb = Image.open(l_rgb_path).convert('RGB')
         w, h = l_rgb.size
-        depth, depth_neg = get_depth(cam_path, depth_path, [h,w], perturb_path, item_files['name'], cam=self.cam, vel_depth=True, augmentation=self.augmentation)
+        depth, depth_neg = get_depth(cam_path, depth_path, [h,w], perturb_path, item_files['name'], cam=self.cam, vel_depth=True, augmentation=self.augmentation, extrinsic=self.extrinsic) 
 
         data = {}
         data['left_img'] = l_rgb

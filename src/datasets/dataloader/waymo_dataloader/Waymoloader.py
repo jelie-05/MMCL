@@ -2,6 +2,8 @@ import numpy as np
 from torch_waymo import WaymoDataset
 import torch
 
+# WARNING: This feature is currently not implemented.
+# Future implementation will include the waymo dataloader
 
 # Function to project LiDAR points to 2D image space with depth information
 def project_lidar_to_image_with_depth(lidar_points, T_cam_lidar, K):

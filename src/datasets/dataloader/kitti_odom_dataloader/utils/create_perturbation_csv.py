@@ -18,6 +18,20 @@ def choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out):
     errors.append(num_errors)
     return errors
 
+def choose_num_errors_intr(theta_rad1, theta_rad2, theta_rad3, x, max_out):
+    # Collect all errors in a list
+    errors = [theta_rad1, theta_rad2, theta_rad3, x]
+    num_zero_out = np.random.choice(range(0, max_out + 1))
+    # Randomly choose which errors to zero out
+    zero_out_indices = np.random.choice(range(len(errors)), num_zero_out, replace=False)
+
+    for index in zero_out_indices:
+        errors[index] = 0
+
+    num_errors = len(errors) - num_zero_out
+    errors.append(num_errors)
+    return errors
+
 def choose_num_errors_3(a, b, c, max_out):
     # Collect all errors in a list
     errors = [a, b, c]
@@ -85,6 +99,34 @@ def create_perturb_csv(sync_list_path, output_file_path, logs_path, range_dict):
             # Write the row to the CSV file
             row = [
                 name, x, y, z, theta_rad1, theta_rad2, theta_rad3, n
+            ]
+            writer.writerow(row)
+
+    print(f"File names have been written to {output_file_path}")
+
+def create_perturb_csv_intr(sync_list_path, output_file_path, logs_path, range_dict):
+    # Read the folder paths from the folder list file
+    with open(sync_list_path, 'r') as file:
+        names = [line.strip() for line in file.readlines()]
+
+    with open(output_file_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        # Write the header
+        writer.writerow(['name', 'fu', 'fv', 'cu', 'cv', 'n'])
+
+        for name in names:
+            fu = generate_random_value(range_dict["fu"])
+            fv = generate_random_value(range_dict["fv"])
+            cu = generate_random_value(range_dict["cu"])
+            cv = generate_random_value(range_dict["cv"])
+
+
+            # Apply the error generation function
+            fu, fv, cu, cv, n = choose_num_errors_intr(fu, fv, cu, cv, max_out=range_dict["max_out"])
+
+            # Write the row to the CSV file
+            row = [
+                name, fu, fv, cu, cv, n
             ]
             writer.writerow(row)
 
@@ -292,20 +334,32 @@ if __name__ == "__main__":
     # }
     # tag = 'test_trans_hard'
 
+    # range_dict = {
+    #     "x_range": (0, 0),
+    #     "y_range": (0, 0),
+    #     "z_range": (0, 0),
+    #     "range_rad1": (1, 5),
+    #     "range_rad2": (1, 5),
+    #     "range_rad3": (1, 5),
+    #     "max_out": 2
+    # }
+    # tag = 'test_rot_easy'
+
+    # create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
+    #                    range_dict=range_dict)
+    
     range_dict = {
-        "x_range": (0, 0),
-        "y_range": (0, 0),
-        "z_range": (0, 0),
-        "range_rad1": (1, 5),
-        "range_rad2": (1, 5),
-        "range_rad3": (1, 5),
-        "max_out": 2
+        "fu": (1, 5),
+        "fv": (1, 5),
+        "cu": (1, 5),
+        "cv": (1, 5),
+        "max_out": 3
     }
-    tag = 'test_rot_easy'
+    tag = 'intrinsics'
 
     sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_test.txt')
     output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
     output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}.csv')
 
-    create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
+    create_perturb_csv_intr(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
                        range_dict=range_dict)
