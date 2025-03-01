@@ -163,10 +163,12 @@ def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, pe
         fv_err_percent = 1.0 + float(perturbation_intr["fv"])/100
         cu_err_percent = 1.0 + float(perturbation_intr["cu"])/100
         cv_err_percent = 1.0 + float(perturbation_intr["cv"])/100
+        gamma_err_percent = float(perturbation_intr["gamma"])/100
         P_rect_err[0,0] *= fu_err_percent
         P_rect_err[1,1] *= fv_err_percent
         P_rect_err[0,2] *= cu_err_percent
         P_rect_err[1,2] *= cv_err_percent
+        P_rect_err[0,1] += gamma_err_percent*P_rect_err[0,0]
 
         full_transform_intr = P_rect_err @ T_cam_velo
 
