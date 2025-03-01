@@ -125,6 +125,10 @@ if __name__ == "__main__":
         classifier.to(device)
         classifier.eval()
         # -
+        if args.intrinsic:
+            print(" ================= Intrinsic Evaluation ================= ")
+        else:
+            print(" ================= Extrinsic Evaluation ================= ")
 
         PR = pr_evaluation(device=device, data_root=kitti_path, model_cls=classifier, mode=args.failure_mode,
                            perturbation_eval=perturbation_file, output_dir=save_dir, show_plot=args.show_plot, loader=loader, intrinsic=args.intrinsic)
