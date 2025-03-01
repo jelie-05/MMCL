@@ -151,7 +151,7 @@ def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, pe
     else:
         print("Applying intrinsic miscalibration")
         
-        perturbation_intr = find_row_by_name(perturbation_csv=perturb_path, target_name=name)
+        perturbation_intr = find_row_by_name(filename=perturb_path, target_name=name)
         assert perturbation_intr is not None, "perturbation intrinsic data is missing."
         
         P_rect_err  = P_rect.copy()
