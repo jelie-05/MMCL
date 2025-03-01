@@ -358,8 +358,8 @@ if __name__ == "__main__":
     tag = 'intrinsics'
 
     sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_test.txt')
-    output_logs_path = os.path.join(root, f'outputs/others/logs_{tag}_neg_csv.txt')
-    output_file_path = os.path.join(root, f'outputs/others/perturbation_{tag}.csv')
+    output_logs_path = os.path.join(root, f'data/kitti_odom/logs_{tag}_neg_csv.txt')
+    output_file_path = os.path.join(root, f'data/kitti_odom/perturbation_{tag}.csv')
 
     create_perturb_csv_intr(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
                        range_dict=range_dict)
