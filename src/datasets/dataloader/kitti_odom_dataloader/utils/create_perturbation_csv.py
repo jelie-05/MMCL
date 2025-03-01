@@ -341,10 +341,10 @@ if __name__ == "__main__":
     # tag = 'test_intrinsic'
 
     range_dict = {
-        "fu": (1, 5),
-        "fv": (1, 5),
-        "cu": (1, 5),
-        "cv": (1, 5),
+        "fu": (3, 5),
+        "fv": (3, 5),
+        "cu": (3, 5),
+        "cv": (3, 5),
         "max_out": 3
     }
     tag = 'test_intrinsic_mid'
