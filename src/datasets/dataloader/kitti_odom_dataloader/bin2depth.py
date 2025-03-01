@@ -64,8 +64,9 @@ def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, pe
     """
     perturb_dir = os.path.dirname(perturb_path)
 
-    R_error, T_error = disturb_matrices(perturbation_csv=perturb_path, target_name=name)
-    T_cam_velo_err = T_cam_velo @ R_error + T_error
+    if not intrinsic:
+        R_error, T_error = disturb_matrices(perturbation_csv=perturb_path, target_name=name)
+        T_cam_velo_err = T_cam_velo @ R_error + T_error
 
     if augmentation is not None:
         augmentation_csv = os.path.join(perturb_dir, augmentation)  # During eval
@@ -75,7 +76,6 @@ def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, pe
         T_cam_velo = T_cam_velo
 
     full_transform = P_rect @ T_cam_velo  # Shape (3, 4)
-    error_transform = P_rect @ T_cam_velo_err
 
     # Convert Velodyne points to homogeneous coordinates
     velo_hom = np.hstack((velodyne_points[:, :3], np.ones((velodyne_points.shape[0], 1))))
@@ -116,6 +116,7 @@ def project_velodyne_to_camera(velodyne_points, im_shape, T_cam_velo, P_rect, pe
     # Apply extrinsic miscalibration
     if not intrinsic:
         # Apply transformation
+        error_transform = P_rect @ T_cam_velo_err
         velo_pts_im_neg = (error_transform @ velo_hom.T).T  # Shape (N, 3)
         velo_pts_im_neg[:, :2] /= velo_pts_im_neg[:, 2][:, np.newaxis]  # Normalize
 
