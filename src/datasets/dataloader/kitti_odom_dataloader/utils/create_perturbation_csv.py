@@ -18,9 +18,9 @@ def choose_num_errors(theta_rad1, theta_rad2, theta_rad3, x, y, z, max_out):
     errors.append(num_errors)
     return errors
 
-def choose_num_errors_intr(theta_rad1, theta_rad2, theta_rad3, x, max_out):
+def choose_num_errors_intr(theta_rad1, theta_rad2, theta_rad3, x, gamma, max_out):
     # Collect all errors in a list
-    errors = [theta_rad1, theta_rad2, theta_rad3, x]
+    errors = [theta_rad1, theta_rad2, theta_rad3, x, gamma]
     num_zero_out = np.random.choice(range(0, max_out + 1))
     # Randomly choose which errors to zero out
     zero_out_indices = np.random.choice(range(len(errors)), num_zero_out, replace=False)
@@ -93,7 +93,7 @@ def create_perturb_csv_intr(sync_list_path, output_file_path, logs_path, range_d
     with open(output_file_path, mode='w', newline='') as file:
         writer = csv.writer(file)
         # Write the header
-        writer.writerow(['name', 'fu', 'fv', 'cu', 'cv', 'n'])
+        writer.writerow(['name', 'fu', 'fv', 'cu', 'cv', 'gamma', 'n'])
 
         for name in names:
             sign_u = np.random.choice([-1, 1])
@@ -102,14 +102,15 @@ def create_perturb_csv_intr(sync_list_path, output_file_path, logs_path, range_d
             fv = generate_random_value(range_dict["fv"])*sign_v
             cu = generate_random_value(range_dict["cu"])*sign_u
             cv = generate_random_value(range_dict["cv"])*sign_v
+            gamma = generate_random_value_intr(range_dict["gamma"])*sign_u
 
 
             # Apply the error generation function
-            fu, fv, cu, cv, n = choose_num_errors_intr(fu, fv, cu, cv, max_out=range_dict["max_out"])
+            fu, fv, cu, cv, gamma, n = choose_num_errors_intr(fu, fv, cu, cv, gamma, max_out=range_dict["max_out"])
 
             # Write the row to the CSV file
             row = [
-                name, fu, fv, cu, cv, n
+                name, fu, fv, cu, cv, gamma, n
             ]
             writer.writerow(row)
 
@@ -340,14 +341,15 @@ if __name__ == "__main__":
     # }
     # tag = 'test_intrinsic'
 
-    # range_dict = {
-    #     "fu": (3, 5),
-    #     "fv": (3, 5),
-    #     "cu": (3, 5),
-    #     "cv": (3, 5),
-    #     "max_out": 3
-    # }
-    # tag = 'test_intrinsic_mid'
+    range_dict = {
+        "fu": (3, 5),
+        "fv": (3, 5),
+        "cu": (3, 5),
+        "cv": (3, 5),
+        "gamma": (3, 5),
+        "max_out": 4
+    }
+    tag = 'test_intrinsic_3_5'
 
     # range_dict = {
     #     "fu": (5, 10),
@@ -358,14 +360,14 @@ if __name__ == "__main__":
     # }
     # tag = 'test_intrinsic_large'
         
-    range_dict = {
-        "fu": (10, 20),
-        "fv": (10, 20),
-        "cu": (10, 20),
-        "cv": (10, 20),
-        "max_out": 3
-    }
-    tag = 'test_intrinsic_very_large'
+    # range_dict = {
+    #     "fu": (10, 20),
+    #     "fv": (10, 20),
+    #     "cu": (10, 20),
+    #     "cv": (10, 20),
+    #     "max_out": 3
+    # }
+    # tag = 'test_intrinsic_very_large'
 
     sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_test.txt')
     output_logs_path = os.path.join(root, f'data/kitti_odom/logs_{tag}_neg_csv.txt')
