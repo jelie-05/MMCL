@@ -331,6 +331,15 @@ if __name__ == "__main__":
     # create_perturb_csv(sync_list_path=sync_list_path, output_file_path=output_file_path, logs_path=output_logs_path,
     #                    range_dict=range_dict)
     
+    # range_dict = {
+    #     "fu": (1, 5),
+    #     "fv": (1, 5),
+    #     "cu": (1, 5),
+    #     "cv": (1, 5),
+    #     "max_out": 3
+    # }
+    # tag = 'test_intrinsic'
+
     range_dict = {
         "fu": (1, 5),
         "fv": (1, 5),
@@ -338,7 +347,7 @@ if __name__ == "__main__":
         "cv": (1, 5),
         "max_out": 3
     }
-    tag = 'test_intrinsic'
+    tag = 'test_intrinsic_mid'
 
     sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_test.txt')
     output_logs_path = os.path.join(root, f'data/kitti_odom/logs_{tag}_neg_csv.txt')
