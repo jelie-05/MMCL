@@ -50,28 +50,9 @@ def choose_num_errors_3(a, b, c, max_out):
 def generate_random_value(value_range):
     return round(random.uniform(*value_range)*np.random.choice([-1, 1]), 2)
 
-def correction_existence(to_check_path, checked_file_path, removed_file_path):
-    with open(to_check_path, 'r') as f:
-        lines = f.readlines()
 
-    with open(checked_file_path, 'w') as output_file, open(removed_file_path, 'w') as log_file:
-        for line in lines:
-            files = line.strip().split()[:-1]
-            all_exist = True
-            for file_path in files:
-                full_path = os.path.join(root, data_folder, file_path)
-                if not os.path.exists(full_path):
-                    all_exist = False
-                    break
-
-            if all_exist:
-                output_file.write(line)
-            else:
-                log_file.write(line)
-
-    print(f"Results have been saved to {checked_file_path}")
-    print(f"Removed lines have been logged to {removed_file_path}")
-
+def generate_random_value_intr(value_range):
+    return round(random.uniform(*value_range), 2)
 
 def create_perturb_csv(sync_list_path, output_file_path, logs_path, range_dict):
     # Read the folder paths from the folder list file
@@ -115,10 +96,12 @@ def create_perturb_csv_intr(sync_list_path, output_file_path, logs_path, range_d
         writer.writerow(['name', 'fu', 'fv', 'cu', 'cv', 'n'])
 
         for name in names:
-            fu = generate_random_value(range_dict["fu"])
-            fv = generate_random_value(range_dict["fv"])
-            cu = generate_random_value(range_dict["cu"])
-            cv = generate_random_value(range_dict["cv"])
+            sign_u = np.random.choice([-1, 1])
+            sign_v = np.random.choice([-1, 1])
+            fu = generate_random_value(range_dict["fu"])*sign_u
+            fv = generate_random_value(range_dict["fv"])*sign_v
+            cu = generate_random_value(range_dict["cu"])*sign_u
+            cv = generate_random_value(range_dict["cv"])*sign_v
 
 
             # Apply the error generation function
@@ -355,7 +338,7 @@ if __name__ == "__main__":
         "cv": (1, 5),
         "max_out": 3
     }
-    tag = 'intrinsics'
+    tag = 'test_intrinsic'
 
     sync_list_path = os.path.join(root, f'data/kitti_odom/sequence_list_test.txt')
     output_logs_path = os.path.join(root, f'data/kitti_odom/logs_{tag}_neg_csv.txt')
