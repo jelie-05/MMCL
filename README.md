@@ -1,4 +1,4 @@
-# MCDet: Real-Time Miscalibration Detection of LiDAR and Camera Sensors
+# (IROS 2025) Real-Time Miscalibration Detection of LiDAR and Camera Sensors
 
 (Last updates can be found in https://github.com/TUMFTM/MiscalibrationDetection, Paper: https://arxiv.org/pdf/2504.01040)
 
