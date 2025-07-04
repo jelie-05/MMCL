@@ -1,6 +1,6 @@
 # (IROS 2025) Real-Time Miscalibration Detection of LiDAR and Camera Sensors
 
-(Last updates can be found in https://github.com/TUMFTM/MiscalibrationDetection, Paper: https://arxiv.org/pdf/2504.01040)
+(Last updates can be found in submitted Repository https://github.com/TUMFTM/MiscalibrationDetection, Paper: https://arxiv.org/pdf/2504.01040)
 
 This project explores **multimodal self-supervised learning (SSL)** techniques for monitoring the calibration of **LiDAR** and **camera** data using **contrastive learning**. The work aims to detect and correct sensor miscalibration in LiDAR projection into image plane.
 
